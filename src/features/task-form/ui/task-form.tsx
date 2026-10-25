@@ -38,7 +38,12 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
   }, [reset, task])
 
   return (
-    <form className="task-form" onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className="task-form"
+      onSubmit={(event) => {
+        void handleSubmit(onSubmit)(event)
+      }}
+    >
       <div className="task-form-heading">
         <div>
           <p className="eyebrow">{task ? 'Edit task' : 'New task'}</p>
