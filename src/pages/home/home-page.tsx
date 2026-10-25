@@ -1,6 +1,6 @@
 export function HomePage() {
   return (
-    <main className="home-shell">
+    <main className="home-shell" id="main-content">
       <section className="hero" aria-labelledby="forma-title">
         <p className="eyebrow">Forma Workspace</p>
         <h1 id="forma-title">Work, shaped around your team.</h1>
