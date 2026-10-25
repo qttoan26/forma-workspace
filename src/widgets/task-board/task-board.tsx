@@ -30,14 +30,10 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
     () => new Map(members.map((member) => [member.id, member])),
     [members],
   )
-  const visibleTasks = useMemo(
-    () =>
-      tasks.filter(
-        (task) =>
-          (!filters?.priority || task.priority === filters.priority) &&
-          (!filters?.assigneeId || task.assigneeId === filters.assigneeId),
-      ),
-    [filters?.assigneeId, filters?.priority, tasks],
+  const visibleTasks = tasks.filter(
+    (task) =>
+      (!filters?.priority || task.priority === filters.priority) &&
+      (!filters?.assigneeId || task.assigneeId === filters.assigneeId),
   )
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
