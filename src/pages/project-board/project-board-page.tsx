@@ -18,10 +18,7 @@ export function ProjectBoardPage() {
           aria-label={`${members.length} project members`}
         >
           {members.map((member) => (
-            <span
-              key={member.id}
-              title={`${member.name} · ${member.role}`}
-            >
+            <span key={member.id} title={`${member.name} · ${member.role}`}>
               {member.initials}
             </span>
           ))}

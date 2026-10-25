@@ -51,9 +51,7 @@ export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
                   <article className="task-card" key={task.id}>
                     <div className="task-meta">
                       <span>{task.id}</span>
-                      <span
-                        className={`priority priority-${task.priority}`}
-                      >
+                      <span className={`priority priority-${task.priority}`}>
                         {task.priority}
                       </span>
                     </div>
