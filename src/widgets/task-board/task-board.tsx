@@ -56,15 +56,18 @@ export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
       current.map((task) => {
         if (task.id !== editingTaskId) return task
 
-        const { assigneeId: _assigneeId, dueDate: _dueDate, ...required } = task
-        return {
-          ...required,
+        const updated: Task = {
+          id: task.id,
+          projectId: task.projectId,
           title: values.title,
           status: values.status,
           priority: values.priority,
+          ...(task.description ? { description: task.description } : {}),
           ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
           ...(values.dueDate ? { dueDate: values.dueDate } : {}),
         }
+
+        return updated
       }),
     )
     setEditingTaskId(null)
