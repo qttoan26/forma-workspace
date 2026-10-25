@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 
 import { initialTasks, members } from '@/pages/project-board/project-board-data'
 
