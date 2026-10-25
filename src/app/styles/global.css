@@ -8,7 +8,7 @@
     'Segoe UI',
     sans-serif;
   color: #18181b;
-  background: #fafafa;
+  background: #f4f4f5;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -32,6 +32,21 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -4rem;
+  z-index: 10;
+  padding: 0.75rem 1rem;
+  background: #18181b;
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
 
 .home-shell {
@@ -69,6 +84,162 @@ h1 {
 
 .status {
   margin-top: 2rem;
+}
+
+.workspace-shell {
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.workspace-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.workspace-header h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.project-description {
+  max-width: 42rem;
+  color: #52525b;
+  line-height: 1.6;
+}
+
+.member-stack {
+  display: flex;
+}
+
+.member-stack span,
+.task-footer > span:first-child {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  margin-left: -0.35rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #27272a;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(16rem, 1fr));
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.board-column {
+  min-height: 32rem;
+  padding: 0.75rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 1rem;
+  background: #fafafa;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.25rem 0.75rem;
+}
+
+.column-header h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.column-header span {
+  color: #71717a;
+}
+
+.task-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.task-card {
+  padding: 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+}
+
+.task-card h3 {
+  margin: 0.75rem 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.task-meta,
+.task-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: #71717a;
+  font-size: 0.75rem;
+}
+
+.priority {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: #f4f4f5;
+  text-transform: capitalize;
+}
+
+.priority-urgent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.priority-high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.task-footer > span:first-child {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  border: 0;
+}
+
+.move-task {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: #71717a;
+  font-size: 0.75rem;
+}
+
+.move-task select {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 0.45rem;
+  background: white;
+  color: #27272a;
+}
+
+@media (max-width: 700px) {
+  .workspace-header {
+    flex-direction: column;
+  }
+
+  .board {
+    grid-template-columns: repeat(4, 17rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
