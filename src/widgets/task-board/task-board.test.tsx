@@ -1,6 +1,15 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 
-import { initialTasks, members } from '@/pages/project-board/project-board-data'
+import {
+  initialTasks,
+  members,
+} from '@/pages/project-board/project-board-data'
 
 import { TaskBoard } from './task-board'
 
@@ -38,9 +47,13 @@ describe('TaskBoard', () => {
 
     expect(await screen.findByText('Prepare release notes')).toBeInTheDocument()
 
-    const createdCard = screen.getByText('Prepare release notes').closest('article')
+    const createdCard = screen
+      .getByText('Prepare release notes')
+      .closest('article')
     expect(createdCard).not.toBeNull()
-    fireEvent.click(within(createdCard as HTMLElement).getByRole('button', { name: 'Edit' }))
+    fireEvent.click(
+      within(createdCard as HTMLElement).getByRole('button', { name: 'Edit' }),
+    )
 
     const title = screen.getByLabelText('Title')
     fireEvent.change(title, { target: { value: 'Publish release notes' } })
