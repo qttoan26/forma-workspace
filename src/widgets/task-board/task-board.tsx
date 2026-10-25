@@ -151,7 +151,10 @@ export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
                             aria-label={`Move ${task.title}`}
                             value={task.status}
                             onChange={(event) =>
-                              moveTask(task.id, event.target.value as TaskStatus)
+                              moveTask(
+                                task.id,
+                                event.target.value as TaskStatus,
+                              )
                             }
                           >
                             {taskStatuses.map((option) => (
