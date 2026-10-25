@@ -10,10 +10,7 @@ import {
   type Task,
 } from '@/entities/task/model/task'
 
-import {
-  taskFormSchema,
-  type TaskFormValues,
-} from '../model/task-form-schema'
+import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 
 interface TaskFormProps {
   members: Member[]
