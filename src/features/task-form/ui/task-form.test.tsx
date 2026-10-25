@@ -18,9 +18,9 @@ describe('TaskForm', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Create task' }))
 
-    expect(
-      await screen.findByRole('alert'),
-    ).toHaveTextContent('Title must be at least 3 characters')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Title must be at least 3 characters',
+    )
     expect(onSubmit).not.toHaveBeenCalled()
 
     fireEvent.change(screen.getByLabelText('Title'), {
