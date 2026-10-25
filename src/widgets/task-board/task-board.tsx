@@ -53,18 +53,19 @@ export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
     if (!editingTaskId) return
 
     setTasks((current) =>
-      current.map((task) =>
-        task.id === editingTaskId
-          ? {
-              ...task,
-              title: values.title,
-              status: values.status,
-              priority: values.priority,
-              assigneeId: values.assigneeId || undefined,
-              dueDate: values.dueDate || undefined,
-            }
-          : task,
-      ),
+      current.map((task) => {
+        if (task.id !== editingTaskId) return task
+
+        const { assigneeId: _assigneeId, dueDate: _dueDate, ...required } = task
+        return {
+          ...required,
+          title: values.title,
+          status: values.status,
+          priority: values.priority,
+          ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
+          ...(values.dueDate ? { dueDate: values.dueDate } : {}),
+        }
+      }),
     )
     setEditingTaskId(null)
   }
