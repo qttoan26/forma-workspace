@@ -13,7 +13,8 @@ describe('TaskForm', () => {
       <TaskForm members={members} onCancel={vi.fn()} onSubmit={onSubmit} />,
     )
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    const titleInput = screen.getByLabelText('Title')
+    fireEvent.change(titleInput, {
       target: { value: 'A' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Create task' }))
@@ -23,7 +24,7 @@ describe('TaskForm', () => {
     )
     expect(onSubmit).not.toHaveBeenCalled()
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(titleInput, {
       target: { value: 'Prepare release notes' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Create task' }))
