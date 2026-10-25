@@ -13,14 +13,14 @@ Forma Workspace classifies state by ownership before selecting a library.
 
 ## State categories
 
-| State                      | Target owner/tool                |
-| -------------------------- | -------------------------------- |
-| Server/cache state         | TanStack Query                   |
-| Route/search/filter state  | TanStack Router                  |
-| Form state                 | React Hook Form + Zod            |
-| Local interaction state    | React state                      |
-| Persisted preferences      | Dedicated preference adapter     |
-| Cross-feature client state | Zustand only when justified      |
+| State                      | Target owner/tool            |
+| -------------------------- | ---------------------------- |
+| Server/cache state         | TanStack Query               |
+| Route/search/filter state  | TanStack Router              |
+| Form state                 | React Hook Form + Zod        |
+| Local interaction state    | React state                  |
+| Persisted preferences      | Dedicated preference adapter |
+| Cross-feature client state | Zustand only when justified  |
 
 The target tools describe intended ownership. They are installed only when a concrete product requirement uses them.
 
