@@ -16,19 +16,13 @@ export function ProjectBoardPage() {
 
   function setPriority(priority: TaskPriority | '') {
     void navigate({
-      search: (previous) => {
-        const { priority: _priority, ...rest } = previous
-        return priority ? { ...rest, priority } : rest
-      },
+      search: () => buildSearch(priority, search.assignee),
     })
   }
 
   function setAssignee(assignee: string) {
     void navigate({
-      search: (previous) => {
-        const { assignee: _assignee, ...rest } = previous
-        return assignee ? { ...rest, assignee } : rest
-      },
+      search: () => buildSearch(search.priority, assignee),
     })
   }
 
@@ -98,4 +92,11 @@ export function ProjectBoardPage() {
       />
     </main>
   )
+}
+
+function buildSearch(priority?: TaskPriority | '', assignee?: string) {
+  return {
+    ...(priority ? { priority } : {}),
+    ...(assignee ? { assignee } : {}),
+  }
 }
