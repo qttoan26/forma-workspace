@@ -57,7 +57,9 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
       <label>
         <span>Title</span>
         <input autoFocus {...register('title')} />
-        {errors.title ? <small role="alert">{errors.title.message}</small> : null}
+        {errors.title ? (
+          <small role="alert">{errors.title.message}</small>
+        ) : null}
       </label>
 
       <div className="task-form-grid">
