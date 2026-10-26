@@ -104,6 +104,8 @@ describe('TaskBoard', () => {
       />,
     )
 
-    expect(screen.getByText('Create board interaction model')).toBeInTheDocument()
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
   })
 })
