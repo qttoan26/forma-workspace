@@ -101,6 +101,16 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
     setEditingTaskId(null)
   }
 
+  function deleteTask(task: Task) {
+    const confirmed = window.confirm(
+      `Delete "${task.title}"? This cannot be undone.`,
+    )
+    if (!confirmed) return
+
+    setTasks((current) => current.filter((item) => item.id !== task.id))
+    if (editingTaskId === task.id) setEditingTaskId(null)
+  }
+
   return (
     <section aria-label="Project task board">
       <div className="board-toolbar">
@@ -214,6 +224,13 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
                           }}
                         >
                           Edit
+                        </button>
+                        <button
+                          className="button-secondary"
+                          type="button"
+                          onClick={() => deleteTask(task)}
+                        >
+                          Delete
                         </button>
                       </div>
                     </article>
