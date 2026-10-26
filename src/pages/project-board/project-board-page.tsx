@@ -23,8 +23,22 @@ export function ProjectBoardPage() {
           next.priority ?? search.priority,
           next.assignee ?? search.assignee,
           next.query ?? search.query,
+          search.task,
         ),
       replace: true,
+    })
+  }
+
+  function selectTask(taskId: string | null) {
+    void navigate({
+      search: () =>
+        buildSearch(
+          search.priority,
+          search.assignee,
+          search.query,
+          taskId ?? undefined,
+        ),
+      replace: taskId === null,
     })
   }
 
@@ -102,7 +116,12 @@ export function ProjectBoardPage() {
           <button
             className="button-secondary"
             type="button"
-            onClick={() => void navigate({ search: {}, replace: true })}
+            onClick={() =>
+              void navigate({
+                search: buildSearch(undefined, undefined, undefined, search.task),
+                replace: true,
+              })
+            }
           >
             Clear filters
           </button>
@@ -113,6 +132,8 @@ export function ProjectBoardPage() {
         projectId={project.id}
         initialTasks={initialTasks}
         members={members}
+        selectedTaskId={search.task ?? null}
+        onSelectedTaskChange={selectTask}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
@@ -127,10 +148,12 @@ function buildSearch(
   priority?: TaskPriority | '',
   assignee?: string,
   query?: string,
+  task?: string,
 ) {
   return {
     ...(priority ? { priority } : {}),
     ...(assignee ? { assignee } : {}),
     ...(query?.trim() ? { query: query.trim() } : {}),
+    ...(task?.trim() ? { task: task.trim() } : {}),
   }
 }
