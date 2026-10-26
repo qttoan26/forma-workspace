@@ -54,4 +54,25 @@ describe('TaskBoard external task selection', () => {
     expect(onSelectedTaskChange).toHaveBeenCalledWith('FOR-18')
     expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
   })
+
+  it('offers a recovery action when a deep-linked task no longer exists', () => {
+    const onSelectedTaskChange = vi.fn()
+
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        selectedTaskId="FOR-404"
+        onSelectedTaskChange={onSelectedTaskChange}
+      />,
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Task FOR-404 could not be found.',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Return to board' }))
+
+    expect(onSelectedTaskChange).toHaveBeenCalledWith(null)
+  })
 })
