@@ -71,7 +71,9 @@ describe('TaskBoard', () => {
       expect(screen.getByText('Publish release notes')).toBeInTheDocument(),
     )
     expect(screen.getByText('Publish to customer channels')).toBeInTheDocument()
-    expect(screen.queryByText('Coordinate launch details')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Coordinate launch details'),
+    ).not.toBeInTheDocument()
   })
 
   it('filters visible tasks without mutating the task collection', () => {
