@@ -126,7 +126,9 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
         {visibleTasks.length} of {tasks.length} tasks shown
       </p>
       {visibleTasks.length === 0 && tasks.length > 0 ? (
-        <p role="note">Try clearing filters or using a different search term.</p>
+        <p role="note">
+          Try clearing filters or using a different search term.
+        </p>
       ) : null}
       <div className="board">
         {taskStatuses.map((status) => {
