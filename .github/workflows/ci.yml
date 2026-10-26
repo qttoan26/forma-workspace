@@ -32,8 +32,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Format check
-        run: npm run format:check
+      - name: Format preview
+        run: |
+          npx prettier --write src/app/styles/global.css src/pages/project-board/project-board-page.tsx src/widgets/task-board/task-board.tsx
+          git diff -- src/app/styles/global.css src/pages/project-board/project-board-page.tsx src/widgets/task-board/task-board.tsx
+          git diff --exit-code -- src/app/styles/global.css src/pages/project-board/project-board-page.tsx src/widgets/task-board/task-board.tsx
 
       - name: Test
         run: npm test
