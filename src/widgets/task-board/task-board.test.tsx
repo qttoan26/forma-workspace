@@ -108,4 +108,33 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+
+  it('combines text search, priority and assignee filters', () => {
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'task', priority: 'urgent', assigneeId: 'member-2' }}
+      />,
+    )
+
+    expect(screen.getByText('Build accessible task cards')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Create board interaction model'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('ignores surrounding whitespace in case-insensitive search', () => {
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: '  FOR-18  ' }}
+      />,
+    )
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
 })
