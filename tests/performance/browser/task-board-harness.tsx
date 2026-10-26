@@ -48,7 +48,7 @@ if (!rootElement) {
 
 createRoot(rootElement).render(<TaskBoardBenchmark />)
 
-function TaskBoardBenchmark() {
+export function TaskBoardBenchmark() {
   const tasks = useMemo(() => createBenchmarkTasks(count), [])
   const members = useMemo(() => createBenchmarkMembers(12), [])
   const [query, setQuery] = useState<string>()
