@@ -9,6 +9,7 @@ import {
   taskStatuses,
   type Task,
 } from '@/entities/task/model/task'
+import { Button, Field } from '@/shared/ui'
 
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 
@@ -46,22 +47,17 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
           <p className="eyebrow">{task ? 'Edit task' : 'New task'}</p>
           <h2>{task ? task.title : 'Create a task'}</h2>
         </div>
-        <button type="button" className="button-secondary" onClick={onCancel}>
+        <Button type="button" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
 
-      <label>
-        <span>Title</span>
+      <Field label="Title" error={errors.title?.message}>
         <input autoFocus {...register('title')} />
-        {errors.title ? (
-          <small role="alert">{errors.title.message}</small>
-        ) : null}
-      </label>
+      </Field>
 
       <div className="task-form-grid">
-        <label>
-          <span>Status</span>
+        <Field label="Status">
           <select {...register('status')}>
             {taskStatuses.map((status) => (
               <option key={status} value={status}>
@@ -69,10 +65,9 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label>
-          <span>Priority</span>
+        <Field label="Priority">
           <select {...register('priority')}>
             {taskPriorities.map((priority) => (
               <option key={priority} value={priority}>
@@ -80,12 +75,11 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       </div>
 
       <div className="task-form-grid">
-        <label>
-          <span>Assignee</span>
+        <Field label="Assignee">
           <select {...register('assigneeId')}>
             <option value="">Unassigned</option>
             {members.map((member) => (
@@ -94,17 +88,16 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label>
-          <span>Due date</span>
+        <Field label="Due date">
           <input type="date" {...register('dueDate')} />
-        </label>
+        </Field>
       </div>
 
-      <button className="button-primary" type="submit" disabled={isSubmitting}>
+      <Button variant="primary" type="submit" disabled={isSubmitting}>
         {task ? 'Save changes' : 'Create task'}
-      </button>
+      </Button>
     </form>
   )
 }
