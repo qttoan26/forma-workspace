@@ -9,18 +9,18 @@ import {
   taskStatusLabels,
   taskStatuses,
   type Task,
-  type TaskPriority,
   type TaskStatus,
 } from '@/entities/task/model/task'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
 
-interface TaskBoardFilters {
-  priority?: TaskPriority
-  assigneeId?: string
-  query?: string
-}
+import {
+  filterTasks,
+  groupTasksByStatus,
+  type TaskBoardFilters,
+  updateTaskStatus,
+} from './model/task-board-view'
 
 interface TaskBoardProps {
   initialTasks: Task[]
@@ -43,23 +43,20 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
     () => new Map(members.map((member) => [member.id, member])),
     [members],
   )
-  const normalizedQuery = filters?.query?.trim().toLocaleLowerCase()
-  const visibleTasks = tasks.filter(
-    (task) =>
-      (!filters?.priority || task.priority === filters.priority) &&
-      (!filters?.assigneeId || task.assigneeId === filters.assigneeId) &&
-      (!normalizedQuery ||
-        task.title.toLocaleLowerCase().includes(normalizedQuery) ||
-        task.id.toLocaleLowerCase().includes(normalizedQuery)),
+  const visibleTasks = useMemo(
+    () => filterTasks(tasks, filters),
+    [filters, tasks],
+  )
+  const columns = useMemo(
+    () => groupTasksByStatus(visibleTasks),
+    [visibleTasks],
   )
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
     : undefined
 
   function moveTask(taskId: string, status: TaskStatus) {
-    setTasks((current) =>
-      current.map((task) => (task.id === taskId ? { ...task, status } : task)),
-    )
+    setTasks((current) => updateTaskStatus(current, taskId, status))
   }
 
   function createTask(values: TaskFormValues) {
@@ -144,9 +141,7 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
       ) : null}
       <div className="board">
         {taskStatuses.map((status) => {
-          const columnTasks = visibleTasks.filter(
-            (task) => task.status === status,
-          )
+          const columnTasks = columns[status]
           return (
             <section
               className="board-column"
