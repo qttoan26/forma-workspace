@@ -118,7 +118,12 @@ export function ProjectBoardPage() {
             type="button"
             onClick={() =>
               void navigate({
-                search: buildSearch(undefined, undefined, undefined, search.task),
+                search: buildSearch(
+                  undefined,
+                  undefined,
+                  undefined,
+                  search.task,
+                ),
                 replace: true,
               })
             }
