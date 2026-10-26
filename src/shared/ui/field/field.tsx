@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 interface FieldProps {
   label: string
-  error?: string
+  error?: string | undefined
   children: ReactNode
 }
 
