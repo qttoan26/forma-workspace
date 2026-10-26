@@ -25,9 +25,9 @@ Data-heavy views should be evaluated with representative datasets including appr
 
 Measurements should include interaction latency, rendered DOM size, memory behavior, long tasks, and virtualization effectiveness where applicable.
 
-## Task board baseline
+## Task board data baseline
 
-The first benchmark isolates task-board data transforms before introducing browser rendering measurements. It measures the production code paths used for:
+The first benchmark isolates task-board data transforms. It measures the production code paths used for:
 
 - filtering tasks by search, priority, and assignee;
 - grouping visible tasks into workflow columns;
@@ -56,18 +56,36 @@ These numbers show the current data transforms remain well below the UI interact
 
 This benchmark is intentionally non-gating. Shared CI runners are useful for trend visibility but are not stable enough to enforce tight millisecond thresholds. Regressions should be investigated by comparing repeated runs on the same reference environment.
 
-## Browser benchmark next
+## Task board browser baseline
 
-Data transforms are only one part of board performance. The next stage should add a browser-level harness for the real board UI and record:
+The browser benchmark renders the real `TaskBoard` in a production Vite build and drives it with headless Chromium through Playwright. The harness disables task persistence so large synthetic datasets do not measure local-storage serialization or hit browser storage quotas.
 
-- initial render and commit duration;
-- DOM node count;
-- interaction latency when filtering and moving a task;
-- long tasks on the main thread;
-- memory behavior while switching datasets;
-- the point at which virtualization materially improves latency and DOM size.
+Run the default 1K and 10K scenarios with:
 
-Virtualization should be introduced only after the browser benchmark demonstrates a measurable bottleneck.
+```sh
+npx playwright install chromium
+npm run benchmark:browser
+```
+
+Override the dataset list when investigating larger scenarios:
+
+```sh
+FORMA_BROWSER_TASK_COUNTS=1000,10000,50000 npm run benchmark:browser
+```
+
+The harness records:
+
+- React Profiler mount actual and base duration;
+- rendered DOM node and task-card counts;
+- browser-side wall latency for a filter update;
+- browser-side wall latency for moving a task;
+- React update duration for those interactions;
+- observed long tasks;
+- JavaScript heap usage when Chromium exposes it.
+
+The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull requests. Larger 50K and 100K scenarios are intentionally manual until the current non-virtualized board demonstrates that they can run reliably without exhausting shared CI resources.
+
+The browser benchmark is a measurement tool, not a millisecond gate. Virtualization should be introduced only after these measurements identify render, DOM, interaction, or memory pressure that the current board cannot meet within the product budgets.
 
 ## Method
 
