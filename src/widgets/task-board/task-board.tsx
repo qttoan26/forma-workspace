@@ -22,21 +22,37 @@ import {
   updateTaskStatus,
 } from './model/task-board-view'
 
+interface TaskBoardPersistence {
+  load: (projectId: string, fallback: Task[]) => Task[]
+  save: (projectId: string, tasks: Task[]) => void
+}
+
+const defaultPersistence: TaskBoardPersistence = {
+  load: loadProjectTasks,
+  save: saveProjectTasks,
+}
+
 interface TaskBoardProps {
   initialTasks: Task[]
   members: Member[]
   filters?: TaskBoardFilters
+  persistence?: TaskBoardPersistence | null
 }
 
-export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
+export function TaskBoard({
+  initialTasks,
+  members,
+  filters,
+  persistence = defaultPersistence,
+}: TaskBoardProps) {
   const projectId = initialTasks[0]?.projectId ?? 'project-1'
   const [tasks, setTasks] = useState(() =>
-    loadProjectTasks(projectId, initialTasks),
+    persistence ? persistence.load(projectId, initialTasks) : initialTasks,
   )
 
   useEffect(() => {
-    saveProjectTasks(projectId, tasks)
-  }, [projectId, tasks])
+    persistence?.save(projectId, tasks)
+  }, [persistence, projectId, tasks])
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const membersById = useMemo(
