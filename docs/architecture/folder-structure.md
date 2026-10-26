@@ -1,25 +1,17 @@
 # Folder Structure
 
-## Initial structure
+## Current structure
 
-Forma Workspace starts with a pages-first structure:
+Forma Workspace started pages-first and only introduced additional layers when real product behavior justified them. The active source structure is now:
 
 ```text
 src/
 ├── app/
-│   ├── config/
-│   ├── providers/
-│   ├── router/
-│   └── styles/
 ├── pages/
+├── widgets/
+├── features/
+├── entities/
 └── shared/
-    ├── api/
-    ├── config/
-    ├── hooks/
-    ├── lib/
-    ├── styles/
-    ├── types/
-    └── ui/
 ```
 
 The repository also separates engineering documentation and non-unit test suites:
@@ -43,35 +35,42 @@ tests/
 
 ### app
 
-Owns application composition. Examples include router construction, root providers, global configuration, error boundaries, and global styles. It should not become a dumping ground for product features.
+Owns application composition: router construction, root providers, global configuration, error boundaries, and global styles. It must not become a dumping ground for product features.
 
 ### pages
 
-Owns route-level composition. A page may coordinate lower-level modules but should avoid becoming the permanent home of reusable domain logic.
+Owns route-level composition. Pages connect URL state and route parameters to lower product layers. Reusable domain or interaction logic should move down once a stable boundary emerges.
+
+### widgets
+
+Owns substantial reusable UI compositions. The task board is the first active widget because it coordinates task domain data and task-management features into a stable workspace region.
+
+### features
+
+Owns meaningful user actions and workflows. Task creation/editing is the first active feature because its validation and form behavior form an independently testable product capability.
+
+### entities
+
+Owns reusable domain concepts and their domain-facing contracts. Task, Project, Workspace, and Member are active entities because the board and task flows share these concepts across composition boundaries.
 
 ### shared
 
-Owns reusable technical building blocks that do not encode Forma-specific business behavior. Examples include generic UI primitives, HTTP infrastructure, utilities, configuration helpers, common hooks, and foundational types.
+Owns reusable technical building blocks that do not encode Forma-specific business behavior: generic UI primitives, HTTP infrastructure, utilities, configuration helpers, common hooks, and foundational technical types.
 
-## When to introduce entities
+## Why the layers were earned
 
-Introduce `entities` when a domain concept such as Task, Project, Workspace, or Member develops reusable behavior or UI used by multiple product flows.
+The repository did not pre-create empty Feature-Sliced Design layers. They appeared as vertical slices required them:
 
-Do not create an entity solely because a TypeScript interface exists.
+- `entities` became useful when Task, Project, Workspace, and Member were shared across product flows.
+- `widgets` became useful when the task board needed a stable composition boundary.
+- `features` became useful when task creation/editing gained validation, form state, and tests.
+- URL-driven filters remain page/router state because they are navigational, shareable, and restorable rather than global client state.
 
-## When to introduce features
-
-Introduce `features` when a user action becomes independently meaningful and reusable, for example creating a task, filtering tasks, assigning a member, or changing task status.
-
-A feature should represent user/product capability rather than a generic component category.
-
-## When to introduce widgets
-
-Introduce `widgets` when multiple entities/features need stable composition into a substantial reusable UI region such as a task board, project sidebar, or data table workspace.
+This is the default rule for future architecture: add a boundary only when it owns real behavior and reduces coupling.
 
 ## Public APIs
 
-Once slices become substantial, cross-slice consumers should import through the slice public API.
+As slices become substantial, cross-slice consumers should import through the slice public API.
 
 ```ts
 import { TaskCard } from '@/entities/task'
@@ -83,8 +82,8 @@ Avoid coupling consumers to internal structure:
 import { TaskCard } from '@/entities/task/ui/task-card'
 ```
 
-Internal imports within a slice may remain direct when that improves clarity.
+Internal imports within a slice may remain direct when that improves clarity. Public API cleanup should be incremental rather than a reason to create empty barrel files.
 
 ## Avoid empty architecture
 
-Do not add directories merely to make the repository resemble an architecture diagram. New boundaries should contain real code and solve a concrete problem.
+Do not add directories merely to make the repository resemble an architecture diagram. New boundaries must contain real code and solve a concrete product or engineering problem.
