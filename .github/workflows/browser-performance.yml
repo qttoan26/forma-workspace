@@ -1,0 +1,48 @@
+name: Browser Performance
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_counts:
+        description: Comma-separated task counts for the browser benchmark
+        required: false
+        default: '1000,10000'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/browser-performance.yml'
+      - 'playwright.performance.config.ts'
+      - 'vite.performance.config.ts'
+      - 'src/widgets/task-board/**'
+      - 'tests/performance/browser/**'
+      - 'tests/performance/task-fixtures.ts'
+      - 'docs/performance/**'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  task-board-browser-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORMA_BROWSER_TASK_COUNTS: ${{ inputs.task_counts || '1000,10000' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.3
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser benchmark
+        run: npm run benchmark:browser
