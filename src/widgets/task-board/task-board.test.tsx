@@ -164,4 +164,17 @@ describe('TaskBoard', () => {
       `0 of ${initialTasks.length} tasks shown`,
     )
   })
+  it('suggests clearing filters when no tasks match', () => {
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'no-such-task' }}
+      />,
+    )
+
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'Try clearing filters or using a different search term.',
+    )
+  })
 })
