@@ -126,6 +126,16 @@ export function TaskBoard({
     setEditingTaskId(null)
   }
 
+  function deleteTask(task: Task) {
+    const confirmed = window.confirm(
+      `Delete "${task.title}"? This cannot be undone.`,
+    )
+    if (!confirmed) return
+
+    setTasks((current) => current.filter((item) => item.id !== task.id))
+    if (editingTaskId === task.id) setEditingTaskId(null)
+  }
+
   return (
     <section aria-label="Project task board">
       <div className="board-toolbar">
@@ -175,6 +185,7 @@ export function TaskBoard({
             membersById={membersById}
             onMove={moveTask}
             onEdit={editTask}
+            onDelete={deleteTask}
           />
         ))}
       </div>
@@ -188,6 +199,7 @@ interface TaskColumnProps {
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
   onEdit: (taskId: string) => void
+  onDelete: (task: Task) => void
 }
 
 function TaskColumn({
@@ -196,6 +208,7 @@ function TaskColumn({
   membersById,
   onMove,
   onEdit,
+  onDelete,
 }: TaskColumnProps) {
   const shouldVirtualize = tasks.length > VIRTUALIZATION_THRESHOLD
 
@@ -220,6 +233,7 @@ function TaskColumn({
           membersById={membersById}
           onMove={onMove}
           onEdit={onEdit}
+          onDelete={onDelete}
         />
       ) : (
         <div
@@ -234,6 +248,7 @@ function TaskColumn({
               membersById={membersById}
               onMove={onMove}
               onEdit={onEdit}
+              onDelete={onDelete}
               position={index + 1}
               setSize={tasks.length}
             />
@@ -250,6 +265,7 @@ interface VirtualTaskListProps {
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
   onEdit: (taskId: string) => void
+  onDelete: (task: Task) => void
 }
 
 function VirtualTaskList({
@@ -258,6 +274,7 @@ function VirtualTaskList({
   membersById,
   onMove,
   onEdit,
+  onDelete,
 }: VirtualTaskListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
@@ -299,6 +316,7 @@ function VirtualTaskList({
                 membersById={membersById}
                 onMove={onMove}
                 onEdit={onEdit}
+                onDelete={onDelete}
                 position={virtualItem.index + 1}
                 setSize={tasks.length}
               />
@@ -315,6 +333,7 @@ interface TaskCardProps {
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
   onEdit: (taskId: string) => void
+  onDelete: (task: Task) => void
   position: number
   setSize: number
 }
@@ -324,6 +343,7 @@ function TaskCard({
   membersById,
   onMove,
   onEdit,
+  onDelete,
   position,
   setSize,
 }: TaskCardProps) {
@@ -372,6 +392,9 @@ function TaskCard({
         </label>
         <Button type="button" onClick={() => onEdit(task.id)}>
           Edit
+        </Button>
+        <Button type="button" onClick={() => onDelete(task)}>
+          Delete
         </Button>
       </div>
     </article>
