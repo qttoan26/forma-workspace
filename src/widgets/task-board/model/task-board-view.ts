@@ -43,7 +43,5 @@ export function updateTaskStatus(
   taskId: string,
   status: TaskStatus,
 ) {
-  return tasks.map((task) =>
-    task.id === taskId ? { ...task, status } : task,
-  )
+  return tasks.map((task) => (task.id === taskId ? { ...task, status } : task))
 }
