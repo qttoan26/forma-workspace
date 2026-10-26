@@ -117,6 +117,7 @@ export function TaskBoard({
         title: values.title,
         status: values.status,
         priority: values.priority,
+        ...(values.description ? { description: values.description } : {}),
         ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
         ...(values.dueDate ? { dueDate: values.dueDate } : {}),
       },
@@ -137,7 +138,7 @@ export function TaskBoard({
           title: values.title,
           status: values.status,
           priority: values.priority,
-          ...(task.description ? { description: task.description } : {}),
+          ...(values.description ? { description: values.description } : {}),
           ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
           ...(values.dueDate ? { dueDate: values.dueDate } : {}),
         }
@@ -396,6 +397,9 @@ function TaskCard({
         </span>
       </div>
       <h3>{task.title}</h3>
+      {task.description ? (
+        <p className="task-description">{task.description}</p>
+      ) : null}
       <div className="task-footer">
         <span title={assignee?.name}>{assignee?.initials ?? '—'}</span>
         {task.dueDate ? (
