@@ -196,7 +196,9 @@ describe('TaskBoard', () => {
     unmount()
 
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
-    const done = screen.getByRole('heading', { name: 'Done' }).closest('section')
+    const done = screen
+      .getByRole('heading', { name: 'Done' })
+      .closest('section')
     expect(done).not.toBeNull()
     expect(
       within(done as HTMLElement).getByText('Create board interaction model'),
