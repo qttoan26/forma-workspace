@@ -60,4 +60,25 @@ describe('TaskBoard', () => {
       expect(screen.getByText('Publish release notes')).toBeInTheDocument(),
     )
   })
+
+  it('filters visible tasks without mutating the task collection', () => {
+    const { rerender } = render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ priority: 'urgent' }}
+      />,
+    )
+
+    expect(screen.getByText('Build accessible task cards')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Create board interaction model'),
+    ).not.toBeInTheDocument()
+
+    rerender(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
 })

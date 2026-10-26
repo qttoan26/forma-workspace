@@ -5,23 +5,35 @@ import {
   taskStatusLabels,
   taskStatuses,
   type Task,
+  type TaskPriority,
   type TaskStatus,
 } from '@/entities/task/model/task'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 
+interface TaskBoardFilters {
+  priority?: TaskPriority
+  assigneeId?: string
+}
+
 interface TaskBoardProps {
   initialTasks: Task[]
   members: Member[]
+  filters?: TaskBoardFilters
 }
 
-export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
+export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const membersById = useMemo(
     () => new Map(members.map((member) => [member.id, member])),
     [members],
+  )
+  const visibleTasks = tasks.filter(
+    (task) =>
+      (!filters?.priority || task.priority === filters.priority) &&
+      (!filters?.assigneeId || task.assigneeId === filters.assigneeId),
   )
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
@@ -107,7 +119,9 @@ export function TaskBoard({ initialTasks, members }: TaskBoardProps) {
 
       <div className="board">
         {taskStatuses.map((status) => {
-          const columnTasks = tasks.filter((task) => task.status === status)
+          const columnTasks = visibleTasks.filter(
+            (task) => task.status === status,
+          )
           return (
             <section
               className="board-column"
