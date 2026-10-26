@@ -43,6 +43,8 @@ interface TaskBoardProps {
   initialTasks: Task[]
   members: Member[]
   filters?: TaskBoardFilters
+  selectedTaskId?: string | null
+  onSelectedTaskChange?: (taskId: string | null) => void
   persistence?: TaskBoardPersistence | null
 }
 
@@ -51,6 +53,8 @@ export function TaskBoard({
   initialTasks,
   members,
   filters,
+  selectedTaskId,
+  onSelectedTaskChange,
   persistence = defaultPersistence,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
@@ -66,7 +70,11 @@ export function TaskBoard({
   useEffect(() => {
     persistence?.save(projectId, tasks)
   }, [persistence, projectId, tasks])
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [internalEditingTaskId, setInternalEditingTaskId] = useState<
+    string | null
+  >(null)
+  const editingTaskId =
+    selectedTaskId === undefined ? internalEditingTaskId : selectedTaskId
   const [isCreating, setIsCreating] = useState(false)
   const membersById = useMemo(
     () => new Map(members.map((member) => [member.id, member])),
@@ -84,13 +92,18 @@ export function TaskBoard({
     ? tasks.find((task) => task.id === editingTaskId)
     : undefined
 
+  function setEditingTask(taskId: string | null) {
+    if (selectedTaskId === undefined) setInternalEditingTaskId(taskId)
+    onSelectedTaskChange?.(taskId)
+  }
+
   function moveTask(taskId: string, status: TaskStatus) {
     setTasks((current) => updateTaskStatus(current, taskId, status))
   }
 
   function editTask(taskId: string) {
     setIsCreating(false)
-    setEditingTaskId(taskId)
+    setEditingTask(taskId)
   }
 
   function createTask(values: TaskFormValues) {
@@ -130,7 +143,7 @@ export function TaskBoard({
         return updated
       }),
     )
-    setEditingTaskId(null)
+    setEditingTask(null)
   }
 
   function deleteTask(task: Task) {
@@ -140,7 +153,7 @@ export function TaskBoard({
     if (!confirmed) return
 
     setTasks((current) => current.filter((item) => item.id !== task.id))
-    if (editingTaskId === task.id) setEditingTaskId(null)
+    if (editingTaskId === task.id) setEditingTask(null)
   }
 
   return (
@@ -150,7 +163,7 @@ export function TaskBoard({
           variant="primary"
           type="button"
           onClick={() => {
-            setEditingTaskId(null)
+            setEditingTask(null)
             setIsCreating(true)
           }}
         >
@@ -170,7 +183,7 @@ export function TaskBoard({
         <TaskForm
           members={members}
           task={editingTask}
-          onCancel={() => setEditingTaskId(null)}
+          onCancel={() => setEditingTask(null)}
           onSubmit={updateTask}
         />
       ) : null}
