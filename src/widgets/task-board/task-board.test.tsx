@@ -108,6 +108,7 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+
   it('combines text search, priority and assignee filters', () => {
     render(
       <TaskBoard
@@ -132,6 +133,8 @@ describe('TaskBoard', () => {
       />,
     )
 
-    expect(screen.getByText('Create board interaction model')).toBeInTheDocument()
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
   })
 })
