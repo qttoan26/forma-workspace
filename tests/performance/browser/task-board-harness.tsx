@@ -78,7 +78,10 @@ function TaskBoardBenchmark() {
       requestAnimationFrame(() => {
         benchmark.domNodes = document.getElementsByTagName('*').length
         benchmark.taskCards = document.querySelectorAll('.task-card').length
-        benchmark.usedJsHeapSize = readUsedJsHeapSize()
+        const usedJsHeapSize = readUsedJsHeapSize()
+        if (usedJsHeapSize !== undefined) {
+          benchmark.usedJsHeapSize = usedJsHeapSize
+        }
         benchmark.ready = true
       })
     })
@@ -103,7 +106,7 @@ function TaskBoardBenchmark() {
         <TaskBoard
           initialTasks={tasks}
           members={members}
-          filters={query ? { query } : undefined}
+          {...(query ? { filters: { query } } : {})}
           persistence={null}
         />
       </Profiler>
