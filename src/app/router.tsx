@@ -42,8 +42,7 @@ export const router = createRouter({ routeTree })
 
 function isTaskPriority(value: unknown): value is TaskPriority {
   return (
-    typeof value === 'string' &&
-    taskPriorities.includes(value as TaskPriority)
+    typeof value === 'string' && taskPriorities.includes(value as TaskPriority)
   )
 }
 
