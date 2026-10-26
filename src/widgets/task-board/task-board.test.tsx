@@ -137,4 +137,18 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+  it('shows an empty state when no tasks match the search', () => {
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'no-such-task' }}
+      />,
+    )
+
+    expect(screen.getAllByText('No matching tasks')).toHaveLength(4)
+    expect(
+      screen.queryByText('Build accessible task cards'),
+    ).not.toBeInTheDocument()
+  })
 })
