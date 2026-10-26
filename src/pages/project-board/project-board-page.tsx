@@ -28,6 +28,10 @@ export function ProjectBoardPage() {
     })
   }
 
+  const hasActiveFilters = Boolean(
+    search.query || search.priority || search.assignee,
+  )
+
   return (
     <main className="workspace-shell" id="main-content">
       <header className="workspace-header">
@@ -94,6 +98,15 @@ export function ProjectBoardPage() {
             ))}
           </select>
         </label>
+        {hasActiveFilters ? (
+          <button
+            className="button-secondary"
+            type="button"
+            onClick={() => void navigate({ search: {}, replace: true })}
+          >
+            Clear filters
+          </button>
+        ) : null}
       </section>
 
       <TaskBoard
