@@ -122,6 +122,9 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
         />
       ) : null}
 
+      <p aria-live="polite" role="status">
+        {visibleTasks.length} of {tasks.length} tasks shown
+      </p>
       <div className="board">
         {taskStatuses.map((status) => {
           const columnTasks = visibleTasks.filter(

@@ -151,4 +151,17 @@ describe('TaskBoard', () => {
       screen.queryByText('Build accessible task cards'),
     ).not.toBeInTheDocument()
   })
+  it('announces the visible task count when search matches nothing', () => {
+    render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'no-such-task' }}
+      />,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      `0 of ${initialTasks.length} tasks shown`,
+    )
+  })
 })
