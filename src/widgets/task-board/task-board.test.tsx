@@ -118,7 +118,9 @@ describe('TaskBoard', () => {
     )
 
     expect(screen.getByText('Build accessible task cards')).toBeInTheDocument()
-    expect(screen.queryByText('Create board interaction model')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Create board interaction model'),
+    ).not.toBeInTheDocument()
   })
 
   it('ignores surrounding whitespace in case-insensitive search', () => {
