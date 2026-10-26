@@ -36,6 +36,9 @@ const projectRoute = createRoute({
     ...(typeof search.query === 'string' && search.query.trim()
       ? { query: search.query.trim() }
       : {}),
+    ...(typeof search.task === 'string' && search.task.trim()
+      ? { task: search.task.trim() }
+      : {}),
   }),
   component: ProjectBoardPage,
 })
