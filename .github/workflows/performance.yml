@@ -31,8 +31,5 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Show canonical transform formatting
-        run: npx prettier src/widgets/task-board/model/task-board-view.ts
-
       - name: Run task board benchmark
         run: npm run benchmark:task-board
