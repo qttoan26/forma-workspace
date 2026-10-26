@@ -38,4 +38,13 @@ describe('task storage', () => {
 
     expect(loadProjectTasks('project-1', fallback)).toEqual(fallback)
   })
+
+  it('falls back when persisted tasks fail the shared task schema', () => {
+    window.localStorage.setItem(
+      'forma:tasks:v1:project-1',
+      JSON.stringify([{ ...fallbackTask, priority: 'critical' }]),
+    )
+
+    expect(loadProjectTasks('project-1', fallback)).toEqual(fallback)
+  })
 })
