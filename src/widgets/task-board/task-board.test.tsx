@@ -81,4 +81,31 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+
+  it('searches tasks by title or task id case-insensitively', () => {
+    const { rerender } = render(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'ACCESSIBLE' }}
+      />,
+    )
+
+    expect(screen.getByText('Build accessible task cards')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Create board interaction model'),
+    ).not.toBeInTheDocument()
+
+    rerender(
+      <TaskBoard
+        initialTasks={initialTasks}
+        members={members}
+        filters={{ query: 'for-18' }}
+      />,
+    )
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
 })

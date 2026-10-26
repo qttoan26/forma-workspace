@@ -12,15 +12,19 @@ export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
 
-  function setPriority(priority: TaskPriority | '') {
+  function updateSearch(next: {
+    priority?: TaskPriority | ''
+    assignee?: string
+    query?: string
+  }) {
     void navigate({
-      search: () => buildSearch(priority, search.assignee),
-    })
-  }
-
-  function setAssignee(assignee: string) {
-    void navigate({
-      search: () => buildSearch(search.priority, assignee),
+      search: () =>
+        buildSearch(
+          next.priority ?? search.priority,
+          next.assignee ?? search.assignee,
+          next.query ?? search.query,
+        ),
+      replace: true,
     })
   }
 
@@ -48,11 +52,23 @@ export function ProjectBoardPage() {
 
       <section className="board-filters" aria-label="Task filters">
         <label>
+          <span>Search</span>
+          <input
+            type="search"
+            placeholder="Search tasks"
+            value={search.query ?? ''}
+            onChange={(event) => updateSearch({ query: event.target.value })}
+          />
+        </label>
+
+        <label>
           <span>Priority</span>
           <select
             value={search.priority ?? ''}
             onChange={(event) =>
-              setPriority(event.target.value as TaskPriority | '')
+              updateSearch({
+                priority: event.target.value as TaskPriority | '',
+              })
             }
           >
             <option value="">All priorities</option>
@@ -68,7 +84,7 @@ export function ProjectBoardPage() {
           <span>Assignee</span>
           <select
             value={search.assignee ?? ''}
-            onChange={(event) => setAssignee(event.target.value)}
+            onChange={(event) => updateSearch({ assignee: event.target.value })}
           >
             <option value="">All assignees</option>
             {members.map((member) => (
@@ -86,15 +102,21 @@ export function ProjectBoardPage() {
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
+          ...(search.query ? { query: search.query } : {}),
         }}
       />
     </main>
   )
 }
 
-function buildSearch(priority?: TaskPriority | '', assignee?: string) {
+function buildSearch(
+  priority?: TaskPriority | '',
+  assignee?: string,
+  query?: string,
+) {
   return {
     ...(priority ? { priority } : {}),
     ...(assignee ? { assignee } : {}),
+    ...(query?.trim() ? { query: query.trim() } : {}),
   }
 }

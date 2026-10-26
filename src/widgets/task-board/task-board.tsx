@@ -14,6 +14,7 @@ import { TaskForm } from '@/features/task-form/ui/task-form'
 interface TaskBoardFilters {
   priority?: TaskPriority
   assigneeId?: string
+  query?: string
 }
 
 interface TaskBoardProps {
@@ -30,10 +31,14 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
     () => new Map(members.map((member) => [member.id, member])),
     [members],
   )
+  const normalizedQuery = filters?.query?.trim().toLocaleLowerCase()
   const visibleTasks = tasks.filter(
     (task) =>
       (!filters?.priority || task.priority === filters.priority) &&
-      (!filters?.assigneeId || task.assigneeId === filters.assigneeId),
+      (!filters?.assigneeId || task.assigneeId === filters.assigneeId) &&
+      (!normalizedQuery ||
+        task.title.toLocaleLowerCase().includes(normalizedQuery) ||
+        task.id.toLocaleLowerCase().includes(normalizedQuery)),
   )
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
