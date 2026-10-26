@@ -14,6 +14,7 @@ import {
 } from '@/entities/task/model/task'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
 import { TaskForm } from '@/features/task-form/ui/task-form'
+import { Button } from '@/shared/ui'
 
 interface TaskBoardFilters {
   priority?: TaskPriority
@@ -104,8 +105,8 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
   return (
     <section aria-label="Project task board">
       <div className="board-toolbar">
-        <button
-          className="button-primary"
+        <Button
+          variant="primary"
           type="button"
           onClick={() => {
             setEditingTaskId(null)
@@ -113,7 +114,7 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
           }}
         >
           New task
-        </button>
+        </Button>
       </div>
 
       {isCreating ? (
@@ -205,8 +206,7 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
                             ))}
                           </select>
                         </label>
-                        <button
-                          className="button-secondary"
+                        <Button
                           type="button"
                           onClick={() => {
                             setIsCreating(false)
@@ -214,7 +214,7 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
                           }}
                         >
                           Edit
-                        </button>
+                        </Button>
                       </div>
                     </article>
                   )
