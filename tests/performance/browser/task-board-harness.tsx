@@ -29,7 +29,9 @@ declare global {
   }
 }
 
-const count = parseTaskCount(new URLSearchParams(window.location.search).get('count'))
+const count = parseTaskCount(
+  new URLSearchParams(window.location.search).get('count'),
+)
 const benchmark: BrowserBenchmarkSnapshot = {
   ready: false,
   count,
