@@ -77,6 +77,8 @@ describe('TaskBoard', () => {
 
     rerender(<TaskBoard initialTasks={initialTasks} members={members} />)
 
-    expect(screen.getByText('Create board interaction model')).toBeInTheDocument()
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
   })
 })
