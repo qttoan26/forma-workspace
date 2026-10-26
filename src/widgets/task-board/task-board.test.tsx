@@ -186,7 +186,9 @@ describe('TaskBoard', () => {
       <TaskBoard initialTasks={initialTasks} members={members} />,
     )
 
-    const task = screen.getByText('Create board interaction model').closest('article')
+    const task = screen
+      .getByText('Create board interaction model')
+      .closest('article')
     expect(task).not.toBeNull()
     fireEvent.change(within(task as HTMLElement).getByRole('combobox'), {
       target: { value: 'done' },
