@@ -91,6 +91,7 @@ export function TaskBoard({
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
     : undefined
+  const missingSelectedTaskId = selectedTaskId && !editingTask ? selectedTaskId : null
 
   function setEditingTask(taskId: string | null) {
     if (selectedTaskId === undefined) setInternalEditingTaskId(taskId)
@@ -186,6 +187,15 @@ export function TaskBoard({
           onCancel={() => setEditingTask(null)}
           onSubmit={updateTask}
         />
+      ) : null}
+
+      {missingSelectedTaskId ? (
+        <div role="alert">
+          <p>Task {missingSelectedTaskId} could not be found.</p>
+          <Button type="button" onClick={() => setEditingTask(null)}>
+            Return to board
+          </Button>
+        </div>
       ) : null}
 
       <p aria-live="polite" role="status">
