@@ -91,7 +91,8 @@ export function TaskBoard({
   const editingTask = editingTaskId
     ? tasks.find((task) => task.id === editingTaskId)
     : undefined
-  const missingSelectedTaskId = selectedTaskId && !editingTask ? selectedTaskId : null
+  const missingSelectedTaskId =
+    selectedTaskId && !editingTask ? selectedTaskId : null
 
   function setEditingTask(taskId: string | null) {
     if (selectedTaskId === undefined) setInternalEditingTaskId(taskId)
