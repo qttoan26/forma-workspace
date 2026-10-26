@@ -1,15 +1,11 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 
-import {
-  taskPriorities,
-  type TaskPriority,
-} from '@/entities/task/model/task'
+import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
 
-const projectRoutePath =
-  '/workspaces/$workspaceSlug/projects/$projectId' as const
+const projectRoutePath = '/workspaces/$workspaceSlug/projects/$projectId' as const
 
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
