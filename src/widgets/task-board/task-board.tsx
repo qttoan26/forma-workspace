@@ -140,6 +140,9 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
                 </span>
               </header>
               <div className="task-list">
+                {columnTasks.length === 0 ? (
+                  <p className="board-empty-state">No matching tasks</p>
+                ) : null}
                 {columnTasks.map((task) => {
                   const assignee = task.assigneeId
                     ? membersById.get(task.assigneeId)
