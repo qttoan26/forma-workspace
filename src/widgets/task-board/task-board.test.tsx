@@ -100,7 +100,7 @@ describe('TaskBoard', () => {
       <TaskBoard
         initialTasks={initialTasks}
         members={members}
-        filters={{ query: 'for-01' }}
+        filters={{ query: 'for-18' }}
       />,
     )
 
