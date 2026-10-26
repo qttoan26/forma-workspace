@@ -1,9 +1,6 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 
-import {
-  taskPriorities,
-  type TaskPriority,
-} from '@/entities/task/model/task'
+import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
