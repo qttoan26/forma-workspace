@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
 import {
+  taskPriorities,
   taskStatusLabels,
   taskStatuses,
   type Task,
@@ -24,7 +25,16 @@ interface TaskBoardProps {
 }
 
 export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
-  const [tasks, setTasks] = useState(initialTasks)
+  const projectId = initialTasks[0]?.projectId ?? 'project-1'
+  const [tasks, setTasks] = useState(() => loadTasks(projectId, initialTasks))
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(storageKey(projectId), JSON.stringify(tasks))
+    } catch {
+      // Storage can be unavailable in private browsing or restricted contexts.
+    }
+  }, [projectId, tasks])
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const membersById = useMemo(
@@ -55,7 +65,7 @@ export function TaskBoard({ initialTasks, members, filters }: TaskBoardProps) {
       ...current,
       {
         id: nextTaskId(current),
-        projectId: initialTasks[0]?.projectId ?? 'project-1',
+        projectId,
         title: values.title,
         status: values.status,
         priority: values.priority,
@@ -224,4 +234,38 @@ function nextTaskId(tasks: Task[]) {
   }, 0)
 
   return `FOR-${String(largest + 1).padStart(2, '0')}`
+}
+
+function storageKey(projectId: string) {
+  return `forma:tasks:v1:${projectId}`
+}
+
+function loadTasks(projectId: string, fallback: Task[]): Task[] {
+  try {
+    const saved = window.localStorage.getItem(storageKey(projectId))
+    if (!saved) return fallback
+
+    const parsed: unknown = JSON.parse(saved)
+    if (!Array.isArray(parsed)) return fallback
+    if (!parsed.every(isTask)) return fallback
+    if (!parsed.every((task) => task.projectId === projectId)) return fallback
+    return parsed
+  } catch {
+    return fallback
+  }
+}
+
+function isTask(value: unknown): value is Task {
+  if (typeof value !== 'object' || value === null) return false
+  const task = value as Record<string, unknown>
+  return (
+    typeof task.id === 'string' &&
+    typeof task.projectId === 'string' &&
+    typeof task.title === 'string' &&
+    taskStatuses.some((status) => status === task.status) &&
+    taskPriorities.some((priority) => priority === task.priority) &&
+    (task.assigneeId === undefined || typeof task.assigneeId === 'string') &&
+    (task.dueDate === undefined || typeof task.dueDate === 'string') &&
+    (task.description === undefined || typeof task.description === 'string')
+  )
 }

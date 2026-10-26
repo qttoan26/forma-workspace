@@ -11,6 +11,10 @@ import { initialTasks, members } from '@/pages/project-board/project-board-data'
 import { TaskBoard } from './task-board'
 
 describe('TaskBoard', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
   it('moves a task between workflow columns', () => {
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
@@ -176,5 +180,38 @@ describe('TaskBoard', () => {
     expect(screen.getByRole('note')).toHaveTextContent(
       'Try clearing filters or using a different search term.',
     )
+  })
+  it('restores moved tasks after remounting the board', () => {
+    const { unmount } = render(
+      <TaskBoard initialTasks={initialTasks} members={members} />,
+    )
+
+    const task = screen
+      .getByText('Create board interaction model')
+      .closest('article')
+    expect(task).not.toBeNull()
+    fireEvent.change(within(task as HTMLElement).getByRole('combobox'), {
+      target: { value: 'done' },
+    })
+    unmount()
+
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+    const done = screen
+      .getByRole('heading', { name: 'Done' })
+      .closest('section')
+    expect(done).not.toBeNull()
+    expect(
+      within(done as HTMLElement).getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
+
+  it('falls back to seed tasks when stored data is invalid', () => {
+    window.localStorage.setItem('forma:tasks:v1:project-1', '{invalid')
+
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
   })
 })
