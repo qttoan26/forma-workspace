@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 
 import type { Member } from '@/entities/member/model/member'
 import {
@@ -21,6 +22,11 @@ import {
   type TaskBoardFilters,
   updateTaskStatus,
 } from './model/task-board-view'
+import './task-board.css'
+
+const VIRTUALIZATION_THRESHOLD = 100
+const ESTIMATED_TASK_HEIGHT = 228
+const VIRTUAL_OVERSCAN = 6
 
 interface TaskBoardPersistence {
   load: (projectId: string, fallback: Task[]) => Task[]
@@ -73,6 +79,11 @@ export function TaskBoard({
 
   function moveTask(taskId: string, status: TaskStatus) {
     setTasks((current) => updateTaskStatus(current, taskId, status))
+  }
+
+  function editTask(taskId: string) {
+    setIsCreating(false)
+    setEditingTaskId(taskId)
   }
 
   function createTask(values: TaskFormValues) {
@@ -156,86 +167,214 @@ export function TaskBoard({
         </p>
       ) : null}
       <div className="board">
-        {taskStatuses.map((status) => {
-          const columnTasks = columns[status]
+        {taskStatuses.map((status) => (
+          <TaskColumn
+            key={status}
+            status={status}
+            tasks={columns[status]}
+            membersById={membersById}
+            onMove={moveTask}
+            onEdit={editTask}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+interface TaskColumnProps {
+  status: TaskStatus
+  tasks: Task[]
+  membersById: Map<string, Member>
+  onMove: (taskId: string, status: TaskStatus) => void
+  onEdit: (taskId: string) => void
+}
+
+function TaskColumn({
+  status,
+  tasks,
+  membersById,
+  onMove,
+  onEdit,
+}: TaskColumnProps) {
+  const shouldVirtualize = tasks.length > VIRTUALIZATION_THRESHOLD
+
+  return (
+    <section
+      className="board-column"
+      aria-labelledby={`column-${status}`}
+      data-virtualized={shouldVirtualize ? 'true' : 'false'}
+    >
+      <header className="column-header">
+        <h2 id={`column-${status}`}>{taskStatusLabels[status]}</h2>
+        <span aria-label={`${tasks.length} tasks`}>{tasks.length}</span>
+      </header>
+      {tasks.length === 0 ? (
+        <div className="task-list">
+          <p className="board-empty-state">No matching tasks</p>
+        </div>
+      ) : shouldVirtualize ? (
+        <VirtualTaskList
+          tasks={tasks}
+          status={status}
+          membersById={membersById}
+          onMove={onMove}
+          onEdit={onEdit}
+        />
+      ) : (
+        <div
+          className="task-list"
+          role="list"
+          aria-label={`${taskStatusLabels[status]} tasks`}
+        >
+          {tasks.map((task, index) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              membersById={membersById}
+              onMove={onMove}
+              onEdit={onEdit}
+              position={index + 1}
+              setSize={tasks.length}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+interface VirtualTaskListProps {
+  tasks: Task[]
+  status: TaskStatus
+  membersById: Map<string, Member>
+  onMove: (taskId: string, status: TaskStatus) => void
+  onEdit: (taskId: string) => void
+}
+
+function VirtualTaskList({
+  tasks,
+  status,
+  membersById,
+  onMove,
+  onEdit,
+}: VirtualTaskListProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: tasks.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ESTIMATED_TASK_HEIGHT,
+    getItemKey: (index) => tasks[index]?.id ?? index,
+    overscan: VIRTUAL_OVERSCAN,
+    useFlushSync: false,
+  })
+  const virtualItems = virtualizer.getVirtualItems()
+
+  return (
+    <div
+      ref={scrollRef}
+      className="task-list task-list-virtualized"
+      role="list"
+      aria-label={`${taskStatusLabels[status]} tasks`}
+      tabIndex={0}
+    >
+      <div
+        className="task-virtual-space"
+        style={{ height: `${virtualizer.getTotalSize()}px` }}
+      >
+        {virtualItems.map((virtualItem) => {
+          const task = tasks[virtualItem.index]
+          if (!task) return null
+
           return (
-            <section
-              className="board-column"
-              key={status}
-              aria-labelledby={`column-${status}`}
+            <div
+              key={virtualItem.key}
+              ref={virtualizer.measureElement}
+              className="task-virtual-row"
+              data-index={virtualItem.index}
+              style={{ transform: `translateY(${virtualItem.start}px)` }}
             >
-              <header className="column-header">
-                <h2 id={`column-${status}`}>{taskStatusLabels[status]}</h2>
-                <span aria-label={`${columnTasks.length} tasks`}>
-                  {columnTasks.length}
-                </span>
-              </header>
-              <div className="task-list">
-                {columnTasks.length === 0 ? (
-                  <p className="board-empty-state">No matching tasks</p>
-                ) : null}
-                {columnTasks.map((task) => {
-                  const assignee = task.assigneeId
-                    ? membersById.get(task.assigneeId)
-                    : undefined
-                  return (
-                    <article className="task-card" key={task.id}>
-                      <div className="task-meta">
-                        <span>{task.id}</span>
-                        <span className={`priority priority-${task.priority}`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                      <h3>{task.title}</h3>
-                      <div className="task-footer">
-                        <span title={assignee?.name}>
-                          {assignee?.initials ?? '—'}
-                        </span>
-                        {task.dueDate ? (
-                          <time dateTime={task.dueDate}>{task.dueDate}</time>
-                        ) : (
-                          <span>No due date</span>
-                        )}
-                      </div>
-                      <div className="task-actions">
-                        <label className="move-task">
-                          <span>Move to</span>
-                          <select
-                            aria-label={`Move ${task.title}`}
-                            value={task.status}
-                            onChange={(event) =>
-                              moveTask(
-                                task.id,
-                                event.target.value as TaskStatus,
-                              )
-                            }
-                          >
-                            {taskStatuses.map((option) => (
-                              <option key={option} value={option}>
-                                {taskStatusLabels[option]}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setIsCreating(false)
-                            setEditingTaskId(task.id)
-                          }}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
+              <TaskCard
+                task={task}
+                membersById={membersById}
+                onMove={onMove}
+                onEdit={onEdit}
+                position={virtualItem.index + 1}
+                setSize={tasks.length}
+              />
+            </div>
           )
         })}
       </div>
-    </section>
+    </div>
+  )
+}
+
+interface TaskCardProps {
+  task: Task
+  membersById: Map<string, Member>
+  onMove: (taskId: string, status: TaskStatus) => void
+  onEdit: (taskId: string) => void
+  position: number
+  setSize: number
+}
+
+function TaskCard({
+  task,
+  membersById,
+  onMove,
+  onEdit,
+  position,
+  setSize,
+}: TaskCardProps) {
+  const assignee = task.assigneeId
+    ? membersById.get(task.assigneeId)
+    : undefined
+
+  return (
+    <article
+      className="task-card"
+      role="listitem"
+      aria-posinset={position}
+      aria-setsize={setSize}
+    >
+      <div className="task-meta">
+        <span>{task.id}</span>
+        <span className={`priority priority-${task.priority}`}>
+          {task.priority}
+        </span>
+      </div>
+      <h3>{task.title}</h3>
+      <div className="task-footer">
+        <span title={assignee?.name}>{assignee?.initials ?? '—'}</span>
+        {task.dueDate ? (
+          <time dateTime={task.dueDate}>{task.dueDate}</time>
+        ) : (
+          <span>No due date</span>
+        )}
+      </div>
+      <div className="task-actions">
+        <label className="move-task">
+          <span>Move to</span>
+          <select
+            aria-label={`Move ${task.title}`}
+            value={task.status}
+            onChange={(event) =>
+              onMove(task.id, event.target.value as TaskStatus)
+            }
+          >
+            {taskStatuses.map((option) => (
+              <option key={option} value={option}>
+                {taskStatusLabels[option]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Button type="button" onClick={() => onEdit(task.id)}>
+          Edit
+        </Button>
+      </div>
+    </article>
   )
 }
 

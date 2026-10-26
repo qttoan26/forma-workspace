@@ -29,27 +29,27 @@ for (const count of taskCounts) {
       () => (window as BenchmarkWindow).__FORMA_BENCHMARK__,
     )
 
-    expect(initial?.taskCards).toBe(count)
-    expect(initial?.domNodes).toBeGreaterThan(count)
+    expect(initial?.taskCards).toBeGreaterThan(0)
+    expect(initial?.taskCards).toBeLessThan(count)
+    expect(initial?.domNodes).toBeGreaterThan(initial?.taskCards ?? 0)
 
     const filter = await page.evaluate(async () => {
       const benchmark = (window as BenchmarkWindow).__FORMA_BENCHMARK__
       const button = document.querySelector<HTMLButtonElement>(
         '[data-testid="benchmark-filter"]',
       )
+      const status = document.querySelector<HTMLElement>('[role="status"]')
 
-      if (!benchmark || !button) {
+      if (!benchmark || !button || !status) {
         throw new Error('Benchmark filter controls are unavailable')
       }
 
-      const taskCardsBefore = document.querySelectorAll('.task-card').length
+      const statusBefore = status.textContent
       const startedAt = performance.now()
       button.click()
 
       const timeoutAt = performance.now() + 30_000
-      while (
-        document.querySelectorAll('.task-card').length === taskCardsBefore
-      ) {
+      while (status.textContent === statusBefore) {
         if (performance.now() > timeoutAt) {
           throw new Error('Timed out waiting for filter DOM commit')
         }
@@ -65,54 +65,43 @@ for (const count of taskCounts) {
       return {
         wallDurationMs: performance.now() - startedAt,
         visibleTaskCards: document.querySelectorAll('.task-card').length,
+        resultStatus: status.textContent,
       }
     })
 
     expect(filter.visibleTaskCards).toBeGreaterThan(0)
     expect(filter.visibleTaskCards).toBeLessThan(count)
+    expect(filter.resultStatus).not.toBe(`${count} of ${count} tasks shown`)
 
     const move = await page.evaluate(async () => {
       const select = document.querySelector<HTMLSelectElement>(
         '.task-card select[aria-label^="Move "]',
       )
+      const doneColumn = document.querySelector<HTMLElement>(
+        '.board-column[aria-labelledby="column-done"]',
+      )
+      const doneCount = doneColumn?.querySelector<HTMLElement>(
+        '.column-header span',
+      )
 
-      if (!select) {
-        throw new Error('Benchmark move control is unavailable')
+      if (!select || !doneCount) {
+        throw new Error('Benchmark move controls are unavailable')
       }
 
-      const ariaLabel = select.getAttribute('aria-label')
-      if (!ariaLabel) {
-        throw new Error('Benchmark move control has no accessible label')
-      }
-
+      const doneCountBefore = doneCount.textContent
       const startedAt = performance.now()
       select.value = 'done'
       select.dispatchEvent(new Event('change', { bubbles: true }))
 
       const timeoutAt = performance.now() + 30_000
-      let columnId: string | null = null
-
-      while (columnId !== 'column-done') {
+      while (doneCount.textContent === doneCountBefore) {
         if (performance.now() > timeoutAt) {
           throw new Error('Timed out waiting for move DOM commit')
         }
 
-        const candidate = Array.from(
-          document.querySelectorAll<HTMLSelectElement>(
-            '.task-card select[aria-label^="Move "]',
-          ),
-        ).find((item) => item.getAttribute('aria-label') === ariaLabel)
-
-        columnId =
-          candidate
-            ?.closest<HTMLElement>('.board-column')
-            ?.getAttribute('aria-labelledby') ?? null
-
-        if (columnId !== 'column-done') {
-          await new Promise<void>((resolve) =>
-            requestAnimationFrame(() => resolve()),
-          )
-        }
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        )
       }
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve()),
@@ -120,11 +109,12 @@ for (const count of taskCounts) {
 
       return {
         wallDurationMs: performance.now() - startedAt,
-        columnId,
+        doneCountBefore,
+        doneCountAfter: doneCount.textContent,
       }
     })
 
-    expect(move.columnId).toBe('column-done')
+    expect(move.doneCountAfter).not.toBe(move.doneCountBefore)
 
     const finalSnapshot = await page.evaluate(
       () => (window as BenchmarkWindow).__FORMA_BENCHMARK__,
