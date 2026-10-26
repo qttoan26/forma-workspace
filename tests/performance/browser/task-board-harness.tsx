@@ -1,5 +1,4 @@
-import { Profiler, useEffect, useMemo, useState } from 'react'
-import type { ProfilerOnRenderCallback } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import type { Member } from '@/entities/member/model/member'
@@ -11,12 +10,7 @@ import { createBenchmarkTasks } from '../task-fixtures'
 interface BrowserBenchmarkSnapshot {
   ready: boolean
   count: number
-  mountActualDurationMs?: number
-  mountBaseDurationMs?: number
-  mountCommitTimeMs?: number
-  lastUpdateActualDurationMs?: number
-  lastUpdateCommitTimeMs?: number
-  updateCount: number
+  mountWallDurationMs?: number
   domNodes?: number
   taskCards?: number
   usedJsHeapSize?: number
@@ -32,10 +26,10 @@ declare global {
 const count = parseTaskCount(
   new URLSearchParams(window.location.search).get('count'),
 )
+const mountStartedAt = performance.now()
 const benchmark: BrowserBenchmarkSnapshot = {
   ready: false,
   count,
-  updateCount: 0,
   longTasks: [],
 }
 
@@ -55,29 +49,10 @@ export function TaskBoardBenchmark() {
   const members = useMemo(() => createBenchmarkMembers(12), [])
   const [query, setQuery] = useState<string>()
 
-  const handleRender: ProfilerOnRenderCallback = (
-    _id,
-    phase,
-    actualDuration,
-    baseDuration,
-    _startTime,
-    commitTime,
-  ) => {
-    if (phase === 'mount') {
-      benchmark.mountActualDurationMs = actualDuration
-      benchmark.mountBaseDurationMs = baseDuration
-      benchmark.mountCommitTimeMs = commitTime
-      return
-    }
-
-    benchmark.updateCount += 1
-    benchmark.lastUpdateActualDurationMs = actualDuration
-    benchmark.lastUpdateCommitTimeMs = commitTime
-  }
-
   useEffect(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        benchmark.mountWallDurationMs = performance.now() - mountStartedAt
         benchmark.domNodes = document.getElementsByTagName('*').length
         benchmark.taskCards = document.querySelectorAll('.task-card').length
         const usedJsHeapSize = readUsedJsHeapSize()
@@ -96,22 +71,18 @@ export function TaskBoardBenchmark() {
           data-testid="benchmark-filter"
           type="button"
           onClick={() =>
-            setQuery((current) =>
-              current ? undefined : 'Performance task 1',
-            )
+            setQuery((current) => (current ? undefined : 'Performance task 1'))
           }
         >
           Toggle benchmark filter
         </button>
       </div>
-      <Profiler id="TaskBoard" onRender={handleRender}>
-        <TaskBoard
-          initialTasks={tasks}
-          members={members}
-          {...(query ? { filters: { query } } : {})}
-          persistence={null}
-        />
-      </Profiler>
+      <TaskBoard
+        initialTasks={tasks}
+        members={members}
+        {...(query ? { filters: { query } } : {})}
+        persistence={null}
+      />
     </main>
   )
 }
