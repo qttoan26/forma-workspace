@@ -41,6 +41,13 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Show canonical benchmark formatting
+        run: |
+          echo '=== HARNESS ==='
+          npx prettier tests/performance/browser/task-board-harness.tsx
+          echo '=== SPEC ==='
+          npx prettier tests/performance/browser/task-board.spec.ts
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
