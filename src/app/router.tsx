@@ -33,6 +33,9 @@ const projectRoute = createRoute({
     ...(typeof search.assignee === 'string' && search.assignee
       ? { assignee: search.assignee }
       : {}),
+    ...(typeof search.query === 'string' && search.query.trim()
+      ? { query: search.query.trim() }
+      : {}),
   }),
   component: ProjectBoardPage,
 })
