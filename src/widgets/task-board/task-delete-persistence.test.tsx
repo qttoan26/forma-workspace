@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 
+import type { Task } from '@/entities/task/model/task'
 import { initialTasks, members } from '@/pages/project-board/project-board-data'
 
 import { TaskBoard } from './task-board'
@@ -11,7 +12,7 @@ describe('TaskBoard deletion persistence contract', () => {
 
   it('saves the task collection without the confirmed deleted task', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
-    const save = vi.fn()
+    const save = vi.fn<(projectId: string, tasks: Task[]) => void>()
     const persistence = {
       load: () => initialTasks,
       save,
