@@ -73,19 +73,35 @@ Override the dataset list when investigating larger scenarios:
 FORMA_BROWSER_TASK_COUNTS=1000,10000,50000 npm run benchmark:browser
 ```
 
-The harness records:
+The production harness records:
 
-- React Profiler mount actual and base duration;
+- wall time from benchmark bootstrap through the mounted board becoming paint-ready;
 - rendered DOM node and task-card counts;
-- browser-side wall latency for a filter update;
-- browser-side wall latency for moving a task;
-- React update duration for those interactions;
+- browser-side wall latency from a filter event through the observable DOM commit;
+- browser-side wall latency from a move event through the card appearing in the target column;
 - observed long tasks;
 - JavaScript heap usage when Chromium exposes it.
 
-The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull requests. Larger 50K and 100K scenarios are intentionally manual until the current non-virtualized board demonstrates that they can run reliably without exhausting shared CI resources.
+The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull requests. Larger 50K and 100K scenarios remain manual because the current non-virtualized board already shows material DOM and render pressure at 10K tasks.
 
-The browser benchmark is a measurement tool, not a millisecond gate. Virtualization should be introduced only after these measurements identify render, DOM, interaction, or memory pressure that the current board cannot meet within the product budgets.
+### Reference browser run
+
+Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build baseline run.
+
+|  Tasks | Mount wall time | DOM nodes | Filter latency | Move latency | Observed long tasks | Heap snapshot* |
+| -----: | --------------: | --------: | -------------: | -----------: | ------------------: | -------------: |
+|  1,000 |        372.6 ms |    17,037 |        53.0 ms |      14.2 ms |               96 ms |       ~10.0 MB |
+| 10,000 |       3,302.1 ms |   170,037 |       289.3 ms |      28.4 ms | 694 ms, 67 ms, 264 ms |       ~44.7 MB |
+
+\* Chromium may quantize `performance.memory`, so heap values are directional rather than precise memory accounting.
+
+### Decision
+
+The browser baseline demonstrates that the primary scaling bottleneck is rendering and DOM volume rather than task filtering or grouping. At 10K tasks the board creates roughly 170K DOM nodes, mount time grows to about 3.3 seconds, filter latency exceeds the <100 ms local-interaction budget, and long main-thread tasks reach hundreds of milliseconds.
+
+This is sufficient evidence to introduce virtualization for large board columns. The next optimization should preserve behavior and accessibility while reducing mounted task-card and DOM counts, then compare the same 1K and 10K scenarios against this baseline before expanding to 50K and 100K browser datasets.
+
+The browser benchmark remains a measurement tool rather than a tight millisecond CI gate because shared runners vary between executions.
 
 ## Method
 
