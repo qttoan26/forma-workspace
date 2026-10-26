@@ -110,6 +110,7 @@ export function ProjectBoardPage() {
       </section>
 
       <TaskBoard
+        projectId={project.id}
         initialTasks={initialTasks}
         members={members}
         filters={{

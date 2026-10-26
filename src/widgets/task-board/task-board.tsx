@@ -39,6 +39,7 @@ const defaultPersistence: TaskBoardPersistence = {
 }
 
 interface TaskBoardProps {
+  projectId?: string
   initialTasks: Task[]
   members: Member[]
   filters?: TaskBoardFilters
@@ -46,12 +47,18 @@ interface TaskBoardProps {
 }
 
 export function TaskBoard({
+  projectId: explicitProjectId,
   initialTasks,
   members,
   filters,
   persistence = defaultPersistence,
 }: TaskBoardProps) {
-  const projectId = initialTasks[0]?.projectId ?? 'project-1'
+  const projectId = explicitProjectId ?? initialTasks[0]?.projectId
+  if (!projectId) {
+    throw new Error('TaskBoard requires a projectId when initialTasks is empty')
+  }
+  const scopedProjectId = projectId
+
   const [tasks, setTasks] = useState(() =>
     persistence ? persistence.load(projectId, initialTasks) : initialTasks,
   )
@@ -91,7 +98,7 @@ export function TaskBoard({
       ...current,
       {
         id: nextTaskId(current),
-        projectId,
+        projectId: scopedProjectId,
         title: values.title,
         status: values.status,
         priority: values.priority,
