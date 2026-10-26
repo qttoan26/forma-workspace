@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Show canonical performance docs formatting
+        run: npx prettier docs/performance/README.md
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
