@@ -214,4 +214,29 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+  it('rejects stored tasks belonging to another project', () => {
+    window.localStorage.setItem(
+      'forma:tasks:v1:project-1',
+      JSON.stringify([{ ...initialTasks[0], projectId: 'another-project' }]),
+    )
+
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
+
+  it('rejects stored tasks with invalid workflow status', () => {
+    window.localStorage.setItem(
+      'forma:tasks:v1:project-1',
+      JSON.stringify([{ ...initialTasks[0], status: 'invalid' }]),
+    )
+
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+  })
 })
