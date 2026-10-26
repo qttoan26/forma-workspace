@@ -57,9 +57,9 @@ for (const count of taskCounts) {
           throw new Error('Timed out waiting for benchmark commit')
         }
 
-        await new Promise<void>((resolve) => requestAnimationFrame(resolve))
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       }
-      await new Promise<void>((resolve) => requestAnimationFrame(resolve))
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
       return {
         wallDurationMs: performance.now() - startedAt,
@@ -90,9 +90,9 @@ for (const count of taskCounts) {
           throw new Error('Timed out waiting for benchmark commit')
         }
 
-        await new Promise<void>((resolve) => requestAnimationFrame(resolve))
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       }
-      await new Promise<void>((resolve) => requestAnimationFrame(resolve))
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
       return {
         wallDurationMs: performance.now() - startedAt,
