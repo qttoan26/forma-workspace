@@ -50,7 +50,20 @@ for (const count of taskCounts) {
       const previousUpdateCount = benchmark.updateCount
       const startedAt = performance.now()
       button.click()
-      await waitForNextCommit(benchmark, previousUpdateCount)
+
+      const timeoutAt = performance.now() + 30_000
+      while (benchmark.updateCount <= previousUpdateCount) {
+        if (performance.now() > timeoutAt) {
+          throw new Error('Timed out waiting for benchmark commit')
+        }
+
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        )
+      }
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
 
       return {
         wallDurationMs: performance.now() - startedAt,
@@ -74,7 +87,20 @@ for (const count of taskCounts) {
       const startedAt = performance.now()
       select.value = 'done'
       select.dispatchEvent(new Event('change', { bubbles: true }))
-      await waitForNextCommit(benchmark, previousUpdateCount)
+
+      const timeoutAt = performance.now() + 30_000
+      while (benchmark.updateCount <= previousUpdateCount) {
+        if (performance.now() > timeoutAt) {
+          throw new Error('Timed out waiting for benchmark commit')
+        }
+
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        )
+      }
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
 
       return {
         wallDurationMs: performance.now() - startedAt,
@@ -108,21 +134,4 @@ function parseTaskCounts(value: string) {
     )
 
   return counts.length > 0 ? counts : [1_000]
-}
-
-async function waitForNextCommit(
-  benchmark: BenchmarkSnapshot,
-  previousUpdateCount: number,
-) {
-  const timeoutAt = performance.now() + 30_000
-
-  while (benchmark.updateCount <= previousUpdateCount) {
-    if (performance.now() > timeoutAt) {
-      throw new Error('Timed out waiting for benchmark commit')
-    }
-
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-  }
-
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 }
