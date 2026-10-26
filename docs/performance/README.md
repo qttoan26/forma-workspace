@@ -77,29 +77,50 @@ The production harness records:
 
 - wall time from benchmark bootstrap through the mounted board becoming paint-ready;
 - rendered DOM node and task-card counts;
-- browser-side wall latency from a filter event through the observable DOM commit;
-- browser-side wall latency from a move event through the card appearing in the target column;
+- browser-side wall latency from a filter event through the observable result-count DOM commit;
+- browser-side wall latency from a move event through the target-column count DOM commit;
 - observed long tasks;
 - JavaScript heap usage when Chromium exposes it.
 
-The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull requests. Larger 50K and 100K scenarios remain manual because the current non-virtualized board already shows material DOM and render pressure at 10K tasks.
+The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull requests. Larger 50K and 100K scenarios remain manual to control shared-runner cost and are candidates for follow-up validation after virtualization.
 
 ### Reference browser run
 
-Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build baseline run.
+Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build baseline run before virtualization.
 
-|  Tasks | Mount wall time | DOM nodes | Filter latency | Move latency |   Observed long tasks | Heap snapshot* |
-| -----: | --------------: | --------: | -------------: | -----------: | --------------------: | -------------: |
-|  1,000 |        372.6 ms |    17,037 |        53.0 ms |      14.2 ms |                 96 ms |       ~10.0 MB |
-| 10,000 |      3,302.1 ms |   170,037 |       289.3 ms |      28.4 ms | 694 ms, 67 ms, 264 ms |       ~44.7 MB |
+|  Tasks | Mount wall time | DOM nodes | Task cards | Filter latency | Move latency |   Observed long tasks | Heap snapshot* |
+| -----: | --------------: | --------: | ---------: | -------------: | -----------: | --------------------: | -------------: |
+|  1,000 |        372.6 ms |    17,037 |      1,000 |        53.0 ms |      14.2 ms |                 96 ms |       ~10.0 MB |
+| 10,000 |      3,302.1 ms |   170,037 |     10,000 |       289.3 ms |      28.4 ms | 694 ms, 67 ms, 264 ms |       ~44.7 MB |
 
 \* Chromium may quantize `performance.memory`, so heap values are directional rather than precise memory accounting.
 
-### Decision
+### Baseline decision
 
 The browser baseline demonstrates that the primary scaling bottleneck is rendering and DOM volume rather than task filtering or grouping. At 10K tasks the board creates roughly 170K DOM nodes, mount time grows to about 3.3 seconds, filter latency exceeds the <100 ms local-interaction budget, and long main-thread tasks reach hundreds of milliseconds.
 
-This is sufficient evidence to introduce virtualization for large board columns. The next optimization should preserve behavior and accessibility while reducing mounted task-card and DOM counts, then compare the same 1K and 10K scenarios against this baseline before expanding to 50K and 100K browser datasets.
+This is sufficient evidence to introduce virtualization for large board columns.
+
+## Virtualized task board comparison
+
+The board now keeps the simple full-render path for columns with 100 tasks or fewer and virtualizes larger columns with TanStack Virtual. Large columns use a fixed scroll viewport, dynamic row measurement, six-item overscan, stable task IDs as virtual keys, and `useFlushSync: false` for React 19 compatibility.
+
+Rendered task cards keep the existing Move/Edit interactions. Virtualized list items also expose `aria-posinset` and `aria-setsize` so assistive technology can retain each rendered item's position within the logical column.
+
+Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build comparison run.
+
+|  Tasks | Mount wall time | DOM nodes | Mounted task cards | Filter latency | Move latency | Observed long tasks | Heap snapshot* |
+| -----: | --------------: | --------: | -----------------: | -------------: | -----------: | ------------------: | -------------: |
+|  1,000 |         62.8 ms |       689 |                 36 |        39.2 ms |       5.2 ms |                None |       ~10.0 MB |
+| 10,000 |         65.7 ms |       689 |                 36 |        19.7 ms |       7.8 ms |                None |       ~10.0 MB |
+
+\* Chromium may quantize `performance.memory`, so heap values are directional rather than precise memory accounting.
+
+### Comparison result
+
+At 10K tasks, virtualization reduces the initial DOM from roughly 170K nodes to 689 and mounted task cards from 10,000 to 36. Mount wall time falls from about 3.3 seconds to about 66 ms, while filter latency falls from about 289 ms to about 20 ms. The comparison run also records no long tasks for either the 1K or 10K scenario.
+
+The measured result brings the 10K filter interaction back under the <100 ms local-interaction budget and confirms that DOM volume was the dominant bottleneck. The next browser-performance step can expand manual validation to 50K and 100K datasets and investigate scroll behavior, memory stability, and accessibility under sustained navigation rather than adding more speculative render optimizations.
 
 The browser benchmark remains a measurement tool rather than a tight millisecond CI gate because shared runners vary between executions.
 
