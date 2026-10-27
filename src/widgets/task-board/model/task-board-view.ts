@@ -20,9 +20,15 @@ export function filterTasks(tasks: Task[], filters?: TaskBoardFilters) {
     (task) =>
       (!filters?.priority || task.priority === filters.priority) &&
       (!filters?.assigneeId || task.assigneeId === filters.assigneeId) &&
-      (!normalizedQuery ||
-        task.title.toLocaleLowerCase().includes(normalizedQuery) ||
-        task.id.toLocaleLowerCase().includes(normalizedQuery)),
+      (!normalizedQuery || matchesTaskQuery(task, normalizedQuery)),
+  )
+}
+
+function matchesTaskQuery(task: Task, normalizedQuery: string) {
+  return (
+    task.title.toLocaleLowerCase().includes(normalizedQuery) ||
+    task.id.toLocaleLowerCase().includes(normalizedQuery) ||
+    task.description?.toLocaleLowerCase().includes(normalizedQuery) === true
   )
 }
 

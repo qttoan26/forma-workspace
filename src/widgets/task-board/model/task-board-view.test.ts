@@ -13,6 +13,7 @@ const tasks: Task[] = [
     id: 'FOR-1',
     projectId: 'project-1',
     title: 'Design board navigation',
+    description: 'Plan keyboard and focus behavior for the board',
     status: 'todo',
     priority: 'high',
     assigneeId: 'member-1',
@@ -36,6 +37,10 @@ describe('task board view transforms', () => {
         assigneeId: 'member-2',
       }),
     ).toEqual([tasks[1]])
+  })
+
+  it('searches task descriptions case-insensitively', () => {
+    expect(filterTasks(tasks, { query: 'FOCUS BEHAVIOR' })).toEqual([tasks[0]])
   })
 
   it('groups tasks by status in one pass', () => {
