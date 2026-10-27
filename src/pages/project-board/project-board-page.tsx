@@ -181,6 +181,7 @@ export function ProjectBoardPage() {
 
       <TaskBoard
         projectId={project.id}
+        taskIdPrefix={project.key}
         initialTasks={initialTasks}
         members={members}
         selectedTaskId={search.task ?? null}
