@@ -1,6 +1,10 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
+import {
+  type TaskBoardSort,
+  taskBoardSorts,
+} from '@/widgets/task-board/model/task-board-view'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
@@ -16,6 +20,7 @@ export function ProjectBoardPage() {
     priority?: TaskPriority | ''
     assignee?: string
     query?: string
+    sort?: TaskBoardSort | ''
   }) {
     void navigate({
       search: () =>
@@ -23,6 +28,7 @@ export function ProjectBoardPage() {
           next.priority ?? search.priority,
           next.assignee ?? search.assignee,
           next.query ?? search.query,
+          next.sort ?? search.sort,
           search.task,
           search.newTask,
         ),
@@ -37,6 +43,7 @@ export function ProjectBoardPage() {
           search.priority,
           search.assignee,
           search.query,
+          search.sort,
           taskId ?? undefined,
           undefined,
         ),
@@ -51,6 +58,7 @@ export function ProjectBoardPage() {
           search.priority,
           search.assignee,
           search.query,
+          search.sort,
           undefined,
           isCreating ? '1' : undefined,
         ),
@@ -128,6 +136,26 @@ export function ProjectBoardPage() {
             ))}
           </select>
         </label>
+
+        <label>
+          <span>Sort</span>
+          <select
+            value={search.sort ?? ''}
+            onChange={(event) =>
+              updateSearch({
+                sort: event.target.value as TaskBoardSort | '',
+              })
+            }
+          >
+            <option value="">Board order</option>
+            {taskBoardSorts.map((sort) => (
+              <option key={sort} value={sort}>
+                {sort === 'priority' ? 'Priority' : 'Due date'}
+              </option>
+            ))}
+          </select>
+        </label>
+
         {hasActiveFilters ? (
           <button
             className="button-secondary"
@@ -138,6 +166,7 @@ export function ProjectBoardPage() {
                   undefined,
                   undefined,
                   undefined,
+                  search.sort,
                   search.task,
                   search.newTask,
                 ),
@@ -162,6 +191,7 @@ export function ProjectBoardPage() {
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
           ...(search.query ? { query: search.query } : {}),
+          ...(search.sort ? { sort: search.sort } : {}),
         }}
       />
     </main>
@@ -172,6 +202,7 @@ function buildSearch(
   priority?: TaskPriority | '',
   assignee?: string,
   query?: string,
+  sort?: TaskBoardSort | '',
   task?: string,
   newTask?: '1',
 ) {
@@ -179,6 +210,7 @@ function buildSearch(
     ...(priority ? { priority } : {}),
     ...(assignee ? { assignee } : {}),
     ...(query?.trim() ? { query: query.trim() } : {}),
+    ...(sort ? { sort } : {}),
     ...(task?.trim() ? { task: task.trim() } : {}),
     ...(newTask === '1' ? { newTask } : {}),
   }

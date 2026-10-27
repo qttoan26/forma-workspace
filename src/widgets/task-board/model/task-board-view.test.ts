@@ -5,6 +5,7 @@ import type { Task } from '@/entities/task/model/task'
 import {
   filterTasks,
   groupTasksByStatus,
+  sortTasks,
   updateTaskStatus,
 } from './task-board-view'
 
@@ -28,6 +29,26 @@ const tasks: Task[] = [
   },
 ]
 
+const sortableTasks: Task[] = [
+  {
+    ...tasks[0],
+    id: 'FOR-3',
+    priority: 'low',
+    dueDate: '2026-11-20',
+  },
+  {
+    ...tasks[1],
+    id: 'FOR-4',
+    priority: 'urgent',
+    dueDate: '2026-11-10',
+  },
+  {
+    ...tasks[0],
+    id: 'FOR-5',
+    priority: 'medium',
+  },
+]
+
 describe('task board view transforms', () => {
   it('filters by search, priority, and assignee', () => {
     expect(
@@ -41,6 +62,36 @@ describe('task board view transforms', () => {
 
   it('searches task descriptions case-insensitively', () => {
     expect(filterTasks(tasks, { query: 'FOCUS BEHAVIOR' })).toEqual([tasks[0]])
+  })
+
+  it('sorts tasks by priority without mutating board order', () => {
+    expect(sortTasks(sortableTasks, 'priority').map((task) => task.id)).toEqual([
+      'FOR-4',
+      'FOR-5',
+      'FOR-3',
+    ])
+    expect(sortableTasks.map((task) => task.id)).toEqual([
+      'FOR-3',
+      'FOR-4',
+      'FOR-5',
+    ])
+  })
+
+  it('sorts due dates ascending with undated tasks last', () => {
+    expect(sortTasks(sortableTasks, 'due-date').map((task) => task.id)).toEqual([
+      'FOR-4',
+      'FOR-3',
+      'FOR-5',
+    ])
+  })
+
+  it('combines filtering and sorting in the visible task transform', () => {
+    expect(
+      filterTasks(sortableTasks, {
+        query: 'board',
+        sort: 'priority',
+      }).map((task) => task.id),
+    ).toEqual(['FOR-5', 'FOR-3'])
   })
 
   it('groups tasks by status in one pass', () => {

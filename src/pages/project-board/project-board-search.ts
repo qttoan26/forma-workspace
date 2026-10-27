@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
+import {
+  taskBoardSorts,
+  type TaskBoardSort,
+} from '@/widgets/task-board/model/task-board-view'
 
 const optionalSearchText = z.preprocess(
   normalizeOptionalText,
@@ -15,6 +19,14 @@ const optionalPriority = z.preprocess(
   z.enum(taskPriorities).optional(),
 )
 
+const optionalSort = z.preprocess(
+  (value) =>
+    typeof value === 'string' && taskBoardSorts.includes(value as TaskBoardSort)
+      ? value
+      : undefined,
+  z.enum(taskBoardSorts).optional(),
+)
+
 const optionalNewTask = z.preprocess(
   (value) => (value === '1' ? value : undefined),
   z.literal('1').optional(),
@@ -24,6 +36,7 @@ export const projectBoardSearchSchema = z.object({
   priority: optionalPriority,
   assignee: optionalSearchText,
   query: optionalSearchText,
+  sort: optionalSort,
   task: optionalSearchText,
   newTask: optionalNewTask,
 })
