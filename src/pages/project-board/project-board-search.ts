@@ -9,8 +9,7 @@ const optionalSearchText = z.preprocess(
 
 const optionalPriority = z.preprocess(
   (value) =>
-    typeof value === 'string' &&
-    taskPriorities.includes(value as TaskPriority)
+    typeof value === 'string' && taskPriorities.includes(value as TaskPriority)
       ? value
       : undefined,
   z.enum(taskPriorities).optional(),
