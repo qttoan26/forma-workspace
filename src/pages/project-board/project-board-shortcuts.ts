@@ -30,6 +30,7 @@ function isEditableTarget(target: EventTarget | null) {
 
   return (
     target.isContentEditable ||
+    target.contentEditable === 'true' ||
     isWithinEditableContent ||
     target instanceof HTMLInputElement ||
     target instanceof HTMLTextAreaElement ||
