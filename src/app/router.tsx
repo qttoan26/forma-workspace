@@ -5,9 +5,9 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
-import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import { HomePage } from '@/pages/home/home-page'
 import { ProjectBoardPage } from '@/pages/project-board/project-board-page'
+import { parseProjectBoardSearch } from '@/pages/project-board/project-board-search'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -28,29 +28,12 @@ const homeRoute = createRoute({
 const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspaces/$workspaceSlug/projects/$projectId',
-  validateSearch: (search: Record<string, unknown>) => ({
-    ...(isTaskPriority(search.priority) ? { priority: search.priority } : {}),
-    ...(typeof search.assignee === 'string' && search.assignee
-      ? { assignee: search.assignee }
-      : {}),
-    ...(typeof search.query === 'string' && search.query.trim()
-      ? { query: search.query.trim() }
-      : {}),
-    ...(typeof search.task === 'string' && search.task.trim()
-      ? { task: search.task.trim() }
-      : {}),
-  }),
+  validateSearch: parseProjectBoardSearch,
   component: ProjectBoardPage,
 })
 
 const routeTree = rootRoute.addChildren([homeRoute, projectRoute])
 export const router = createRouter({ routeTree })
-
-function isTaskPriority(value: unknown): value is TaskPriority {
-  return (
-    typeof value === 'string' && taskPriorities.includes(value as TaskPriority)
-  )
-}
 
 declare module '@tanstack/react-router' {
   interface Register {
