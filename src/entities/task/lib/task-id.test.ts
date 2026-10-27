@@ -22,9 +22,9 @@ describe('task id helpers', () => {
   })
 
   it('increments only ids belonging to the requested prefix', () => {
-    expect(nextTaskId([task('OPS-02'), task('FOR-99'), task('OPS-09')], 'OPS')).toBe(
-      'OPS-10',
-    )
+    expect(
+      nextTaskId([task('OPS-02'), task('FOR-99'), task('OPS-09')], 'OPS'),
+    ).toBe('OPS-10')
   })
 
   it('normalizes project keys and provides a safe fallback', () => {
