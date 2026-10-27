@@ -16,6 +16,22 @@ describe('parseProjectBoardSearch', () => {
       assignee: 'member-2',
       query: 'release notes',
       task: 'FOR-18',
+      newTask: undefined,
+    })
+  })
+
+  it('normalizes URL task creation and gives it precedence over editing', () => {
+    expect(
+      parseProjectBoardSearch({
+        task: 'FOR-18',
+        newTask: '1',
+      }),
+    ).toEqual({
+      priority: undefined,
+      assignee: undefined,
+      query: undefined,
+      task: undefined,
+      newTask: '1',
     })
   })
 
@@ -26,6 +42,7 @@ describe('parseProjectBoardSearch', () => {
         assignee: '   ',
         query: 42,
         task: null,
+        newTask: 'true',
         debug: 'true',
       }),
     ).toEqual({
@@ -33,6 +50,7 @@ describe('parseProjectBoardSearch', () => {
       assignee: undefined,
       query: undefined,
       task: undefined,
+      newTask: undefined,
     })
   })
 })
