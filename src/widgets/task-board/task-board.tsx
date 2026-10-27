@@ -472,7 +472,10 @@ function TaskCard({
     >
       <div className="task-meta">
         <span>{task.id}</span>
-        <span className={`priority priority-${task.priority}`}>
+        <span
+          className={`priority priority-${task.priority}`}
+          aria-label={`Priority: ${task.priority}`}
+        >
           {task.priority}
         </span>
       </div>
