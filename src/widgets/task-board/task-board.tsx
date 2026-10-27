@@ -198,7 +198,7 @@ export function TaskBoard({
   }
 
   function deleteTask(task: Task) {
-    const confirmed = window.confirm(`Delete "${task.title}"?`)
+    const confirmed = window.confirm(`Delete \"${task.title}\"?`)
     if (!confirmed) return
 
     const index = tasks.findIndex((item) => item.id === task.id)
@@ -233,6 +233,8 @@ export function TaskBoard({
         <Button
           variant="primary"
           type="button"
+          aria-keyshortcuts="N"
+          title="Press N to create a task"
           onClick={() => {
             rememberEditorTrigger()
             setEditingTask(null)
