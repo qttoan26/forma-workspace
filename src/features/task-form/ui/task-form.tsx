@@ -38,6 +38,11 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
   return (
     <form
       className="task-form"
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return
+        event.preventDefault()
+        onCancel()
+      }}
       onSubmit={(event) => {
         void handleSubmit(onSubmit)(event)
       }}
@@ -47,7 +52,7 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
           <p className="eyebrow">{task ? 'Edit task' : 'New task'}</p>
           <h2>{task ? task.title : 'Create a task'}</h2>
         </div>
-        <Button type="button" onClick={onCancel}>
+        <Button type="button" aria-keyshortcuts="Escape" onClick={onCancel}>
           Cancel
         </Button>
       </div>
