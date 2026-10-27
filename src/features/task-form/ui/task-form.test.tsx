@@ -63,4 +63,16 @@ describe('TaskForm', () => {
     )
     expect(onSubmit).not.toHaveBeenCalled()
   })
+
+  it('cancels the form when Escape is pressed', () => {
+    const onCancel = vi.fn()
+
+    render(
+      <TaskForm members={members} onCancel={onCancel} onSubmit={vi.fn()} />,
+    )
+
+    fireEvent.keyDown(screen.getByLabelText('Title'), { key: 'Escape' })
+
+    expect(onCancel).toHaveBeenCalledTimes(1)
+  })
 })
