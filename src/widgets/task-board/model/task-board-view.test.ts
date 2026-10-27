@@ -65,11 +65,9 @@ describe('task board view transforms', () => {
   })
 
   it('sorts tasks by priority without mutating board order', () => {
-    expect(sortTasks(sortableTasks, 'priority').map((task) => task.id)).toEqual([
-      'FOR-4',
-      'FOR-5',
-      'FOR-3',
-    ])
+    expect(
+      sortTasks(sortableTasks, 'priority').map((task) => task.id),
+    ).toEqual(['FOR-4', 'FOR-5', 'FOR-3'])
     expect(sortableTasks.map((task) => task.id)).toEqual([
       'FOR-3',
       'FOR-4',
@@ -78,11 +76,9 @@ describe('task board view transforms', () => {
   })
 
   it('sorts due dates ascending with undated tasks last', () => {
-    expect(sortTasks(sortableTasks, 'due-date').map((task) => task.id)).toEqual([
-      'FOR-4',
-      'FOR-3',
-      'FOR-5',
-    ])
+    expect(
+      sortTasks(sortableTasks, 'due-date').map((task) => task.id),
+    ).toEqual(['FOR-4', 'FOR-3', 'FOR-5'])
   })
 
   it('combines filtering and sorting in the visible task transform', () => {
