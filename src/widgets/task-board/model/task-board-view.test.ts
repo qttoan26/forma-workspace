@@ -31,21 +31,32 @@ const tasks: Task[] = [
 
 const sortableTasks: Task[] = [
   {
-    ...tasks[0],
     id: 'FOR-3',
+    projectId: 'project-1',
+    title: 'Design board navigation',
+    description: 'Plan keyboard and focus behavior for the board',
+    status: 'todo',
     priority: 'low',
+    assigneeId: 'member-1',
     dueDate: '2026-11-20',
   },
   {
-    ...tasks[1],
     id: 'FOR-4',
+    projectId: 'project-1',
+    title: 'Measure task rendering',
+    status: 'in-progress',
     priority: 'urgent',
+    assigneeId: 'member-2',
     dueDate: '2026-11-10',
   },
   {
-    ...tasks[0],
     id: 'FOR-5',
+    projectId: 'project-1',
+    title: 'Design board navigation',
+    description: 'Plan keyboard and focus behavior for the board',
+    status: 'todo',
     priority: 'medium',
+    assigneeId: 'member-1',
   },
 ]
 
