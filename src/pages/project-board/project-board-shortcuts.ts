@@ -23,8 +23,14 @@ export function getProjectBoardShortcut(
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false
 
+  const editableAncestor = target.closest('[contenteditable]')
+  const isWithinEditableContent =
+    editableAncestor instanceof HTMLElement &&
+    editableAncestor.getAttribute('contenteditable') !== 'false'
+
   return (
     target.isContentEditable ||
+    isWithinEditableContent ||
     target instanceof HTMLInputElement ||
     target instanceof HTMLTextAreaElement ||
     target instanceof HTMLSelectElement
