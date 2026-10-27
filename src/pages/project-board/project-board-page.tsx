@@ -24,6 +24,7 @@ export function ProjectBoardPage() {
           next.assignee ?? search.assignee,
           next.query ?? search.query,
           search.task,
+          search.newTask,
         ),
       replace: true,
     })
@@ -37,8 +38,23 @@ export function ProjectBoardPage() {
           search.assignee,
           search.query,
           taskId ?? undefined,
+          undefined,
         ),
       replace: taskId === null,
+    })
+  }
+
+  function setCreatingTask(isCreating: boolean) {
+    void navigate({
+      search: () =>
+        buildSearch(
+          search.priority,
+          search.assignee,
+          search.query,
+          undefined,
+          isCreating ? '1' : undefined,
+        ),
+      replace: !isCreating,
     })
   }
 
@@ -123,6 +139,7 @@ export function ProjectBoardPage() {
                   undefined,
                   undefined,
                   search.task,
+                  search.newTask,
                 ),
                 replace: true,
               })
@@ -139,6 +156,8 @@ export function ProjectBoardPage() {
         members={members}
         selectedTaskId={search.task ?? null}
         onSelectedTaskChange={selectTask}
+        isCreatingTask={search.newTask === '1'}
+        onCreatingTaskChange={setCreatingTask}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
@@ -154,11 +173,13 @@ function buildSearch(
   assignee?: string,
   query?: string,
   task?: string,
+  newTask?: '1',
 ) {
   return {
     ...(priority ? { priority } : {}),
     ...(assignee ? { assignee } : {}),
     ...(query?.trim() ? { query: query.trim() } : {}),
     ...(task?.trim() ? { task: task.trim() } : {}),
+    ...(newTask === '1' ? { newTask } : {}),
   }
 }
