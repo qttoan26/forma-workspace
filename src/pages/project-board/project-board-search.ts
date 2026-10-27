@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { taskPriorities } from '@/entities/task/model/task'
+import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 
 const optionalSearchText = z.preprocess(
   normalizeOptionalText,
@@ -9,10 +9,15 @@ const optionalSearchText = z.preprocess(
 
 const optionalPriority = z.preprocess(
   (value) =>
-    typeof value === 'string' && taskPriorities.includes(value as never)
+    typeof value === 'string' && taskPriorities.includes(value as TaskPriority)
       ? value
       : undefined,
   z.enum(taskPriorities).optional(),
+)
+
+const optionalNewTask = z.preprocess(
+  (value) => (value === '1' ? value : undefined),
+  z.literal('1').optional(),
 )
 
 export const projectBoardSearchSchema = z.object({
@@ -20,10 +25,13 @@ export const projectBoardSearchSchema = z.object({
   assignee: optionalSearchText,
   query: optionalSearchText,
   task: optionalSearchText,
+  newTask: optionalNewTask,
 })
 
 export function parseProjectBoardSearch(search: Record<string, unknown>) {
-  return projectBoardSearchSchema.parse(search)
+  const parsed = projectBoardSearchSchema.parse(search)
+
+  return parsed.newTask === '1' ? { ...parsed, task: undefined } : parsed
 }
 
 function normalizeOptionalText(value: unknown) {

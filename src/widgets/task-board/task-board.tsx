@@ -50,6 +50,8 @@ interface TaskBoardProps {
   filters?: TaskBoardFilters
   selectedTaskId?: string | null
   onSelectedTaskChange?: (taskId: string | null) => void
+  isCreatingTask?: boolean
+  onCreatingTaskChange?: (isCreating: boolean) => void
   persistence?: TaskBoardPersistence | null
 }
 
@@ -60,6 +62,8 @@ export function TaskBoard({
   filters,
   selectedTaskId,
   onSelectedTaskChange,
+  isCreatingTask,
+  onCreatingTaskChange,
   persistence = defaultPersistence,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
@@ -80,7 +84,9 @@ export function TaskBoard({
   >(null)
   const editingTaskId =
     selectedTaskId === undefined ? internalEditingTaskId : selectedTaskId
-  const [isCreating, setIsCreating] = useState(false)
+  const [internalIsCreating, setInternalIsCreating] = useState(false)
+  const isCreating =
+    isCreatingTask === undefined ? internalIsCreating : isCreatingTask
   const [deletedTask, setDeletedTask] = useState<DeletedTaskSnapshot | null>(
     null,
   )
@@ -107,12 +113,17 @@ export function TaskBoard({
     onSelectedTaskChange?.(taskId)
   }
 
+  function setCreatingTask(isCreatingValue: boolean) {
+    if (isCreatingTask === undefined) setInternalIsCreating(isCreatingValue)
+    onCreatingTaskChange?.(isCreatingValue)
+  }
+
   function moveTask(taskId: string, status: TaskStatus) {
     setTasks((current) => updateTaskStatus(current, taskId, status))
   }
 
   function editTask(taskId: string) {
-    setIsCreating(false)
+    setCreatingTask(false)
     setEditingTask(taskId)
   }
 
@@ -131,7 +142,7 @@ export function TaskBoard({
       },
     ])
     setDeletedTask(null)
-    setIsCreating(false)
+    setCreatingTask(false)
   }
 
   function updateTask(values: TaskFormValues) {
@@ -196,7 +207,7 @@ export function TaskBoard({
           type="button"
           onClick={() => {
             setEditingTask(null)
-            setIsCreating(true)
+            setCreatingTask(true)
           }}
         >
           New task
@@ -206,7 +217,7 @@ export function TaskBoard({
       {isCreating ? (
         <TaskForm
           members={members}
-          onCancel={() => setIsCreating(false)}
+          onCancel={() => setCreatingTask(false)}
           onSubmit={createTask}
         />
       ) : null}
