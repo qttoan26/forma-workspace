@@ -5,6 +5,7 @@ import type { Task } from '@/entities/task/model/task'
 import {
   filterTasks,
   groupTasksByStatus,
+  sortTasks,
   updateTaskStatus,
 } from './task-board-view'
 
@@ -28,6 +29,37 @@ const tasks: Task[] = [
   },
 ]
 
+const sortableTasks: Task[] = [
+  {
+    id: 'FOR-3',
+    projectId: 'project-1',
+    title: 'Design board navigation',
+    description: 'Plan keyboard and focus behavior for the board',
+    status: 'todo',
+    priority: 'low',
+    assigneeId: 'member-1',
+    dueDate: '2026-11-20',
+  },
+  {
+    id: 'FOR-4',
+    projectId: 'project-1',
+    title: 'Measure task rendering',
+    status: 'in-progress',
+    priority: 'urgent',
+    assigneeId: 'member-2',
+    dueDate: '2026-11-10',
+  },
+  {
+    id: 'FOR-5',
+    projectId: 'project-1',
+    title: 'Design board navigation',
+    description: 'Plan keyboard and focus behavior for the board',
+    status: 'todo',
+    priority: 'medium',
+    assigneeId: 'member-1',
+  },
+]
+
 describe('task board view transforms', () => {
   it('filters by search, priority, and assignee', () => {
     expect(
@@ -41,6 +73,35 @@ describe('task board view transforms', () => {
 
   it('searches task descriptions case-insensitively', () => {
     expect(filterTasks(tasks, { query: 'FOCUS BEHAVIOR' })).toEqual([tasks[0]])
+  })
+
+  it('sorts tasks by priority without mutating board order', () => {
+    const sorted = sortTasks(sortableTasks, 'priority')
+
+    expect(sorted[0]?.id).toBe('FOR-4')
+    expect(sorted[1]?.id).toBe('FOR-5')
+    expect(sorted[2]?.id).toBe('FOR-3')
+    expect(sortableTasks[0]?.id).toBe('FOR-3')
+    expect(sortableTasks[1]?.id).toBe('FOR-4')
+    expect(sortableTasks[2]?.id).toBe('FOR-5')
+  })
+
+  it('sorts due dates ascending with undated tasks last', () => {
+    const sorted = sortTasks(sortableTasks, 'due-date')
+
+    expect(sorted[0]?.id).toBe('FOR-4')
+    expect(sorted[1]?.id).toBe('FOR-3')
+    expect(sorted[2]?.id).toBe('FOR-5')
+  })
+
+  it('combines filtering and sorting in the visible task transform', () => {
+    const visible = filterTasks(sortableTasks, {
+      query: 'board',
+      sort: 'priority',
+    })
+
+    expect(visible[0]?.id).toBe('FOR-5')
+    expect(visible[1]?.id).toBe('FOR-3')
   })
 
   it('groups tasks by status in one pass', () => {

@@ -9,15 +9,21 @@ describe('parseProjectBoardSearch', () => {
         priority: 'urgent',
         assignee: '  member-2  ',
         query: '  release notes  ',
+        sort: 'priority',
         task: '  FOR-18  ',
       }),
     ).toEqual({
       priority: 'urgent',
       assignee: 'member-2',
       query: 'release notes',
+      sort: 'priority',
       task: 'FOR-18',
       newTask: undefined,
     })
+  })
+
+  it('accepts due-date sorting', () => {
+    expect(parseProjectBoardSearch({ sort: 'due-date' }).sort).toBe('due-date')
   })
 
   it('normalizes URL task creation and gives it precedence over editing', () => {
@@ -30,6 +36,7 @@ describe('parseProjectBoardSearch', () => {
       priority: undefined,
       assignee: undefined,
       query: undefined,
+      sort: undefined,
       task: undefined,
       newTask: '1',
     })
@@ -41,6 +48,7 @@ describe('parseProjectBoardSearch', () => {
         priority: 'critical',
         assignee: '   ',
         query: 42,
+        sort: 'newest',
         task: null,
         newTask: 'true',
         debug: 'true',
@@ -49,6 +57,7 @@ describe('parseProjectBoardSearch', () => {
       priority: undefined,
       assignee: undefined,
       query: undefined,
+      sort: undefined,
       task: undefined,
       newTask: undefined,
     })
