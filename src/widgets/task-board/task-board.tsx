@@ -198,7 +198,7 @@ export function TaskBoard({
   }
 
   function deleteTask(task: Task) {
-    const confirmed = window.confirm(`Delete "${task.title}"?`)
+    const confirmed = window.confirm(`Delete \"${task.title}\"?`)
     if (!confirmed) return
 
     const index = tasks.findIndex((item) => item.id === task.id)
@@ -491,7 +491,12 @@ function TaskCard({
           {assignee?.initials ?? '—'}
         </span>
         {task.dueDate ? (
-          <time dateTime={task.dueDate}>{task.dueDate}</time>
+          <time
+            dateTime={task.dueDate}
+            aria-label={`Due date: ${task.dueDate}`}
+          >
+            {task.dueDate}
+          </time>
         ) : (
           <span>No due date</span>
         )}
