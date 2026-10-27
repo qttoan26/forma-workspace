@@ -27,11 +27,21 @@ describe('getProjectBoardShortcut', () => {
 
   it('ignores modified shortcuts and unrelated keys', () => {
     expect(
-      getProjectBoardShortcut({ key: '/', target: document.body, ctrlKey: true }),
+      getProjectBoardShortcut({
+        key: '/',
+        target: document.body,
+        ctrlKey: true,
+      }),
     ).toBeNull()
     expect(
-      getProjectBoardShortcut({ key: 'n', target: document.body, metaKey: true }),
+      getProjectBoardShortcut({
+        key: 'n',
+        target: document.body,
+        metaKey: true,
+      }),
     ).toBeNull()
-    expect(getProjectBoardShortcut({ key: 'x', target: document.body })).toBeNull()
+    expect(
+      getProjectBoardShortcut({ key: 'x', target: document.body }),
+    ).toBeNull()
   })
 })
