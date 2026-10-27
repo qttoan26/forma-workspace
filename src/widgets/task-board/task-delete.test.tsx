@@ -45,6 +45,24 @@ describe('TaskBoard task deletion', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('moves focus to Undo after deleting a task', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    const task = screen
+      .getByText('Create board interaction model')
+      .closest('article')
+    expect(task).not.toBeNull()
+
+    const deleteButton = within(task as HTMLElement).getByRole('button', {
+      name: 'Delete Create board interaction model',
+    })
+    deleteButton.focus()
+    fireEvent.click(deleteButton)
+
+    expect(screen.getByRole('button', { name: 'Undo' })).toHaveFocus()
+  })
+
   it('restores a deleted task with undo and persists the restoration', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     const { unmount } = render(
