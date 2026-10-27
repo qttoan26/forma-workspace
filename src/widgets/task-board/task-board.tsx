@@ -481,7 +481,12 @@ function TaskCard({
         <p className="task-description">{task.description}</p>
       ) : null}
       <div className="task-footer">
-        <span title={assignee?.name}>{assignee?.initials ?? '—'}</span>
+        <span
+          title={assignee?.name}
+          aria-label={assignee ? `Assignee: ${assignee.name}` : 'Unassigned'}
+        >
+          {assignee?.initials ?? '—'}
+        </span>
         {task.dueDate ? (
           <time dateTime={task.dueDate}>{task.dueDate}</time>
         ) : (
