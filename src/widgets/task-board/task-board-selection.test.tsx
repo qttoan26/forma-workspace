@@ -48,7 +48,9 @@ describe('TaskBoard external task selection', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Edit' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Edit Create board interaction model',
+      }),
     )
 
     expect(onSelectedTaskChange).toHaveBeenCalledWith('FOR-18')

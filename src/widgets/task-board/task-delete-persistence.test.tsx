@@ -38,7 +38,9 @@ describe('TaskBoard deletion persistence contract', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Delete Create board interaction model',
+      }),
     )
 
     await waitFor(() => {

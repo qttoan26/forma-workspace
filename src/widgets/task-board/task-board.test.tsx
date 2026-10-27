@@ -57,7 +57,9 @@ describe('TaskBoard', () => {
       .closest('article')
     expect(createdCard).not.toBeNull()
     fireEvent.click(
-      within(createdCard as HTMLElement).getByRole('button', { name: 'Edit' }),
+      within(createdCard as HTMLElement).getByRole('button', {
+        name: 'Edit Prepare release notes',
+      }),
     )
 
     const title = screen.getByLabelText('Title')
