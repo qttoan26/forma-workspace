@@ -95,6 +95,8 @@ export function TaskBoard({
   const [deletedTask, setDeletedTask] = useState<DeletedTaskSnapshot | null>(
     null,
   )
+  const editorTriggerRef = useRef<HTMLElement | null>(null)
+  const wasEditorOpenRef = useRef(false)
   const membersById = useMemo(
     () => new Map(members.map((member) => [member.id, member])),
     [members],
@@ -112,6 +114,17 @@ export function TaskBoard({
     : undefined
   const missingSelectedTaskId =
     selectedTaskId && !editingTask ? selectedTaskId : null
+  const isEditorOpen = isCreating || Boolean(editingTask)
+
+  useEffect(() => {
+    if (wasEditorOpenRef.current && !isEditorOpen) {
+      const trigger = editorTriggerRef.current
+      if (trigger?.isConnected) trigger.focus()
+      editorTriggerRef.current = null
+    }
+
+    wasEditorOpenRef.current = isEditorOpen
+  }, [isEditorOpen])
 
   function setEditingTask(taskId: string | null) {
     if (selectedTaskId === undefined) setInternalEditingTaskId(taskId)
@@ -123,11 +136,21 @@ export function TaskBoard({
     onCreatingTaskChange?.(isCreatingValue)
   }
 
+  function rememberEditorTrigger() {
+    if (
+      typeof document !== 'undefined' &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      editorTriggerRef.current = document.activeElement
+    }
+  }
+
   function moveTask(taskId: string, status: TaskStatus) {
     setTasks((current) => updateTaskStatus(current, taskId, status))
   }
 
   function editTask(taskId: string) {
+    rememberEditorTrigger()
     setCreatingTask(false)
     setEditingTask(taskId)
   }
@@ -211,6 +234,7 @@ export function TaskBoard({
           variant="primary"
           type="button"
           onClick={() => {
+            rememberEditorTrigger()
             setEditingTask(null)
             setCreatingTask(true)
           }}
