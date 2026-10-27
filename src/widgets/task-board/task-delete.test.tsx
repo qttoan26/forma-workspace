@@ -58,13 +58,17 @@ describe('TaskBoard task deletion', () => {
       within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
     )
 
-    expect(screen.getByText('Deleted Create board interaction model.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Deleted Create board interaction model.'),
+    ).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }))
 
     expect(
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Undo' }),
+    ).not.toBeInTheDocument()
 
     unmount()
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
