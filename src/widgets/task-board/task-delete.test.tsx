@@ -29,7 +29,7 @@ describe('TaskBoard task deletion', () => {
     )
 
     expect(confirm).toHaveBeenCalledWith(
-      'Delete "Create board interaction model"? This cannot be undone.',
+      'Delete "Create board interaction model"?',
     )
     expect(
       screen.queryByText('Create board interaction model'),
@@ -41,6 +41,41 @@ describe('TaskBoard task deletion', () => {
     expect(
       screen.queryByText('Create board interaction model'),
     ).not.toBeInTheDocument()
+  })
+
+  it('restores a deleted task with undo and persists the restoration', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const { unmount } = render(
+      <TaskBoard initialTasks={initialTasks} members={members} />,
+    )
+
+    const task = screen
+      .getByText('Create board interaction model')
+      .closest('article')
+    expect(task).not.toBeNull()
+
+    fireEvent.click(
+      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+    )
+
+    expect(
+      screen.getByText('Deleted Create board interaction model.'),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }))
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Undo' }),
+    ).not.toBeInTheDocument()
+
+    unmount()
+    render(<TaskBoard initialTasks={initialTasks} members={members} />)
+
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
   })
 
   it('keeps a task when deletion is cancelled', () => {
