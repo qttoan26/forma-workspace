@@ -274,7 +274,7 @@ export function TaskBoard({
       {deletedTask ? (
         <div className="task-delete-undo" aria-live="polite">
           <span>Deleted {deletedTask.task.title}.</span>
-          <Button type="button" onClick={undoDelete}>
+          <Button type="button" autoFocus onClick={undoDelete}>
             Undo
           </Button>
         </div>
