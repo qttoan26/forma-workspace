@@ -233,6 +233,8 @@ export function TaskBoard({
         <Button
           variant="primary"
           type="button"
+          aria-keyshortcuts="N"
+          title="Press N to create a task"
           onClick={() => {
             rememberEditorTrigger()
             setEditingTask(null)
