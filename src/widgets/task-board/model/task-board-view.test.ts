@@ -65,29 +65,32 @@ describe('task board view transforms', () => {
   })
 
   it('sorts tasks by priority without mutating board order', () => {
-    expect(
-      sortTasks(sortableTasks, 'priority').map((task) => task.id),
-    ).toEqual(['FOR-4', 'FOR-5', 'FOR-3'])
-    expect(sortableTasks.map((task) => task.id)).toEqual([
-      'FOR-3',
-      'FOR-4',
-      'FOR-5',
-    ])
+    const sorted = sortTasks(sortableTasks, 'priority')
+
+    expect(sorted[0]?.id).toBe('FOR-4')
+    expect(sorted[1]?.id).toBe('FOR-5')
+    expect(sorted[2]?.id).toBe('FOR-3')
+    expect(sortableTasks[0]?.id).toBe('FOR-3')
+    expect(sortableTasks[1]?.id).toBe('FOR-4')
+    expect(sortableTasks[2]?.id).toBe('FOR-5')
   })
 
   it('sorts due dates ascending with undated tasks last', () => {
-    expect(
-      sortTasks(sortableTasks, 'due-date').map((task) => task.id),
-    ).toEqual(['FOR-4', 'FOR-3', 'FOR-5'])
+    const sorted = sortTasks(sortableTasks, 'due-date')
+
+    expect(sorted[0]?.id).toBe('FOR-4')
+    expect(sorted[1]?.id).toBe('FOR-3')
+    expect(sorted[2]?.id).toBe('FOR-5')
   })
 
   it('combines filtering and sorting in the visible task transform', () => {
-    expect(
-      filterTasks(sortableTasks, {
-        query: 'board',
-        sort: 'priority',
-      }).map((task) => task.id),
-    ).toEqual(['FOR-5', 'FOR-3'])
+    const visible = filterTasks(sortableTasks, {
+      query: 'board',
+      sort: 'priority',
+    })
+
+    expect(visible[0]?.id).toBe('FOR-5')
+    expect(visible[1]?.id).toBe('FOR-3')
   })
 
   it('groups tasks by status in one pass', () => {
