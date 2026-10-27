@@ -37,16 +37,20 @@ describe('TaskBoard', () => {
     ).toBeInTheDocument()
   })
 
-  it('creates and edits a task', async () => {
+  it('creates and edits a task with a description', async () => {
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'New task' }))
     fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: 'Prepare release notes' },
     })
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'Coordinate launch details' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Create task' }))
 
     expect(await screen.findByText('Prepare release notes')).toBeInTheDocument()
+    expect(screen.getByText('Coordinate launch details')).toBeInTheDocument()
 
     const createdCard = screen
       .getByText('Prepare release notes')
@@ -58,11 +62,18 @@ describe('TaskBoard', () => {
 
     const title = screen.getByLabelText('Title')
     fireEvent.change(title, { target: { value: 'Publish release notes' } })
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'Publish to customer channels' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
     await waitFor(() =>
       expect(screen.getByText('Publish release notes')).toBeInTheDocument(),
     )
+    expect(screen.getByText('Publish to customer channels')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Coordinate launch details'),
+    ).not.toBeInTheDocument()
   })
 
   it('filters visible tasks without mutating the task collection', () => {

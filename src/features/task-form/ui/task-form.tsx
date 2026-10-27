@@ -56,6 +56,10 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
         <input autoFocus {...register('title')} />
       </Field>
 
+      <Field label="Description" error={errors.description?.message}>
+        <textarea rows={4} {...register('description')} />
+      </Field>
+
       <div className="task-form-grid">
         <Field label="Status">
           <select {...register('status')}>
@@ -105,6 +109,7 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
 function toFormValues(task?: Task): TaskFormValues {
   return {
     title: task?.title ?? '',
+    description: task?.description ?? '',
     status: task?.status ?? 'todo',
     priority: task?.priority ?? 'medium',
     assigneeId: task?.assigneeId ?? '',
