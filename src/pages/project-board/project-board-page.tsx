@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
@@ -8,6 +9,7 @@ import {
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
+import { getProjectBoardShortcut } from './project-board-shortcuts'
 
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
@@ -15,6 +17,35 @@ const projectRoutePath =
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const shortcut = getProjectBoardShortcut(event)
+      if (!shortcut) return
+
+      event.preventDefault()
+      if (shortcut === 'focus-search') {
+        searchInputRef.current?.focus()
+        return
+      }
+
+      void navigate({
+        search: () =>
+          buildSearch(
+            search.priority,
+            search.assignee,
+            search.query,
+            search.sort,
+            undefined,
+            '1',
+          ),
+      })
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate, search.assignee, search.priority, search.query, search.sort])
 
   function updateSearch(next: {
     priority?: TaskPriority | ''
@@ -96,9 +127,12 @@ export function ProjectBoardPage() {
         <label>
           <span>Search</span>
           <input
+            ref={searchInputRef}
             type="search"
             placeholder="Search tasks"
             value={search.query ?? ''}
+            aria-keyshortcuts="/"
+            title="Press / to focus search"
             onChange={(event) => updateSearch({ query: event.target.value })}
           />
         </label>
