@@ -25,7 +25,9 @@ describe('TaskBoard task deletion', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Delete Create board interaction model',
+      }),
     )
 
     expect(confirm).toHaveBeenCalledWith(
@@ -55,7 +57,9 @@ describe('TaskBoard task deletion', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Delete Create board interaction model',
+      }),
     )
 
     expect(
@@ -88,7 +92,9 @@ describe('TaskBoard task deletion', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Delete Create board interaction model',
+      }),
     )
 
     expect(
@@ -106,14 +112,18 @@ describe('TaskBoard task deletion', () => {
     expect(task).not.toBeNull()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Edit' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Edit Create board interaction model',
+      }),
     )
     expect(
       screen.getByRole('button', { name: 'Save changes' }),
     ).toBeInTheDocument()
 
     fireEvent.click(
-      within(task as HTMLElement).getByRole('button', { name: 'Delete' }),
+      within(task as HTMLElement).getByRole('button', {
+        name: 'Delete Create board interaction model',
+      }),
     )
 
     expect(
