@@ -28,6 +28,9 @@ export function nextTaskId(tasks: Task[], prefix: string) {
 }
 
 function normalizePrefix(prefix: string) {
-  const normalized = prefix.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-')
+  const normalized = prefix
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '-')
   return normalized.replace(/^-+|-+$/g, '') || 'TASK'
 }
