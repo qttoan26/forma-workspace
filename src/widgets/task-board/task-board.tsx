@@ -505,10 +505,18 @@ function TaskCard({
             ))}
           </select>
         </label>
-        <Button type="button" onClick={() => onEdit(task.id)}>
+        <Button
+          type="button"
+          aria-label={`Edit ${task.title}`}
+          onClick={() => onEdit(task.id)}
+        >
           Edit
         </Button>
-        <Button type="button" onClick={() => onDelete(task)}>
+        <Button
+          type="button"
+          aria-label={`Delete ${task.title}`}
+          onClick={() => onDelete(task)}
+        >
           Delete
         </Button>
       </div>
