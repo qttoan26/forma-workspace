@@ -60,7 +60,7 @@ describe('TaskBoard editor focus management', () => {
     expect(task).not.toBeNull()
 
     const editButton = within(task as HTMLElement).getByRole('button', {
-      name: 'Edit',
+      name: 'Edit Create board interaction model',
     })
     editButton.focus()
     fireEvent.click(editButton)
@@ -82,7 +82,7 @@ describe('TaskBoard editor focus management', () => {
     expect(task).not.toBeNull()
 
     const editButton = within(task as HTMLElement).getByRole('button', {
-      name: 'Edit',
+      name: 'Edit Create board interaction model',
     })
     editButton.focus()
     fireEvent.click(editButton)
