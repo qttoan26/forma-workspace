@@ -33,6 +33,11 @@ interface TaskBoardPersistence {
   save: (projectId: string, tasks: Task[]) => void
 }
 
+interface DeletedTaskSnapshot {
+  task: Task
+  index: number
+}
+
 const defaultPersistence: TaskBoardPersistence = {
   load: loadProjectTasks,
   save: saveProjectTasks,
@@ -76,6 +81,9 @@ export function TaskBoard({
   const editingTaskId =
     selectedTaskId === undefined ? internalEditingTaskId : selectedTaskId
   const [isCreating, setIsCreating] = useState(false)
+  const [deletedTask, setDeletedTask] = useState<DeletedTaskSnapshot | null>(
+    null,
+  )
   const membersById = useMemo(
     () => new Map(members.map((member) => [member.id, member])),
     [members],
@@ -122,6 +130,7 @@ export function TaskBoard({
         ...(values.dueDate ? { dueDate: values.dueDate } : {}),
       },
     ])
+    setDeletedTask(null)
     setIsCreating(false)
   }
 
@@ -150,13 +159,33 @@ export function TaskBoard({
   }
 
   function deleteTask(task: Task) {
-    const confirmed = window.confirm(
-      `Delete "${task.title}"? This cannot be undone.`,
-    )
+    const confirmed = window.confirm(`Delete "${task.title}"?`)
     if (!confirmed) return
 
+    const index = tasks.findIndex((item) => item.id === task.id)
+    if (index === -1) return
+
+    setDeletedTask({ task, index })
     setTasks((current) => current.filter((item) => item.id !== task.id))
     if (editingTaskId === task.id) setEditingTask(null)
+  }
+
+  function undoDelete() {
+    if (!deletedTask) return
+
+    setTasks((current) => {
+      if (current.some((task) => task.id === deletedTask.task.id)) {
+        return current
+      }
+
+      const index = Math.min(deletedTask.index, current.length)
+      return [
+        ...current.slice(0, index),
+        deletedTask.task,
+        ...current.slice(index),
+      ]
+    })
+    setDeletedTask(null)
   }
 
   return (
@@ -196,6 +225,15 @@ export function TaskBoard({
           <p>Task {missingSelectedTaskId} could not be found.</p>
           <Button type="button" onClick={() => setEditingTask(null)}>
             Return to board
+          </Button>
+        </div>
+      ) : null}
+
+      {deletedTask ? (
+        <div className="task-delete-undo" aria-live="polite">
+          <span>Deleted {deletedTask.task.title}.</span>
+          <Button type="button" onClick={undoDelete}>
+            Undo
           </Button>
         </div>
       ) : null}
