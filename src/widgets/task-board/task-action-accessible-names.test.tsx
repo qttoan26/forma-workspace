@@ -9,18 +9,17 @@ describe('TaskBoard task action accessible names', () => {
     window.localStorage.clear()
   })
 
-  it('names Edit and Delete actions with the task title', () => {
+  it('names Edit and Delete actions with the task title while preserving visible labels', () => {
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
-    expect(
-      screen.getByRole('button', {
-        name: 'Edit Create board interaction model',
-      }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', {
-        name: 'Delete Create board interaction model',
-      }),
-    ).toBeInTheDocument()
+    const editButton = screen.getByRole('button', {
+      name: 'Edit Create board interaction model',
+    })
+    const deleteButton = screen.getByRole('button', {
+      name: 'Delete Create board interaction model',
+    })
+
+    expect(editButton).toHaveTextContent('Edit')
+    expect(deleteButton).toHaveTextContent('Delete')
   })
 })
