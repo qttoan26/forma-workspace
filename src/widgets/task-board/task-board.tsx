@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 import type { Member } from '@/entities/member/model/member'
+import { inferTaskIdPrefix, nextTaskId } from '@/entities/task/lib/task-id'
 import {
   loadProjectTasks,
   saveProjectTasks,
@@ -45,6 +46,7 @@ const defaultPersistence: TaskBoardPersistence = {
 
 interface TaskBoardProps {
   projectId?: string
+  taskIdPrefix?: string
   initialTasks: Task[]
   members: Member[]
   filters?: TaskBoardFilters
@@ -57,6 +59,7 @@ interface TaskBoardProps {
 
 export function TaskBoard({
   projectId: explicitProjectId,
+  taskIdPrefix: explicitTaskIdPrefix,
   initialTasks,
   members,
   filters,
@@ -71,6 +74,8 @@ export function TaskBoard({
     throw new Error('TaskBoard requires a projectId when initialTasks is empty')
   }
   const scopedProjectId = projectId
+  const taskIdPrefix =
+    explicitTaskIdPrefix ?? inferTaskIdPrefix(initialTasks) ?? 'TASK'
 
   const [tasks, setTasks] = useState(() =>
     persistence ? persistence.load(projectId, initialTasks) : initialTasks,
@@ -131,7 +136,7 @@ export function TaskBoard({
     setTasks((current) => [
       ...current,
       {
-        id: nextTaskId(current),
+        id: nextTaskId(current, taskIdPrefix),
         projectId: scopedProjectId,
         title: values.title,
         status: values.status,
@@ -483,13 +488,4 @@ function TaskCard({
       </div>
     </article>
   )
-}
-
-function nextTaskId(tasks: Task[]) {
-  const largest = tasks.reduce((max, task) => {
-    const value = Number(task.id.split('-').at(-1))
-    return Number.isFinite(value) ? Math.max(max, value) : max
-  }, 0)
-
-  return `FOR-${String(largest + 1).padStart(2, '0')}`
 }
