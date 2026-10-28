@@ -8,6 +8,8 @@ export const taskPriorities = ['low', 'medium', 'high', 'urgent'] as const
 export const taskPrioritySchema = z.enum(taskPriorities)
 export type TaskPriority = z.infer<typeof taskPrioritySchema>
 
+export const taskDueDateSchema = z.iso.date()
+
 export const taskSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -16,7 +18,7 @@ export const taskSchema = z.object({
   status: taskStatusSchema,
   priority: taskPrioritySchema,
   assigneeId: z.string().optional(),
-  dueDate: z.string().optional(),
+  dueDate: taskDueDateSchema.optional(),
 })
 
 export type Task = z.infer<typeof taskSchema>
