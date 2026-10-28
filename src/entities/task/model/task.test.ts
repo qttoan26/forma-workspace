@@ -33,9 +33,13 @@ describe('task domain schema', () => {
   })
 
   it('shares title validation with persisted tasks', () => {
-    expect(taskTitleSchema.safeParse('  Valid title  ').data).toBe('Valid title')
+    expect(taskTitleSchema.safeParse('  Valid title  ').data).toBe(
+      'Valid title',
+    )
     expect(taskTitleSchema.safeParse('ab').success).toBe(false)
-    expect(taskSchema.safeParse({ ...baseTask, title: 'ab' }).success).toBe(false)
+    expect(
+      taskSchema.safeParse({ ...baseTask, title: 'ab' }).success,
+    ).toBe(false)
   })
 
   it('shares description limits with persisted tasks', () => {
