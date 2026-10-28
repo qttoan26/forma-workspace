@@ -1,7 +1,6 @@
-import type { Member } from '@/entities/member/model/member'
-
 import { projectTasksSchema } from './project-tasks-schema'
 import { projectWorkspaceSchema } from './project-workspace-schema'
+import { taskAssigneesSchema } from './task-assignees-schema'
 
 const projectWorkspace = projectWorkspaceSchema.parse({
   workspace: {
@@ -19,12 +18,6 @@ const projectWorkspace = projectWorkspaceSchema.parse({
 })
 
 export const { workspace, project } = projectWorkspace
-
-export const members: Member[] = [
-  { id: 'member-1', name: 'Alex Morgan', initials: 'AM', role: 'Design' },
-  { id: 'member-2', name: 'Sam Lee', initials: 'SL', role: 'Frontend' },
-  { id: 'member-3', name: 'Jordan Kim', initials: 'JK', role: 'Product' },
-]
 
 const projectTasks = projectTasksSchema.parse({
   project,
@@ -66,4 +59,14 @@ const projectTasks = projectTasksSchema.parse({
   ],
 })
 
-export const initialTasks = projectTasks.tasks
+const taskAssignees = taskAssigneesSchema.parse({
+  members: [
+    { id: 'member-1', name: 'Alex Morgan', initials: 'AM', role: 'Design' },
+    { id: 'member-2', name: 'Sam Lee', initials: 'SL', role: 'Frontend' },
+    { id: 'member-3', name: 'Jordan Kim', initials: 'JK', role: 'Product' },
+  ],
+  tasks: projectTasks.tasks,
+})
+
+export const { members } = taskAssignees
+export const initialTasks = taskAssignees.tasks
