@@ -19,7 +19,9 @@ describe('browser task mutation adapter', () => {
   it('persists task collections through the async contract', async () => {
     const adapter = createBrowserTaskMutationAdapter(window.localStorage)
 
-    await expect(adapter.persist(task.projectId, [task])).resolves.toBeUndefined()
+    await expect(
+      adapter.persist(task.projectId, [task]),
+    ).resolves.toBeUndefined()
 
     expect(loadProjectTasks(task.projectId, [])).toEqual([task])
   })
