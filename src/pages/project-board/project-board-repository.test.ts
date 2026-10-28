@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { projectBoardRepository } from './project-board-repository'
+import {
+  ProjectBoardNotFoundError,
+  projectBoardRepository,
+} from './project-board-repository'
 
 describe('projectBoardRepository', () => {
   it('loads the matching project board snapshot', async () => {
@@ -14,12 +17,20 @@ describe('projectBoardRepository', () => {
     expect(data.initialTasks).not.toHaveLength(0)
   })
 
-  it('rejects unknown route identities', async () => {
-    await expect(
-      projectBoardRepository.getProjectBoard({
-        workspaceSlug: 'forma',
-        projectId: 'missing-project',
-      }),
-    ).rejects.toThrow('Project board not found')
+  it('rejects unknown route identities with a typed not-found error', async () => {
+    const input = {
+      workspaceSlug: 'forma',
+      projectId: 'missing-project',
+    }
+
+    const error = await projectBoardRepository
+      .getProjectBoard(input)
+      .catch((caught: unknown) => caught)
+
+    expect(error).toBeInstanceOf(ProjectBoardNotFoundError)
+    expect(error).toMatchObject({
+      name: 'ProjectBoardNotFoundError',
+      input,
+    })
   })
 })
