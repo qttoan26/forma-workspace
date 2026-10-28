@@ -6,8 +6,9 @@ import {
 } from '@tanstack/react-router'
 
 import { HomePage } from '@/pages/home/home-page'
+import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
+import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
 import { ProjectBoardPage } from '@/pages/project-board/project-board-page'
-import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
 import { parseProjectBoardSearch } from '@/pages/project-board/project-board-search'
 
 const rootRoute = createRootRoute({
@@ -31,11 +32,12 @@ const projectRoute = createRoute({
   path: '/workspaces/$workspaceSlug/projects/$projectId',
   validateSearch: parseProjectBoardSearch,
   loader: ({ params }) =>
-    projectBoardRepository.getProjectBoard({
+    loadProjectBoard({
       workspaceSlug: params.workspaceSlug,
       projectId: params.projectId,
     }),
   component: ProjectBoardPage,
+  notFoundComponent: ProjectBoardNotFound,
 })
 
 const routeTree = rootRoute.addChildren([homeRoute, projectRoute])
