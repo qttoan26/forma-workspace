@@ -20,16 +20,16 @@ export interface ProjectBoardRepository {
 }
 
 export const projectBoardRepository: ProjectBoardRepository = {
-  async getProjectBoard({ workspaceSlug, projectId }) {
+  getProjectBoard({ workspaceSlug, projectId }) {
     if (workspace.slug !== workspaceSlug || project.id !== projectId) {
-      throw new Error('Project board not found')
+      return Promise.reject(new Error('Project board not found'))
     }
 
-    return {
+    return Promise.resolve({
       workspace,
       project,
       members,
       initialTasks,
-    }
+    })
   },
 }
