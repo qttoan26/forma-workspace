@@ -32,10 +32,5 @@ export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
 export function RouterErrorBoundary({ error }: ErrorComponentProps) {
   const router = useRouter()
 
-  return (
-    <RouterErrorView
-      error={error}
-      onRetry={() => void router.invalidate()}
-    />
-  )
+  return <RouterErrorView error={error} onRetry={() => void router.invalidate()} />
 }
