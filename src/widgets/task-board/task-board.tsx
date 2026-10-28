@@ -179,7 +179,7 @@ export function TaskBoard({
   }
 
   function deleteTask(task: Task) {
-    const confirmed = window.confirm(`Delete \"${task.title}\"?`)
+    const confirmed = window.confirm(`Delete "${task.title}"?`)
     if (!confirmed) return
 
     const result = removeTask(tasks, task.id)
