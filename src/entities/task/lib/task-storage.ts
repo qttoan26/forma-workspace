@@ -1,7 +1,4 @@
-import {
-  taskCollectionSchema,
-  type Task,
-} from '@/entities/task/model/task'
+import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 
 const storageVersion = 'v1'
 
