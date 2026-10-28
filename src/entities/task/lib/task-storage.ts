@@ -1,4 +1,7 @@
-import { taskSchema, type Task } from '@/entities/task/model/task'
+import {
+  taskCollectionSchema,
+  type Task,
+} from '@/entities/task/model/task'
 
 const storageVersion = 'v1'
 
@@ -12,7 +15,7 @@ export function loadProjectTasks(
     if (!saved) return fallback
 
     const parsed: unknown = JSON.parse(saved)
-    const result = taskSchema.array().safeParse(parsed)
+    const result = taskCollectionSchema.safeParse(parsed)
     if (!result.success) return fallback
     if (!result.data.every((task) => task.projectId === projectId)) {
       return fallback
