@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
+import {
+  loadProjectTasks,
+  saveProjectTasks,
+} from '@/entities/task/lib/task-storage'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import {
   type TaskBoardSort,
@@ -12,6 +16,11 @@ import { getProjectBoardShortcut } from './project-board-shortcuts'
 
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
+
+const projectTaskPersistence = {
+  load: loadProjectTasks,
+  save: saveProjectTasks,
+}
 
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
@@ -224,6 +233,7 @@ export function ProjectBoardPage() {
         onSelectedTaskChange={selectTask}
         isCreatingTask={search.newTask === '1'}
         onCreatingTaskChange={setCreatingTask}
+        persistence={projectTaskPersistence}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
