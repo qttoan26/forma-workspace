@@ -1,7 +1,11 @@
 import { Link, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 
-export function RouterErrorBoundary({ error }: ErrorComponentProps) {
-  const router = useRouter()
+interface RouterErrorViewProps {
+  error: unknown
+  onRetry: () => void
+}
+
+export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
   const message = error instanceof Error ? error.message : 'Unexpected error'
 
   return (
@@ -15,12 +19,23 @@ export function RouterErrorBoundary({ error }: ErrorComponentProps) {
         </p>
         <p role="alert">{message}</p>
         <div>
-          <button type="button" onClick={() => void router.invalidate()}>
+          <button type="button" onClick={onRetry}>
             Retry
           </button>
           <Link to="/">Go home</Link>
         </div>
       </section>
     </main>
+  )
+}
+
+export function RouterErrorBoundary({ error }: ErrorComponentProps) {
+  const router = useRouter()
+
+  return (
+    <RouterErrorView
+      error={error}
+      onRetry={() => void router.invalidate()}
+    />
   )
 }
