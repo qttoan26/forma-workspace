@@ -1,5 +1,9 @@
 import { loadProjectTasks } from './task-storage'
-import { createBrowserTaskMutationAdapter } from './task-mutation-adapter'
+import {
+  createBrowserTaskMutationAdapter,
+  createTaskMutationEffectBoundary,
+  type TaskMutationAdapter,
+} from './task-mutation-adapter'
 
 import type { Task } from '../model/task'
 
@@ -11,18 +15,40 @@ const task: Task = {
   priority: 'high',
 }
 
-describe('browser task mutation adapter', () => {
+describe('task mutation effect boundary', () => {
   beforeEach(() => {
     window.localStorage.clear()
   })
 
-  it('persists task collections through the async contract', async () => {
+  it('skips the initial synchronization and persists later task changes', async () => {
     const adapter = createBrowserTaskMutationAdapter(window.localStorage)
 
     await expect(
       adapter.persist(task.projectId, [task]),
     ).resolves.toBeUndefined()
+    expect(loadProjectTasks(task.projectId, [])).toEqual([])
 
-    expect(loadProjectTasks(task.projectId, [])).toEqual([task])
+    const updatedTask = { ...task, status: 'done' as const }
+    await expect(
+      adapter.persist(task.projectId, [updatedTask]),
+    ).resolves.toBeUndefined()
+
+    expect(loadProjectTasks(task.projectId, [])).toEqual([updatedTask])
+  })
+
+  it('captures adapter failures without leaking a rejected promise', async () => {
+    const failure = new Error('network unavailable')
+    const onFailure = vi.fn<(error: unknown) => void>()
+    const failingAdapter: TaskMutationAdapter = {
+      persist: vi.fn().mockRejectedValue(failure),
+    }
+    const adapter = createTaskMutationEffectBoundary(failingAdapter, onFailure)
+
+    await adapter.persist(task.projectId, [task])
+    await expect(
+      adapter.persist(task.projectId, [task]),
+    ).resolves.toBeUndefined()
+
+    expect(onFailure).toHaveBeenCalledWith(failure)
   })
 })
