@@ -5,6 +5,7 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
+import { RouterErrorBoundary } from '@/app/router-error-boundary'
 import { HomePage } from '@/pages/home/home-page'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
@@ -41,7 +42,10 @@ const projectRoute = createRoute({
 })
 
 const routeTree = rootRoute.addChildren([homeRoute, projectRoute])
-export const router = createRouter({ routeTree })
+export const router = createRouter({
+  routeTree,
+  defaultErrorComponent: RouterErrorBoundary,
+})
 
 declare module '@tanstack/react-router' {
   interface Register {

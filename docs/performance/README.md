@@ -88,10 +88,10 @@ The `Browser Performance` workflow runs 1K and 10K scenarios on relevant pull re
 
 Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build baseline run before virtualization.
 
-|  Tasks | Mount wall time | DOM nodes | Task cards | Filter latency | Move latency |   Observed long tasks | Heap snapshot* |
-| -----: | --------------: | --------: | ---------: | -------------: | -----------: | --------------------: | -------------: |
-|  1,000 |        372.6 ms |    17,037 |      1,000 |        53.0 ms |      14.2 ms |                 96 ms |       ~10.0 MB |
-| 10,000 |      3,302.1 ms |   170,037 |     10,000 |       289.3 ms |      28.4 ms | 694 ms, 67 ms, 264 ms |       ~44.7 MB |
+|  Tasks | Mount wall time | DOM nodes | Task cards | Filter latency | Move latency |   Observed long tasks | Heap snapshot\* |
+| -----: | --------------: | --------: | ---------: | -------------: | -----------: | --------------------: | --------------: |
+|  1,000 |        372.6 ms |    17,037 |      1,000 |        53.0 ms |      14.2 ms |                 96 ms |        ~10.0 MB |
+| 10,000 |      3,302.1 ms |   170,037 |     10,000 |       289.3 ms |      28.4 ms | 694 ms, 67 ms, 264 ms |        ~44.7 MB |
 
 \* Chromium may quantize `performance.memory`, so heap values are directional rather than precise memory accounting.
 
@@ -109,10 +109,10 @@ Rendered task cards keep the existing Move/Edit interactions. Virtualized list i
 
 Reference environment: GitHub Actions `ubuntu-24.04`, Node `22.23.3`, Playwright Chromium / Chrome for Testing `156.0.8078.4`. Values below are from the October 26, 2026 production-build comparison run.
 
-|  Tasks | Mount wall time | DOM nodes | Mounted task cards | Filter latency | Move latency | Observed long tasks | Heap snapshot* |
-| -----: | --------------: | --------: | -----------------: | -------------: | -----------: | ------------------: | -------------: |
-|  1,000 |         62.8 ms |       689 |                 36 |        39.2 ms |       5.2 ms |                None |       ~10.0 MB |
-| 10,000 |         65.7 ms |       689 |                 36 |        19.7 ms |       7.8 ms |                None |       ~10.0 MB |
+|  Tasks | Mount wall time | DOM nodes | Mounted task cards | Filter latency | Move latency | Observed long tasks | Heap snapshot\* |
+| -----: | --------------: | --------: | -----------------: | -------------: | -----------: | ------------------: | --------------: |
+|  1,000 |         62.8 ms |       689 |                 36 |        39.2 ms |       5.2 ms |                None |        ~10.0 MB |
+| 10,000 |         65.7 ms |       689 |                 36 |        19.7 ms |       7.8 ms |                None |        ~10.0 MB |
 
 \* Chromium may quantize `performance.memory`, so heap values are directional rather than precise memory accounting.
 
