@@ -9,6 +9,15 @@ import {
   type Task,
   type TaskStatus,
 } from '@/entities/task/model/task'
+import {
+  appendTask,
+  moveTaskToStatus,
+  removeTask,
+  restoreTask,
+  type DeletedTaskSnapshot,
+  type TaskWriteValues,
+  updateTaskValues,
+} from '@/entities/task/model/task-mutations'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
@@ -17,7 +26,6 @@ import {
   filterTasks,
   groupTasksByStatus,
   type TaskBoardFilters,
-  updateTaskStatus,
 } from './model/task-board-view'
 import './task-board.css'
 
@@ -28,11 +36,6 @@ const VIRTUAL_OVERSCAN = 6
 interface TaskBoardPersistence {
   load: (projectId: string, fallback: Task[]) => Task[]
   save: (projectId: string, tasks: Task[]) => void
-}
-
-interface DeletedTaskSnapshot {
-  task: Task
-  index: number
 }
 
 interface TaskBoardProps {
@@ -137,7 +140,7 @@ export function TaskBoard({
   }
 
   function moveTask(taskId: string, status: TaskStatus) {
-    setTasks((current) => updateTaskStatus(current, taskId, status))
+    setTasks((current) => moveTaskToStatus(current, taskId, status))
   }
 
   function editTask(taskId: string) {
@@ -147,19 +150,13 @@ export function TaskBoard({
   }
 
   function createTask(values: TaskFormValues) {
-    setTasks((current) => [
-      ...current,
-      {
+    setTasks((current) =>
+      appendTask(current, {
         id: nextTaskId(current, taskIdPrefix),
         projectId: scopedProjectId,
-        title: values.title,
-        status: values.status,
-        priority: values.priority,
-        ...(values.description ? { description: values.description } : {}),
-        ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
-        ...(values.dueDate ? { dueDate: values.dueDate } : {}),
-      },
-    ])
+        ...toTaskWriteValues(values),
+      }),
+    )
     setDeletedTask(null)
     setCreatingTask(false)
   }
@@ -168,22 +165,7 @@ export function TaskBoard({
     if (!editingTaskId) return
 
     setTasks((current) =>
-      current.map((task) => {
-        if (task.id !== editingTaskId) return task
-
-        const updated: Task = {
-          id: task.id,
-          projectId: task.projectId,
-          title: values.title,
-          status: values.status,
-          priority: values.priority,
-          ...(values.description ? { description: values.description } : {}),
-          ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
-          ...(values.dueDate ? { dueDate: values.dueDate } : {}),
-        }
-
-        return updated
-      }),
+      updateTaskValues(current, editingTaskId, toTaskWriteValues(values)),
     )
     setEditingTask(null)
   }
@@ -192,29 +174,18 @@ export function TaskBoard({
     const confirmed = window.confirm(`Delete "${task.title}"?`)
     if (!confirmed) return
 
-    const index = tasks.findIndex((item) => item.id === task.id)
-    if (index === -1) return
+    const result = removeTask(tasks, task.id)
+    if (!result.deletedTask) return
 
-    setDeletedTask({ task, index })
-    setTasks((current) => current.filter((item) => item.id !== task.id))
+    setDeletedTask(result.deletedTask)
+    setTasks(result.tasks)
     if (editingTaskId === task.id) setEditingTask(null)
   }
 
   function undoDelete() {
     if (!deletedTask) return
 
-    setTasks((current) => {
-      if (current.some((task) => task.id === deletedTask.task.id)) {
-        return current
-      }
-
-      const index = Math.min(deletedTask.index, current.length)
-      return [
-        ...current.slice(0, index),
-        deletedTask.task,
-        ...current.slice(index),
-      ]
-    })
+    setTasks((current) => restoreTask(current, deletedTask))
     setDeletedTask(null)
   }
 
@@ -294,6 +265,17 @@ export function TaskBoard({
       </div>
     </section>
   )
+}
+
+function toTaskWriteValues(values: TaskFormValues): TaskWriteValues {
+  return {
+    title: values.title,
+    status: values.status,
+    priority: values.priority,
+    ...(values.description ? { description: values.description } : {}),
+    ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
+    ...(values.dueDate ? { dueDate: values.dueDate } : {}),
+  }
 }
 
 interface TaskColumnProps {
