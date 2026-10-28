@@ -2,10 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
-import {
-  loadProjectTasks,
-  saveProjectTasks,
-} from '@/entities/task/lib/task-storage'
+import { loadProjectTasks } from '@/entities/task/lib/task-storage'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import {
   type TaskBoardSort,
@@ -18,10 +15,6 @@ import { getProjectBoardShortcut } from './project-board-shortcuts'
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
 
-const projectTaskPersistence = {
-  load: loadProjectTasks,
-  save: saveProjectTasks,
-}
 const projectTaskMutationAdapter = createBrowserTaskMutationAdapter()
 
 export function ProjectBoardPage() {
@@ -31,6 +24,7 @@ export function ProjectBoardPage() {
     from: projectRoutePath,
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const persistedTasks = loadProjectTasks(project.id, initialTasks)
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -229,13 +223,12 @@ export function ProjectBoardPage() {
       <TaskBoard
         projectId={project.id}
         taskIdPrefix={project.key}
-        initialTasks={initialTasks}
+        initialTasks={persistedTasks}
         members={members}
         selectedTaskId={search.task ?? null}
         onSelectedTaskChange={selectTask}
         isCreatingTask={search.newTask === '1'}
         onCreatingTaskChange={setCreatingTask}
-        persistence={projectTaskPersistence}
         mutationAdapter={projectTaskMutationAdapter}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
