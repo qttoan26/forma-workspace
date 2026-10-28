@@ -1,4 +1,9 @@
-import { taskDueDateSchema, taskSchema } from './task'
+import {
+  taskDescriptionSchema,
+  taskDueDateSchema,
+  taskSchema,
+  taskTitleSchema,
+} from './task'
 
 describe('task domain schema', () => {
   const baseTask = {
@@ -25,5 +30,19 @@ describe('task domain schema', () => {
 
   it('keeps due dates optional', () => {
     expect(taskSchema.safeParse(baseTask).success).toBe(true)
+  })
+
+  it('shares title validation with persisted tasks', () => {
+    expect(taskTitleSchema.safeParse('  Valid title  ').data).toBe('Valid title')
+    expect(taskTitleSchema.safeParse('ab').success).toBe(false)
+    expect(taskSchema.safeParse({ ...baseTask, title: 'ab' }).success).toBe(false)
+  })
+
+  it('shares description limits with persisted tasks', () => {
+    expect(taskDescriptionSchema.safeParse('  Details  ').data).toBe('Details')
+    expect(taskDescriptionSchema.safeParse('x'.repeat(501)).success).toBe(false)
+    expect(
+      taskSchema.safeParse({ ...baseTask, description: 'x'.repeat(501) }).success,
+    ).toBe(false)
   })
 })
