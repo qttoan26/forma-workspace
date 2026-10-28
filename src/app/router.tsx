@@ -8,6 +8,7 @@ import {
 import { RouterErrorBoundary } from '@/app/router-error-boundary'
 import { HomePage } from '@/pages/home/home-page'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
+import { ProjectBoardLoading } from '@/pages/project-board/project-board-loading'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
 import { ProjectBoardPage } from '@/pages/project-board/project-board-page'
 import { parseProjectBoardSearch } from '@/pages/project-board/project-board-search'
@@ -38,6 +39,9 @@ const projectRoute = createRoute({
       projectId: params.projectId,
     }),
   component: ProjectBoardPage,
+  pendingComponent: ProjectBoardLoading,
+  pendingMs: 200,
+  pendingMinMs: 300,
   notFoundComponent: ProjectBoardNotFound,
 })
 
