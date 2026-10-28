@@ -198,7 +198,7 @@ export function TaskBoard({
   }
 
   function deleteTask(task: Task) {
-    const confirmed = window.confirm(`Delete "${task.title}"?`)
+    const confirmed = window.confirm(`Delete \"${task.title}\"?`)
     if (!confirmed) return
 
     const index = tasks.findIndex((item) => item.id === task.id)
@@ -471,7 +471,7 @@ function TaskCard({
       aria-setsize={setSize}
     >
       <div className="task-meta">
-        <span>{task.id}</span>
+        <span aria-label={`Task ID: ${task.id}`}>{task.id}</span>
         <span
           className={`priority priority-${task.priority}`}
           aria-label={`Priority: ${task.priority}`}
