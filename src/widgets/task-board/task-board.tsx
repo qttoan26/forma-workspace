@@ -4,10 +4,6 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Member } from '@/entities/member/model/member'
 import { inferTaskIdPrefix, nextTaskId } from '@/entities/task/lib/task-id'
 import {
-  loadProjectTasks,
-  saveProjectTasks,
-} from '@/entities/task/lib/task-storage'
-import {
   taskStatusLabels,
   taskStatuses,
   type Task,
@@ -39,11 +35,6 @@ interface DeletedTaskSnapshot {
   index: number
 }
 
-const defaultPersistence: TaskBoardPersistence = {
-  load: loadProjectTasks,
-  save: saveProjectTasks,
-}
-
 interface TaskBoardProps {
   projectId?: string
   taskIdPrefix?: string
@@ -67,7 +58,7 @@ export function TaskBoard({
   onSelectedTaskChange,
   isCreatingTask,
   onCreatingTaskChange,
-  persistence = defaultPersistence,
+  persistence = null,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
   if (!projectId) {
