@@ -1,7 +1,4 @@
-import {
-  type ErrorComponentProps,
-  useRouter,
-} from '@tanstack/react-router'
+import { type ErrorComponentProps, useRouter } from '@tanstack/react-router'
 
 interface RouterErrorViewProps {
   error: unknown
