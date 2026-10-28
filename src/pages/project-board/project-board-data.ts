@@ -1,21 +1,24 @@
 import type { Member } from '@/entities/member/model/member'
-import type { Project } from '@/entities/project/model/project'
 import type { Task } from '@/entities/task/model/task'
-import type { Workspace } from '@/entities/workspace/model/workspace'
 
-export const workspace: Workspace = {
-  id: 'ws-1',
-  name: 'Forma',
-  slug: 'forma',
-}
+import { projectWorkspaceSchema } from './project-workspace-schema'
 
-export const project: Project = {
-  id: 'project-1',
-  workspaceId: workspace.id,
-  name: 'Product launch',
-  key: 'FOR',
-  description: 'Ship the first production-ready Forma Workspace experience.',
-}
+const projectWorkspace = projectWorkspaceSchema.parse({
+  workspace: {
+    id: 'ws-1',
+    name: 'Forma',
+    slug: 'forma',
+  },
+  project: {
+    id: 'project-1',
+    workspaceId: 'ws-1',
+    name: 'Product launch',
+    key: 'FOR',
+    description: 'Ship the first production-ready Forma Workspace experience.',
+  },
+})
+
+export const { workspace, project } = projectWorkspace
 
 export const members: Member[] = [
   { id: 'member-1', name: 'Alex Morgan', initials: 'AM', role: 'Design' },
