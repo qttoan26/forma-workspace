@@ -81,7 +81,6 @@ export function TaskBoardBenchmark() {
         initialTasks={tasks}
         members={members}
         {...(query ? { filters: { query } } : {})}
-        persistence={null}
       />
     </main>
   )
