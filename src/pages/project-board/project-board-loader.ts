@@ -11,7 +11,7 @@ export async function loadProjectBoard(input: GetProjectBoardInput) {
     return await projectBoardRepository.getProjectBoard(input)
   } catch (error) {
     if (error instanceof ProjectBoardNotFoundError) {
-      throw notFound({ data: error.input })
+      notFound({ data: error.input, throw: true })
     }
 
     throw error
