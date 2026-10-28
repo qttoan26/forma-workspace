@@ -10,8 +10,9 @@ export function createBrowserTaskMutationAdapter(
   storage?: Storage,
 ): TaskMutationAdapter {
   return {
-    async persist(projectId, tasks) {
+    persist(projectId, tasks) {
       saveProjectTasks(projectId, tasks, storage ?? window.localStorage)
+      return Promise.resolve()
     },
   }
 }
