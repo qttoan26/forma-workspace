@@ -36,8 +36,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Format check
-        run: npm run format:check
+      - name: Inspect Prettier output
+        run: |
+          npx prettier --write docs/performance/README.md src/app/router-error-boundary.tsx
+          git diff -- docs/performance/README.md src/app/router-error-boundary.tsx
+          exit 1
 
       - name: Test
         run: npm test
