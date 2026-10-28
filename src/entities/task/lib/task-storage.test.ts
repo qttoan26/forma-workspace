@@ -47,4 +47,21 @@ describe('task storage', () => {
 
     expect(loadProjectTasks('project-1', fallback)).toEqual(fallback)
   })
+
+  it('falls back when persisted tasks contain duplicate IDs', () => {
+    const duplicateTasks = [
+      fallbackTask,
+      {
+        ...fallbackTask,
+        title: 'Duplicate task ID',
+      },
+    ]
+
+    window.localStorage.setItem(
+      'forma:tasks:v1:project-1',
+      JSON.stringify(duplicateTasks),
+    )
+
+    expect(loadProjectTasks('project-1', fallback)).toEqual(fallback)
+  })
 })
