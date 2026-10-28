@@ -1,11 +1,22 @@
 import type { Task, TaskStatus } from './task'
 
-export type TaskWriteValues = Pick<Task, 'title' | 'status' | 'priority'> &
-  Partial<Pick<Task, 'description' | 'assigneeId' | 'dueDate'>>
+export interface TaskWriteValues {
+  title: Task['title']
+  status: Task['status']
+  priority: Task['priority']
+  description?: Task['description']
+  assigneeId?: Task['assigneeId']
+  dueDate?: Task['dueDate']
+}
 
 export interface DeletedTaskSnapshot {
   task: Task
   index: number
+}
+
+interface TaskRemovalResult {
+  tasks: Task[]
+  deletedTask: DeletedTaskSnapshot | null
 }
 
 export function appendTask(tasks: Task[], task: Task): Task[] {
@@ -36,13 +47,7 @@ export function moveTaskToStatus(
   return tasks.map((task) => (task.id === taskId ? { ...task, status } : task))
 }
 
-export function removeTask(
-  tasks: Task[],
-  taskId: string,
-): {
-  tasks: Task[]
-  deletedTask: DeletedTaskSnapshot | null
-} {
+export function removeTask(tasks: Task[], taskId: string): TaskRemovalResult {
   const index = tasks.findIndex((task) => task.id === taskId)
   if (index === -1) return { tasks, deletedTask: null }
 
