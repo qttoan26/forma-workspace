@@ -8,13 +8,23 @@ export const taskPriorities = ['low', 'medium', 'high', 'urgent'] as const
 export const taskPrioritySchema = z.enum(taskPriorities)
 export type TaskPriority = z.infer<typeof taskPrioritySchema>
 
+export const taskTitleSchema = z
+  .string()
+  .trim()
+  .min(3, 'Title must be at least 3 characters')
+
+export const taskDescriptionSchema = z
+  .string()
+  .trim()
+  .max(500, 'Description must be 500 characters or less')
+
 export const taskDueDateSchema = z.iso.date()
 
 export const taskSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: taskTitleSchema,
+  description: taskDescriptionSchema.optional(),
   status: taskStatusSchema,
   priority: taskPrioritySchema,
   assigneeId: z.string().optional(),
