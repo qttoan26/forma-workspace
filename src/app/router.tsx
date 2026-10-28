@@ -7,6 +7,7 @@ import {
 
 import { HomePage } from '@/pages/home/home-page'
 import { ProjectBoardPage } from '@/pages/project-board/project-board-page'
+import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
 import { parseProjectBoardSearch } from '@/pages/project-board/project-board-search'
 
 const rootRoute = createRootRoute({
@@ -29,6 +30,11 @@ const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspaces/$workspaceSlug/projects/$projectId',
   validateSearch: parseProjectBoardSearch,
+  loader: ({ params }) =>
+    projectBoardRepository.getProjectBoard({
+      workspaceSlug: params.workspaceSlug,
+      projectId: params.projectId,
+    }),
   component: ProjectBoardPage,
 })
 

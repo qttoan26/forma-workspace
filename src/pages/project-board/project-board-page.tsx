@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import {
@@ -8,7 +8,6 @@ import {
 } from '@/widgets/task-board/model/task-board-view'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
-import { initialTasks, members, project, workspace } from './project-board-data'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
 
 const projectRoutePath =
@@ -17,6 +16,9 @@ const projectRoutePath =
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
+  const { workspace, project, members, initialTasks } = useLoaderData({
+    from: projectRoutePath,
+  })
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
