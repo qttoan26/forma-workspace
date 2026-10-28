@@ -1,26 +1,32 @@
-import { render, screen } from '@testing-library/react'
-import { RouterProvider, createMemoryHistory } from '@tanstack/react-router'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 
-import { router } from '@/app/router'
+import { RouterErrorView } from '@/app/router-error-boundary'
 
-describe('RouterErrorBoundary', () => {
-  it('renders the global fallback for unexpected route failures', async () => {
-    const history = createMemoryHistory({
-      initialEntries: ['/workspaces/forma/projects/project-1'],
-    })
+describe('RouterErrorView', () => {
+  it('renders an unexpected error and retries on request', () => {
+    const onRetry = vi.fn()
 
-    const originalInvalidate = router.invalidate
-    router.update({ history })
-    router.invalidate = async () => {
-      throw new Error('route reload failed')
-    }
-
-    render(<RouterProvider router={router} />)
+    render(
+      <RouterErrorView error={new Error('storage unavailable')} onRetry={onRetry} />,
+    )
 
     expect(
-      await screen.findByRole('heading', { name: /something went wrong/i }),
+      screen.getByRole('heading', { name: /something went wrong/i }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('storage unavailable')
 
-    router.invalidate = originalInvalidate
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }))
+    expect(onRetry).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('link', { name: /go home/i })).toHaveAttribute(
+      'href',
+      '/',
+    )
+  })
+
+  it('uses a safe message for non-error thrown values', () => {
+    render(<RouterErrorView error={{ reason: 'bad state' }} onRetry={() => {}} />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Unexpected error')
   })
 })
