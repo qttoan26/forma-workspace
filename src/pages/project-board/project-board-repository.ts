@@ -1,16 +1,8 @@
-import type { Member } from '@/entities/member/model/member'
-import type { Project } from '@/entities/project/model/project'
-import type { Task } from '@/entities/task/model/task'
-import type { Workspace } from '@/entities/workspace/model/workspace'
-
 import { initialTasks, members, project, workspace } from './project-board-data'
-
-export interface ProjectBoardData {
-  workspace: Workspace
-  project: Project
-  members: Member[]
-  initialTasks: Task[]
-}
+import {
+  parseProjectBoardData,
+  type ProjectBoardData,
+} from './project-board-data-parser'
 
 export interface ProjectBoardRepository {
   getProjectBoard: (input: {
@@ -25,11 +17,13 @@ export const projectBoardRepository: ProjectBoardRepository = {
       return Promise.reject(new Error('Project board not found'))
     }
 
-    return Promise.resolve({
-      workspace,
-      project,
-      members,
-      initialTasks,
-    })
+    return Promise.resolve(
+      parseProjectBoardData({
+        workspace,
+        project,
+        members,
+        initialTasks,
+      }),
+    )
   },
 }
