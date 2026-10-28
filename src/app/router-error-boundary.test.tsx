@@ -8,7 +8,10 @@ describe('RouterErrorView', () => {
     const onRetry = vi.fn()
 
     render(
-      <RouterErrorView error={new Error('storage unavailable')} onRetry={onRetry} />,
+      <RouterErrorView
+        error={new Error('storage unavailable')}
+        onRetry={onRetry}
+      />,
     )
 
     expect(
@@ -25,7 +28,9 @@ describe('RouterErrorView', () => {
   })
 
   it('uses a safe message for non-error thrown values', () => {
-    render(<RouterErrorView error={{ reason: 'bad state' }} onRetry={() => {}} />)
+    render(
+      <RouterErrorView error={{ reason: 'bad state' }} onRetry={() => {}} />,
+    )
 
     expect(screen.getByRole('alert')).toHaveTextContent('Unexpected error')
   })
