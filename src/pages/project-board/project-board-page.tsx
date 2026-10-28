@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
+import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
 import {
   loadProjectTasks,
   saveProjectTasks,
@@ -21,6 +22,7 @@ const projectTaskPersistence = {
   load: loadProjectTasks,
   save: saveProjectTasks,
 }
+const projectTaskMutationAdapter = createBrowserTaskMutationAdapter()
 
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
@@ -234,6 +236,7 @@ export function ProjectBoardPage() {
         isCreatingTask={search.newTask === '1'}
         onCreatingTaskChange={setCreatingTask}
         persistence={projectTaskPersistence}
+        mutationAdapter={projectTaskMutationAdapter}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),

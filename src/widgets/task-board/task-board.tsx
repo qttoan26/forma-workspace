@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 import type { Member } from '@/entities/member/model/member'
+import type { TaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
 import { inferTaskIdPrefix, nextTaskId } from '@/entities/task/lib/task-id'
 import {
   taskStatusLabels,
@@ -49,6 +50,7 @@ interface TaskBoardProps {
   isCreatingTask?: boolean
   onCreatingTaskChange?: (isCreating: boolean) => void
   persistence?: TaskBoardPersistence | null
+  mutationAdapter?: TaskMutationAdapter | null
 }
 
 export function TaskBoard({
@@ -62,6 +64,7 @@ export function TaskBoard({
   isCreatingTask,
   onCreatingTaskChange,
   persistence = null,
+  mutationAdapter = null,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
   if (!projectId) {
@@ -76,8 +79,13 @@ export function TaskBoard({
   )
 
   useEffect(() => {
+    if (mutationAdapter) {
+      void mutationAdapter.persist(projectId, tasks)
+      return
+    }
+
     persistence?.save(projectId, tasks)
-  }, [persistence, projectId, tasks])
+  }, [mutationAdapter, persistence, projectId, tasks])
   const [internalEditingTaskId, setInternalEditingTaskId] = useState<
     string | null
   >(null)
