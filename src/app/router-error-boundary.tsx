@@ -15,8 +15,8 @@ export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
         <p className="eyebrow">Forma Workspace</p>
         <h1 id="router-error-title">Something went wrong.</h1>
         <p className="hero-copy">
-          We could not finish loading this view. You can retry the current
-          route or return to the workspace home.
+          We could not finish loading this view. You can retry the current route
+          or return to the workspace home.
         </p>
         <p role="alert">{message}</p>
         <div>
