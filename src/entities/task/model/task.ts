@@ -31,22 +31,24 @@ export const taskSchema = z.object({
   dueDate: taskDueDateSchema.optional(),
 })
 
-export const taskCollectionSchema = z.array(taskSchema).superRefine((tasks, ctx) => {
-  const seenTaskIds = new Set<string>()
+export const taskCollectionSchema = z
+  .array(taskSchema)
+  .superRefine((tasks, ctx) => {
+    const seenTaskIds = new Set<string>()
 
-  tasks.forEach((task, index) => {
-    if (!seenTaskIds.has(task.id)) {
-      seenTaskIds.add(task.id)
-      return
-    }
+    tasks.forEach((task, index) => {
+      if (!seenTaskIds.has(task.id)) {
+        seenTaskIds.add(task.id)
+        return
+      }
 
-    ctx.addIssue({
-      code: 'custom',
-      path: [index, 'id'],
-      message: `Duplicate task ID: ${task.id}`,
+      ctx.addIssue({
+        code: 'custom',
+        path: [index, 'id'],
+        message: `Duplicate task ID: ${task.id}`,
+      })
     })
   })
-})
 
 export type Task = z.infer<typeof taskSchema>
 
