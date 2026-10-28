@@ -1,8 +1,22 @@
+import type { ComponentProps } from 'react'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
+import {
+  loadProjectTasks,
+  saveProjectTasks,
+} from '@/entities/task/lib/task-storage'
 import { initialTasks, members } from '@/pages/project-board/project-board-data'
 
-import { TaskBoard } from './task-board'
+import { TaskBoard as BaseTaskBoard } from './task-board'
+
+const browserPersistence = {
+  load: loadProjectTasks,
+  save: saveProjectTasks,
+}
+
+function TaskBoard(props: ComponentProps<typeof BaseTaskBoard>) {
+  return <BaseTaskBoard {...props} persistence={browserPersistence} />
+}
 
 describe('TaskBoard task deletion', () => {
   beforeEach(() => {
