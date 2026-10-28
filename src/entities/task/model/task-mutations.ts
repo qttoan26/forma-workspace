@@ -1,6 +1,9 @@
 import type { Task, TaskStatus } from './task'
 
-export type TaskWriteValues = Pick<Task, 'title' | 'status' | 'priority'> &
+export type TaskWriteValues = Pick<
+  Task,
+  'title' | 'status' | 'priority'
+> &
   Partial<Pick<Task, 'description' | 'assigneeId' | 'dueDate'>>
 
 export interface DeletedTaskSnapshot {
@@ -33,7 +36,9 @@ export function moveTaskToStatus(
   taskId: string,
   status: TaskStatus,
 ): Task[] {
-  return tasks.map((task) => (task.id === taskId ? { ...task, status } : task))
+  return tasks.map((task) =>
+    task.id === taskId ? { ...task, status } : task,
+  )
 }
 
 export function removeTask(
