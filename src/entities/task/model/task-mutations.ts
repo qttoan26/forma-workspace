@@ -33,9 +33,7 @@ export function moveTaskToStatus(
   taskId: string,
   status: TaskStatus,
 ): Task[] {
-  return tasks.map((task) =>
-    task.id === taskId ? { ...task, status } : task,
-  )
+  return tasks.map((task) => (task.id === taskId ? { ...task, status } : task))
 }
 
 export function removeTask(
