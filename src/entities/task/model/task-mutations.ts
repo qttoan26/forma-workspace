@@ -67,9 +67,5 @@ export function restoreTask(
   if (tasks.some((task) => task.id === deletedTask.task.id)) return tasks
 
   const index = Math.min(deletedTask.index, tasks.length)
-  return [
-    ...tasks.slice(0, index),
-    deletedTask.task,
-    ...tasks.slice(index),
-  ]
+  return [...tasks.slice(0, index), deletedTask.task, ...tasks.slice(index)]
 }
