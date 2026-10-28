@@ -28,13 +28,7 @@ describe('TaskBoard assignee accessibility', () => {
       priority: 'medium',
     }
 
-    render(
-      <TaskBoard
-        initialTasks={[unassignedTask]}
-        members={members}
-        persistence={null}
-      />,
-    )
+    render(<TaskBoard initialTasks={[unassignedTask]} members={members} />)
 
     expect(screen.getByLabelText('Unassigned')).toHaveTextContent('—')
   })

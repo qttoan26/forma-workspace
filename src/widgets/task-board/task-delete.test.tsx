@@ -1,21 +1,25 @@
 import type { ComponentProps } from 'react'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
-import {
-  loadProjectTasks,
-  saveProjectTasks,
-} from '@/entities/task/lib/task-storage'
+import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
+import { loadProjectTasks } from '@/entities/task/lib/task-storage'
 import { initialTasks, members } from '@/pages/project-board/project-board-data'
 
 import { TaskBoard as BaseTaskBoard } from './task-board'
 
-const browserPersistence = {
-  load: loadProjectTasks,
-  save: saveProjectTasks,
-}
+const browserMutationAdapter = createBrowserTaskMutationAdapter()
 
 function TaskBoard(props: ComponentProps<typeof BaseTaskBoard>) {
-  return <BaseTaskBoard {...props} persistence={browserPersistence} />
+  const projectId = props.projectId ?? props.initialTasks[0]?.projectId
+  if (!projectId) throw new Error('Test TaskBoard requires a project id')
+
+  return (
+    <BaseTaskBoard
+      {...props}
+      initialTasks={loadProjectTasks(projectId, props.initialTasks)}
+      mutationAdapter={browserMutationAdapter}
+    />
+  )
 }
 
 describe('TaskBoard task deletion', () => {

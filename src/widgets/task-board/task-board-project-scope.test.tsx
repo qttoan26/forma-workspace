@@ -7,21 +7,18 @@ import { TaskBoard } from './task-board'
 
 describe('TaskBoard project scope', () => {
   it('uses the explicit project id when the board starts empty', async () => {
-    const load = vi
-      .fn<(projectId: string, fallback: Task[]) => Task[]>()
-      .mockReturnValue([])
-    const save = vi.fn<(projectId: string, tasks: Task[]) => void>()
+    const persist = vi
+      .fn<(projectId: string, tasks: Task[]) => Promise<void>>()
+      .mockResolvedValue(undefined)
 
     render(
       <TaskBoard
         projectId="empty-project"
         initialTasks={[]}
         members={members}
-        persistence={{ load, save }}
+        mutationAdapter={{ persist }}
       />,
     )
-
-    expect(load).toHaveBeenCalledWith('empty-project', [])
 
     fireEvent.click(screen.getByRole('button', { name: 'New task' }))
     fireEvent.change(screen.getByLabelText('Title'), {
@@ -30,7 +27,7 @@ describe('TaskBoard project scope', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create task' }))
 
     await waitFor(() =>
-      expect(save).toHaveBeenLastCalledWith(
+      expect(persist).toHaveBeenLastCalledWith(
         'empty-project',
         expect.arrayContaining([
           expect.objectContaining({

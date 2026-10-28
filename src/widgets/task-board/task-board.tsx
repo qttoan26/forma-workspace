@@ -34,11 +34,6 @@ const VIRTUALIZATION_THRESHOLD = 100
 const ESTIMATED_TASK_HEIGHT = 228
 const VIRTUAL_OVERSCAN = 6
 
-interface TaskBoardPersistence {
-  load: (projectId: string, fallback: Task[]) => Task[]
-  save: (projectId: string, tasks: Task[]) => void
-}
-
 interface TaskBoardProps {
   projectId?: string
   taskIdPrefix?: string
@@ -49,7 +44,6 @@ interface TaskBoardProps {
   onSelectedTaskChange?: (taskId: string | null) => void
   isCreatingTask?: boolean
   onCreatingTaskChange?: (isCreating: boolean) => void
-  persistence?: TaskBoardPersistence | null
   mutationAdapter?: TaskMutationAdapter | null
 }
 
@@ -63,7 +57,6 @@ export function TaskBoard({
   onSelectedTaskChange,
   isCreatingTask,
   onCreatingTaskChange,
-  persistence = null,
   mutationAdapter = null,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
@@ -74,18 +67,12 @@ export function TaskBoard({
   const taskIdPrefix =
     explicitTaskIdPrefix ?? inferTaskIdPrefix(initialTasks) ?? 'TASK'
 
-  const [tasks, setTasks] = useState(() =>
-    persistence ? persistence.load(projectId, initialTasks) : initialTasks,
-  )
+  const [tasks, setTasks] = useState(initialTasks)
 
   useEffect(() => {
-    if (mutationAdapter) {
-      void mutationAdapter.persist(projectId, tasks)
-      return
-    }
-
-    persistence?.save(projectId, tasks)
-  }, [mutationAdapter, persistence, projectId, tasks])
+    if (!mutationAdapter) return
+    void mutationAdapter.persist(projectId, tasks)
+  }, [mutationAdapter, projectId, tasks])
   const [internalEditingTaskId, setInternalEditingTaskId] = useState<
     string | null
   >(null)

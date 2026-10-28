@@ -16,19 +16,17 @@ describe('TaskBoard deletion persistence contract', () => {
     vi.restoreAllMocks()
   })
 
-  it('saves the task collection without the confirmed deleted task', async () => {
+  it('persists the task collection without the confirmed deleted task', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
-    const save = vi.fn<(projectId: string, tasks: Task[]) => void>()
-    const persistence = {
-      load: () => initialTasks,
-      save,
-    }
+    const persist = vi
+      .fn<(projectId: string, tasks: Task[]) => Promise<void>>()
+      .mockResolvedValue(undefined)
 
     render(
       <TaskBoard
         initialTasks={initialTasks}
         members={members}
-        persistence={persistence}
+        mutationAdapter={{ persist }}
       />,
     )
 
@@ -44,7 +42,7 @@ describe('TaskBoard deletion persistence contract', () => {
     )
 
     await waitFor(() => {
-      const latestTasks = save.mock.calls.at(-1)?.[1]
+      const latestTasks = persist.mock.calls.at(-1)?.[1]
       expect(latestTasks).toHaveLength(initialTasks.length - 1)
       expect(latestTasks).not.toEqual(
         expect.arrayContaining([expect.objectContaining({ id: 'FOR-18' })]),

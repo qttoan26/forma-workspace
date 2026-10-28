@@ -7,21 +7,25 @@ import {
   within,
 } from '@testing-library/react'
 
-import {
-  loadProjectTasks,
-  saveProjectTasks,
-} from '@/entities/task/lib/task-storage'
+import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
+import { loadProjectTasks } from '@/entities/task/lib/task-storage'
 import { initialTasks, members } from '@/pages/project-board/project-board-data'
 
 import { TaskBoard as BaseTaskBoard } from './task-board'
 
-const browserPersistence = {
-  load: loadProjectTasks,
-  save: saveProjectTasks,
-}
+const browserMutationAdapter = createBrowserTaskMutationAdapter()
 
 function TaskBoard(props: ComponentProps<typeof BaseTaskBoard>) {
-  return <BaseTaskBoard {...props} persistence={browserPersistence} />
+  const projectId = props.projectId ?? props.initialTasks[0]?.projectId
+  if (!projectId) throw new Error('Test TaskBoard requires a project id')
+
+  return (
+    <BaseTaskBoard
+      {...props}
+      initialTasks={loadProjectTasks(projectId, props.initialTasks)}
+      mutationAdapter={browserMutationAdapter}
+    />
+  )
 }
 
 describe('TaskBoard', () => {
@@ -168,6 +172,7 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+
   it('shows an empty state when no tasks match the search', () => {
     render(
       <TaskBoard
@@ -182,6 +187,7 @@ describe('TaskBoard', () => {
       screen.queryByText('Build accessible task cards'),
     ).not.toBeInTheDocument()
   })
+
   it('announces the visible task count when search matches nothing', () => {
     render(
       <TaskBoard
@@ -195,6 +201,7 @@ describe('TaskBoard', () => {
       `0 of ${initialTasks.length} tasks shown`,
     )
   })
+
   it('suggests clearing filters when no tasks match', () => {
     render(
       <TaskBoard
@@ -208,6 +215,7 @@ describe('TaskBoard', () => {
       'Try clearing filters or using a different search term.',
     )
   })
+
   it('restores moved tasks after remounting the board', () => {
     const { unmount } = render(
       <TaskBoard initialTasks={initialTasks} members={members} />,
@@ -241,6 +249,7 @@ describe('TaskBoard', () => {
       screen.getByText('Create board interaction model'),
     ).toBeInTheDocument()
   })
+
   it('rejects stored tasks belonging to another project', () => {
     window.localStorage.setItem(
       'forma:tasks:v1:project-1',
