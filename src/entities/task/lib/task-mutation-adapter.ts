@@ -38,10 +38,14 @@ export function createBrowserTaskMutationAdapter(
         saveProjectTasks(projectId, tasks, storage ?? window.localStorage)
         return Promise.resolve()
       } catch (error) {
-        return Promise.reject(error)
+        return Promise.reject(toError(error))
       }
     },
   }
 
   return createTaskMutationEffectBoundary(browserAdapter, onFailure)
+}
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error))
 }
