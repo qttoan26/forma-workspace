@@ -5,7 +5,7 @@ import {
   loadProjectTasksFromApi,
   persistProjectTasksToApi,
 } from './task-api'
-import { publishProjectTasks } from './task-broadcast'
+import { notifyProjectTasks, publishProjectTasks } from './task-broadcast'
 import {
   completeProjectTaskSync,
   enqueueProjectTaskSync,
@@ -100,7 +100,6 @@ export async function retryConfiguredProjectTaskSync(
 
 export async function refreshConfiguredProjectTasks(
   projectId: string,
-  onTasks: (tasks: Task[]) => void,
   onFailure?: TaskMutationFailureHandler,
 ): Promise<void> {
   const apiBaseUrl = getTaskApiBaseUrl()
@@ -113,7 +112,7 @@ export async function refreshConfiguredProjectTasks(
     const tasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
     await cacheProjectTasks(projectId, tasks)
     publishProjectTasks(projectId, tasks)
-    onTasks(tasks)
+    notifyProjectTasks(projectId, tasks)
   } catch (error) {
     onFailure?.(error)
   }
