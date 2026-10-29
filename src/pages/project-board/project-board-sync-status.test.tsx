@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
 import {
@@ -16,8 +16,15 @@ import type { Task } from '@/entities/task/model/task'
 
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 
+const retryConfiguredProjectTaskSync = vi.fn()
+
 vi.mock('@/entities/task/lib/task-api', () => ({
   getTaskApiBaseUrl: () => 'https://example.test',
+}))
+
+vi.mock('@/entities/task/lib/task-persistence', () => ({
+  retryConfiguredProjectTaskSync: (...args: unknown[]) =>
+    retryConfiguredProjectTaskSync(...args),
 }))
 
 const projectId = 'project-1'
@@ -35,6 +42,7 @@ afterEach(() => {
   sessionStorage.clear()
   clearMemoryProjectTaskSync(projectId)
   clearProjectTaskSyncPending(projectId)
+  retryConfiguredProjectTaskSync.mockReset()
 })
 
 describe('ProjectBoardSyncStatus recovery states', () => {
@@ -76,6 +84,7 @@ describe('ProjectBoardSyncStatus recovery states', () => {
     render(<ProjectBoardSyncStatus projectId={projectId} />)
 
     expect(await screen.findByRole('status')).toHaveTextContent('Sync failed')
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled()
   })
 
   it('clears the failure state after sync succeeds', async () => {
@@ -90,5 +99,36 @@ describe('ProjectBoardSyncStatus recovery states', () => {
     })
 
     expect(await screen.findByRole('status')).toHaveTextContent('Synced')
+  })
+
+  it('retries the queued sync and disables duplicate retry clicks', async () => {
+    let resolveRetry: (() => void) | undefined
+    retryConfiguredProjectTaskSync.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveRetry = resolve
+        }),
+    )
+    markProjectTaskSyncPending(projectId)
+    recordProjectTaskSyncFailure(projectId)
+    render(<ProjectBoardSyncStatus projectId={projectId} />)
+
+    const retryButton = await screen.findByRole('button', { name: 'Retry' })
+    fireEvent.click(retryButton)
+
+    expect(retryConfiguredProjectTaskSync).toHaveBeenCalledTimes(1)
+    expect(retryConfiguredProjectTaskSync).toHaveBeenCalledWith(projectId)
+    expect(
+      screen.getByRole('button', { name: 'Retrying…' }),
+    ).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retrying…' }))
+    expect(retryConfiguredProjectTaskSync).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveRetry?.()
+    })
+
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled()
   })
 })
