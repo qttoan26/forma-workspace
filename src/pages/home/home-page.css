@@ -1,0 +1,355 @@
+.dashboard-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgb(24 24 27 / 5%), transparent 30rem),
+    #f7f7f8;
+  color: #18181b;
+}
+
+.dashboard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4.5rem;
+  padding: 0 2rem;
+  border-bottom: 1px solid #e4e4e7;
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: blur(12px);
+}
+
+.dashboard-brand,
+.dashboard-account,
+.project-overview-card,
+.attention-item {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dashboard-brand,
+.dashboard-account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-brand {
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-brand-mark,
+.dashboard-avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: #18181b;
+  color: white;
+  font-weight: 760;
+}
+
+.dashboard-brand-mark {
+  width: 2rem;
+  height: 2rem;
+}
+
+.dashboard-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.dashboard-account-copy {
+  display: grid;
+  text-align: right;
+}
+
+.dashboard-account-copy strong {
+  font-size: 0.85rem;
+}
+
+.dashboard-account-copy small {
+  color: #71717a;
+}
+
+.dashboard-content {
+  width: min(100% - 2rem, 76rem);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 5rem) 0;
+}
+
+.dashboard-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.dashboard-intro h1 {
+  max-width: 44rem;
+  margin: 0.55rem 0 1rem;
+  font-size: clamp(2.7rem, 7vw, 5.4rem);
+}
+
+.dashboard-lead {
+  max-width: 42rem;
+  margin: 0;
+  color: #52525b;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.65;
+}
+
+.dashboard-primary-action {
+  flex: none;
+  padding: 0.8rem 1rem;
+  border-radius: 0.7rem;
+  background: #18181b;
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+}
+
+.dashboard-primary-action:hover,
+.dashboard-primary-action:focus-visible {
+  background: #27272a;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 3rem 0 1rem;
+}
+
+.metric-card,
+.dashboard-panel {
+  border: 1px solid #e4e4e7;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+}
+
+.metric-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+}
+
+.metric-card > span,
+.metric-card small {
+  color: #71717a;
+}
+
+.metric-card strong {
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.85fr);
+  gap: 1rem;
+}
+
+.dashboard-panel {
+  padding: 1.25rem;
+  border-radius: 1rem;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.25rem;
+}
+
+.panel-count {
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #52525b;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.project-overview-card {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.9rem;
+  background: #fafafa;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.project-overview-card:hover,
+.project-overview-card:focus-visible {
+  border-color: #a1a1aa;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 7%);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.project-overview-main {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.project-key {
+  display: grid;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: #18181b;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 760;
+}
+
+.project-overview-main h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.project-overview-main p {
+  max-width: 34rem;
+  margin: 0;
+  color: #71717a;
+  line-height: 1.5;
+}
+
+.project-progress {
+  display: grid;
+  gap: 0.5rem;
+  color: #71717a;
+  font-size: 0.8rem;
+}
+
+.project-progress strong {
+  color: #27272a;
+}
+
+.progress-track {
+  display: block;
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4e4e7;
+}
+
+.progress-track > span {
+  display: block;
+  width: 25%;
+  height: 100%;
+  border-radius: inherit;
+  background: #27272a;
+}
+
+.project-overview-footer {
+  display: flex;
+  gap: 1rem;
+  color: #71717a;
+  font-size: 0.8rem;
+}
+
+.project-overview-footer span:last-child {
+  margin-left: auto;
+  color: #18181b;
+  font-size: 1rem;
+}
+
+.attention-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.attention-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.9rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.8rem;
+  background: #fafafa;
+}
+
+.attention-item:hover,
+.attention-item:focus-visible {
+  border-color: #a1a1aa;
+  outline: none;
+}
+
+.attention-item > span:last-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.attention-item strong {
+  line-height: 1.35;
+}
+
+.attention-item small {
+  color: #71717a;
+}
+
+.attention-priority {
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.attention-priority-urgent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.attention-priority-high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+@media (max-width: 800px) {
+  .dashboard-topbar {
+    padding: 0 1rem;
+  }
+
+  .dashboard-intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metric-grid,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-account-copy {
+    display: none;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-overview-main {
+    flex-direction: column;
+  }
+}
