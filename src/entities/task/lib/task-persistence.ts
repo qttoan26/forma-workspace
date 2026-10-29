@@ -15,6 +15,7 @@ import {
   type QueuedProjectTaskSync,
 } from './task-indexed-db'
 import {
+  clearMemoryProjectTaskSync,
   completeMemoryProjectTaskSync,
   enqueueMemoryProjectTaskSync,
   loadMemoryProjectTaskSync,
@@ -24,6 +25,12 @@ import {
   type TaskMutationAdapter,
   type TaskMutationFailureHandler,
 } from './task-mutation-adapter'
+import {
+  clearSessionProjectTaskSync,
+  completeSessionProjectTaskSync,
+  enqueueSessionProjectTaskSync,
+  loadSessionProjectTaskSync,
+} from './task-session-sync-queue'
 import {
   clearProjectTasks,
   loadProjectTasks,
@@ -35,7 +42,7 @@ import {
 } from './task-sync-storage'
 
 interface RecoverableQueuedProjectTaskSync {
-  source: 'indexed-db' | 'memory'
+  source: 'indexed-db' | 'session-storage' | 'memory'
   queuedSync: QueuedProjectTaskSync
 }
 
@@ -160,9 +167,20 @@ async function enqueueRecoverableProjectTaskSync(
   ).catch(() => null)
 
   if (indexedDbQueuedSync) {
+    clearSessionProjectTaskSync(projectId)
+    clearMemoryProjectTaskSync(projectId)
     return {
       source: 'indexed-db',
       queuedSync: indexedDbQueuedSync,
+    }
+  }
+
+  const sessionQueuedSync = enqueueSessionProjectTaskSync(projectId, tasks)
+  if (sessionQueuedSync) {
+    clearMemoryProjectTaskSync(projectId)
+    return {
+      source: 'session-storage',
+      queuedSync: sessionQueuedSync,
     }
   }
 
@@ -185,6 +203,14 @@ async function loadRecoverableProjectTaskSync(
     }
   }
 
+  const sessionQueuedSync = loadSessionProjectTaskSync(projectId)
+  if (sessionQueuedSync) {
+    return {
+      source: 'session-storage',
+      queuedSync: sessionQueuedSync,
+    }
+  }
+
   const memoryQueuedSync = loadMemoryProjectTaskSync(projectId)
   if (!memoryQueuedSync) return null
 
@@ -198,6 +224,12 @@ async function completeRecoverableProjectTaskSync(
   recoverableSync: RecoverableQueuedProjectTaskSync,
 ): Promise<boolean> {
   const { source, queuedSync } = recoverableSync
+  if (source === 'session-storage') {
+    return completeSessionProjectTaskSync(
+      queuedSync.projectId,
+      queuedSync.mutationId,
+    )
+  }
   if (source === 'memory') {
     return completeMemoryProjectTaskSync(
       queuedSync.projectId,
