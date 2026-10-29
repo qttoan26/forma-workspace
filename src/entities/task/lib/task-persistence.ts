@@ -5,6 +5,7 @@ import {
   loadProjectTasksFromApi,
   persistProjectTasksToApi,
 } from './task-api'
+import { publishProjectTasks } from './task-broadcast'
 import {
   completeProjectTaskSync,
   enqueueProjectTaskSync,
@@ -64,6 +65,7 @@ export function createConfiguredTaskMutationAdapter(
   const localFirstAdapter: TaskMutationAdapter = {
     async persist(projectId, tasks) {
       await cacheProjectTasks(projectId, tasks)
+      publishProjectTasks(projectId, tasks)
 
       if (!apiBaseUrl) return
 
@@ -91,6 +93,27 @@ export async function retryConfiguredProjectTaskSync(
 
     markProjectTaskSyncPending(projectId)
     await syncProjectTasks(projectId, queuedSync.tasks, apiBaseUrl, queuedSync)
+  } catch (error) {
+    onFailure?.(error)
+  }
+}
+
+export async function refreshConfiguredProjectTasks(
+  projectId: string,
+  onTasks: (tasks: Task[]) => void,
+  onFailure?: TaskMutationFailureHandler,
+): Promise<void> {
+  const apiBaseUrl = getTaskApiBaseUrl()
+  if (!apiBaseUrl) return
+
+  try {
+    const queuedSync = await loadQueuedProjectTaskSync(projectId)
+    if (queuedSync) return
+
+    const tasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
+    await cacheProjectTasks(projectId, tasks)
+    publishProjectTasks(projectId, tasks)
+    onTasks(tasks)
   } catch (error) {
     onFailure?.(error)
   }
