@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import {
+  reportBrowserStorageFailure,
+  reportBrowserStorageSuccess,
+} from '@/shared/lib/browser-storage-health'
 
 const databaseName = 'forma-workspace'
 const databaseVersion = 2
@@ -38,7 +42,7 @@ export interface QueuedProjectTaskSync {
 export async function loadProjectTaskSnapshotFromIndexedDb(
   projectId: string,
 ): Promise<ProjectTaskSnapshot | null> {
-  if (!('indexedDB' in globalThis)) return null
+  if (!hasIndexedDb()) return null
 
   const database = await openDatabase()
   try {
@@ -74,7 +78,7 @@ export async function saveProjectTasksToIndexedDb(
   projectId: string,
   tasks: Task[],
 ): Promise<ProjectTaskSnapshot> {
-  if (!('indexedDB' in globalThis)) {
+  if (!hasIndexedDb()) {
     throw new Error('IndexedDB is unavailable')
   }
 
@@ -91,7 +95,7 @@ export async function enqueueProjectTaskSync(
   projectId: string,
   tasks: Task[],
 ): Promise<QueuedProjectTaskSync> {
-  if (!('indexedDB' in globalThis)) {
+  if (!hasIndexedDb()) {
     throw new Error('IndexedDB is unavailable')
   }
 
@@ -118,7 +122,7 @@ export async function enqueueProjectTaskSync(
 export async function loadQueuedProjectTaskSync(
   projectId: string,
 ): Promise<QueuedProjectTaskSync | null> {
-  if (!('indexedDB' in globalThis)) return null
+  if (!hasIndexedDb()) return null
 
   const database = await openDatabase()
   try {
@@ -140,7 +144,7 @@ export async function completeProjectTaskSync(
   projectId: string,
   mutationId: string,
 ): Promise<boolean> {
-  if (!('indexedDB' in globalThis)) return false
+  if (!hasIndexedDb()) return false
 
   const database = await openDatabase()
   try {
@@ -181,19 +185,31 @@ function saveProjectTaskSnapshot(
       }
       objectStore.put(snapshot)
     }
-    request.onerror = () =>
-      reject(request.error ?? new Error('Failed to read project task snapshot'))
+    request.onerror = () => {
+      const error = request.error ?? new Error('Failed to read project task snapshot')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
     transaction.oncomplete = () => {
       if (!snapshot) {
-        reject(new Error('Project task snapshot was not written'))
+        const error = new Error('Project task snapshot was not written')
+        reportBrowserStorageFailure('indexed-db', error)
+        reject(error)
         return
       }
+      reportBrowserStorageSuccess('indexed-db')
       resolve(snapshot)
     }
-    transaction.onerror = () =>
-      reject(transaction.error ?? new Error('Failed to save project tasks'))
-    transaction.onabort = () =>
-      reject(transaction.error ?? new Error('Project task save aborted'))
+    transaction.onerror = () => {
+      const error = transaction.error ?? new Error('Failed to save project tasks')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
+    transaction.onabort = () => {
+      const error = transaction.error ?? new Error('Project task save aborted')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
   })
 }
 
@@ -218,13 +234,25 @@ function completeQueuedSync(
         completed = true
       }
     }
-    request.onerror = () =>
-      reject(request.error ?? new Error('Failed to read task sync queue'))
-    transaction.oncomplete = () => resolve(completed)
-    transaction.onerror = () =>
-      reject(transaction.error ?? new Error('Failed to update task sync queue'))
-    transaction.onabort = () =>
-      reject(transaction.error ?? new Error('Task sync queue update aborted'))
+    request.onerror = () => {
+      const error = request.error ?? new Error('Failed to read task sync queue')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
+    transaction.oncomplete = () => {
+      reportBrowserStorageSuccess('indexed-db')
+      resolve(completed)
+    }
+    transaction.onerror = () => {
+      const error = transaction.error ?? new Error('Failed to update task sync queue')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
+    transaction.onabort = () => {
+      const error = transaction.error ?? new Error('Task sync queue update aborted')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
   })
 }
 
@@ -232,41 +260,83 @@ function createMutationId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
 }
 
+function hasIndexedDb() {
+  try {
+    if (!('indexedDB' in globalThis) || !globalThis.indexedDB) {
+      reportBrowserStorageFailure(
+        'indexed-db',
+        new DOMException('IndexedDB is unavailable', 'NotSupportedError'),
+      )
+      return false
+    }
+    return true
+  } catch (error) {
+    reportBrowserStorageFailure('indexed-db', error)
+    return false
+  }
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(databaseName, databaseVersion)
+    try {
+      const request = globalThis.indexedDB.open(databaseName, databaseVersion)
 
-    request.onupgradeneeded = () => {
-      const database = request.result
-      if (!database.objectStoreNames.contains(taskStoreName)) {
-        database.createObjectStore(taskStoreName, { keyPath: 'projectId' })
+      request.onupgradeneeded = () => {
+        const database = request.result
+        if (!database.objectStoreNames.contains(taskStoreName)) {
+          database.createObjectStore(taskStoreName, { keyPath: 'projectId' })
+        }
+        if (!database.objectStoreNames.contains(taskSyncQueueStoreName)) {
+          database.createObjectStore(taskSyncQueueStoreName, {
+            keyPath: 'projectId',
+          })
+        }
       }
-      if (!database.objectStoreNames.contains(taskSyncQueueStoreName)) {
-        database.createObjectStore(taskSyncQueueStoreName, {
-          keyPath: 'projectId',
-        })
+      request.onsuccess = () => {
+        reportBrowserStorageSuccess('indexed-db')
+        resolve(request.result)
       }
+      request.onerror = () => {
+        const error = request.error ?? new Error('Failed to open IndexedDB')
+        reportBrowserStorageFailure('indexed-db', error)
+        reject(error)
+      }
+    } catch (error) {
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
     }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () =>
-      reject(request.error ?? new Error('Failed to open IndexedDB'))
   })
 }
 
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () =>
-      reject(request.error ?? new Error('IndexedDB request failed'))
+    request.onsuccess = () => {
+      reportBrowserStorageSuccess('indexed-db')
+      resolve(request.result)
+    }
+    request.onerror = () => {
+      const error = request.error ?? new Error('IndexedDB request failed')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
   })
 }
 
 function transactionToPromise(transaction: IDBTransaction): Promise<void> {
   return new Promise((resolve, reject) => {
-    transaction.oncomplete = () => resolve()
-    transaction.onerror = () =>
-      reject(transaction.error ?? new Error('IndexedDB transaction failed'))
-    transaction.onabort = () =>
-      reject(transaction.error ?? new Error('IndexedDB transaction aborted'))
+    transaction.oncomplete = () => {
+      reportBrowserStorageSuccess('indexed-db')
+      resolve()
+    }
+    transaction.onerror = () => {
+      const error = transaction.error ?? new Error('IndexedDB transaction failed')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
+    transaction.onabort = () => {
+      const error = transaction.error ?? new Error('IndexedDB transaction aborted')
+      reportBrowserStorageFailure('indexed-db', error)
+      reject(error)
+    }
   })
 }
