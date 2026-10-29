@@ -13,6 +13,7 @@ import {
 
 import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
+import { ProjectBoardStorageHealth } from './project-board-storage-health'
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 import { ProjectLiveTaskBoard } from './project-live-task-board'
 import './project-board-page.css'
@@ -157,6 +158,8 @@ export function ProjectBoardPage() {
           </div>
         </div>
       </header>
+
+      <ProjectBoardStorageHealth />
 
       {hasPersistenceFailure ? (
         <ProjectBoardPersistenceAlert

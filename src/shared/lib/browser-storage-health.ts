@@ -16,6 +16,9 @@ export interface BrowserStorageHealth {
   updatedAt: string | null
 }
 
+export const browserStorageHealthChangeEvent =
+  'forma:browser-storage-health-change'
+
 const storageHealth = new Map<BrowserStorageArea, BrowserStorageHealth>()
 
 export function getBrowserStorageHealth(
@@ -32,7 +35,7 @@ export function getBrowserStorageHealth(
 }
 
 export function reportBrowserStorageSuccess(area: BrowserStorageArea) {
-  storageHealth.set(area, {
+  setBrowserStorageHealth({
     area,
     status: 'healthy',
     lastErrorName: null,
@@ -44,7 +47,7 @@ export function reportBrowserStorageFailure(
   area: BrowserStorageArea,
   error: unknown,
 ) {
-  storageHealth.set(area, {
+  setBrowserStorageHealth({
     area,
     status: classifyStorageFailure(error),
     lastErrorName: getErrorName(error),
@@ -118,6 +121,17 @@ export function safeStorageRemoveItem(
     reportBrowserStorageFailure(area, error)
     return false
   }
+}
+
+function setBrowserStorageHealth(health: BrowserStorageHealth) {
+  storageHealth.set(health.area, health)
+  if (typeof window === 'undefined') return
+
+  window.dispatchEvent(
+    new CustomEvent(browserStorageHealthChangeEvent, {
+      detail: { area: health.area },
+    }),
+  )
 }
 
 function classifyStorageFailure(error: unknown): BrowserStorageStatus {
