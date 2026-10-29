@@ -13,7 +13,10 @@ export function isProjectTaskSyncPending(projectId: string) {
 }
 
 export function recordProjectTaskSyncSuccess(projectId: string) {
-  safeLocalStorage()?.setItem(lastSyncedKey(projectId), new Date().toISOString())
+  safeLocalStorage()?.setItem(
+    lastSyncedKey(projectId),
+    new Date().toISOString(),
+  )
   clearProjectTaskSyncPending(projectId)
 }
 
