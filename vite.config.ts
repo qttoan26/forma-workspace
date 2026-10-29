@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
-const githubPagesBase = process.env.GITHUB_PAGES === 'true' ? '/forma-workspace/' : '/'
+const githubPagesBase =
+  process.env.GITHUB_PAGES === 'true' ? '/forma-workspace/' : '/'
 
 export default defineConfig({
   base: githubPagesBase,
