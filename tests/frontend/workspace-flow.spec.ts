@@ -53,8 +53,14 @@ test('keeps the primary flow usable on a mobile viewport', async ({ page }) => {
 
 test('exposes the skip link for keyboard navigation', async ({ page }) => {
   await page.goto('/')
-  await page.keyboard.press('Tab')
+  await expect(
+    page.getByRole('heading', { name: 'Keep the work moving.' }),
+  ).toBeVisible()
 
   const skipLink = page.getByRole('link', { name: /skip/i })
+  await page.keyboard.press('Tab')
+
   await expect(skipLink).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#main-content')).toBeVisible()
 })
