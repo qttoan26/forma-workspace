@@ -6,7 +6,7 @@ import {
   type TaskMutationFailureHandler,
 } from './task-mutation-adapter'
 
-export function getTaskApiBaseUrl() {
+export function getTaskApiBaseUrl(): string {
   return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
 }
 
