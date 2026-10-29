@@ -100,7 +100,10 @@ export async function enqueueProjectTaskSync(
   }
   const database = await openDatabase()
   try {
-    const transaction = database.transaction(taskSyncQueueStoreName, 'readwrite')
+    const transaction = database.transaction(
+      taskSyncQueueStoreName,
+      'readwrite',
+    )
     transaction.objectStore(taskSyncQueueStoreName).put(queuedSync)
     await transactionToPromise(transaction)
     return queuedSync
@@ -158,7 +161,10 @@ function completeQueuedSync(
   mutationId: string,
 ): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(taskSyncQueueStoreName, 'readwrite')
+    const transaction = database.transaction(
+      taskSyncQueueStoreName,
+      'readwrite',
+    )
     const objectStore = transaction.objectStore(taskSyncQueueStoreName)
     const request = objectStore.get(projectId) as IDBRequest<unknown>
     let completed = false
@@ -174,7 +180,9 @@ function completeQueuedSync(
       reject(request.error ?? new Error('Failed to read task sync queue'))
     transaction.oncomplete = () => resolve(completed)
     transaction.onerror = () =>
-      reject(transaction.error ?? new Error('Failed to update task sync queue'))
+      reject(
+        transaction.error ?? new Error('Failed to update task sync queue'),
+      )
     transaction.onabort = () =>
       reject(transaction.error ?? new Error('Task sync queue update aborted'))
   })
