@@ -133,6 +133,14 @@ function classifyStorageFailure(error: unknown): BrowserStorageStatus {
 }
 
 function getErrorName(error: unknown) {
-  if (error instanceof Error && error.name) return error.name
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    typeof error.name === 'string' &&
+    error.name
+  ) {
+    return error.name
+  }
   return 'UnknownError'
 }
