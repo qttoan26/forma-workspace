@@ -1,0 +1,33 @@
+:root {
+  --forma-color-canvas: #f4f4f5;
+  --forma-color-surface: #ffffff;
+  --forma-color-surface-subtle: #fafafa;
+  --forma-color-text: #18181b;
+  --forma-color-text-strong: #27272a;
+  --forma-color-text-muted: #71717a;
+  --forma-color-text-secondary: #52525b;
+  --forma-color-border: #e4e4e7;
+  --forma-color-border-strong: #d4d4d8;
+  --forma-color-danger-surface: #fee2e2;
+  --forma-color-danger-text: #991b1b;
+  --forma-color-warning-surface: #ffedd5;
+  --forma-color-warning-text: #9a3412;
+  --forma-color-error-text: #b91c1c;
+
+  --forma-radius-sm: 0.45rem;
+  --forma-radius-md: 0.55rem;
+  --forma-radius-lg: 0.75rem;
+  --forma-radius-xl: 1rem;
+  --forma-radius-pill: 999px;
+
+  --forma-shadow-card: 0 1px 2px rgb(0 0 0 / 4%);
+  --forma-shadow-overlay: 0 10px 30px rgb(0 0 0 / 8%);
+
+  --forma-space-1: 0.25rem;
+  --forma-space-2: 0.5rem;
+  --forma-space-3: 0.75rem;
+  --forma-space-4: 1rem;
+  --forma-space-5: 1.25rem;
+  --forma-space-6: 1.5rem;
+  --forma-space-8: 2rem;
+}
