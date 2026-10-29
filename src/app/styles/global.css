@@ -7,8 +7,8 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #18181b;
-  background: #f4f4f5;
+  color: var(--forma-color-text);
+  background: var(--forma-color-canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -39,10 +39,10 @@ select {
   left: 1rem;
   top: -4rem;
   z-index: 10;
-  padding: 0.75rem 1rem;
-  background: #18181b;
-  color: white;
-  border-radius: 0.5rem;
+  padding: var(--forma-space-3) var(--forma-space-4);
+  background: var(--forma-color-text);
+  color: var(--forma-color-surface);
+  border-radius: var(--forma-radius-md);
 }
 
 .skip-link:focus {
@@ -53,7 +53,7 @@ select {
   display: grid;
   min-height: 100vh;
   place-items: center;
-  padding: 2rem;
+  padding: var(--forma-space-8);
 }
 
 .hero {
@@ -62,7 +62,7 @@ select {
 
 .eyebrow,
 .status {
-  color: #71717a;
+  color: var(--forma-color-text-muted);
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -77,13 +77,13 @@ h1 {
 
 .hero-copy {
   max-width: 42rem;
-  color: #52525b;
+  color: var(--forma-color-text-secondary);
   font-size: clamp(1.05rem, 2vw, 1.35rem);
   line-height: 1.6;
 }
 
 .status {
-  margin-top: 2rem;
+  margin-top: var(--forma-space-8);
 }
 
 .workspace-shell {
@@ -95,8 +95,8 @@ h1 {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: var(--forma-space-8);
+  margin-bottom: var(--forma-space-8);
 }
 
 .workspace-header h1 {
@@ -105,7 +105,7 @@ h1 {
 
 .project-description {
   max-width: 42rem;
-  color: #52525b;
+  color: var(--forma-color-text-secondary);
   line-height: 1.6;
 }
 
@@ -120,10 +120,10 @@ h1 {
   height: 2.25rem;
   place-items: center;
   margin-left: -0.35rem;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: #27272a;
-  color: white;
+  border: 2px solid var(--forma-color-surface);
+  border-radius: var(--forma-radius-pill);
+  background: var(--forma-color-text-strong);
+  color: var(--forma-color-surface);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -131,46 +131,46 @@ h1 {
 .board-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1rem;
+  margin-bottom: var(--forma-space-4);
 }
 
 .button-primary,
 .button-secondary {
   padding: 0.6rem 0.8rem;
-  border-radius: 0.55rem;
+  border-radius: var(--forma-radius-md);
   cursor: pointer;
   font-weight: 650;
 }
 
 .button-primary {
-  border: 1px solid #18181b;
-  background: #18181b;
-  color: white;
+  border: 1px solid var(--forma-color-text);
+  background: var(--forma-color-text);
+  color: var(--forma-color-surface);
 }
 
 .button-secondary {
-  border: 1px solid #d4d4d8;
-  background: white;
-  color: #27272a;
+  border: 1px solid var(--forma-color-border-strong);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
 }
 
 .task-form {
   display: grid;
-  gap: 1rem;
+  gap: var(--forma-space-4);
   width: min(100%, 44rem);
   margin: 0 0 1.5rem auto;
-  padding: 1.25rem;
-  border: 1px solid #d4d4d8;
-  border-radius: 1rem;
-  background: white;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 8%);
+  padding: var(--forma-space-5);
+  border: 1px solid var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-color-surface);
+  box-shadow: var(--forma-shadow-overlay);
 }
 
 .task-form-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--forma-space-4);
 }
 
 .task-form-heading h2 {
@@ -180,7 +180,7 @@ h1 {
 .task-form label {
   display: grid;
   gap: 0.4rem;
-  color: #52525b;
+  color: var(--forma-color-text-secondary);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -189,36 +189,36 @@ h1 {
 .task-form select {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border: 1px solid #d4d4d8;
-  border-radius: 0.55rem;
-  background: white;
-  color: #18181b;
+  border: 1px solid var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text);
 }
 
 .task-form small[role='alert'] {
-  color: #b91c1c;
+  color: var(--forma-color-error-text);
 }
 
 .task-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--forma-space-4);
 }
 
 .board {
   display: grid;
   grid-template-columns: repeat(4, minmax(16rem, 1fr));
-  gap: 1rem;
+  gap: var(--forma-space-4);
   overflow-x: auto;
-  padding-bottom: 1rem;
+  padding-bottom: var(--forma-space-4);
 }
 
 .board-column {
   min-height: 32rem;
-  padding: 0.75rem;
-  border: 1px solid #e4e4e7;
-  border-radius: 1rem;
-  background: #fafafa;
+  padding: var(--forma-space-3);
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-color-surface-subtle);
 }
 
 .column-header {
@@ -236,20 +236,20 @@ h1 {
 }
 
 .column-header span {
-  color: #71717a;
+  color: var(--forma-color-text-muted);
 }
 
 .task-list {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--forma-space-3);
 }
 
 .task-card {
-  padding: 1rem;
-  border: 1px solid #e4e4e7;
-  border-radius: 0.75rem;
-  background: white;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  padding: var(--forma-space-4);
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-surface);
+  box-shadow: var(--forma-shadow-card);
 }
 
 .task-card h3 {
@@ -263,26 +263,26 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  color: #71717a;
+  gap: var(--forma-space-2);
+  color: var(--forma-color-text-muted);
   font-size: 0.75rem;
 }
 
 .priority {
   padding: 0.2rem 0.45rem;
-  border-radius: 999px;
-  background: #f4f4f5;
+  border-radius: var(--forma-radius-pill);
+  background: var(--forma-color-canvas);
   text-transform: capitalize;
 }
 
 .priority-urgent {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
 }
 
 .priority-high {
-  background: #ffedd5;
-  color: #9a3412;
+  background: var(--forma-color-warning-surface);
+  color: var(--forma-color-warning-text);
 }
 
 .task-footer > span:first-child {
@@ -295,23 +295,23 @@ h1 {
 .task-actions {
   display: grid;
   gap: 0.65rem;
-  margin-top: 1rem;
+  margin-top: var(--forma-space-4);
 }
 
 .move-task {
   display: grid;
   gap: 0.35rem;
-  color: #71717a;
+  color: var(--forma-color-text-muted);
   font-size: 0.75rem;
 }
 
 .move-task select {
   width: 100%;
   padding: 0.45rem 0.55rem;
-  border: 1px solid #d4d4d8;
-  border-radius: 0.45rem;
-  background: white;
-  color: #27272a;
+  border: 1px solid var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
 }
 
 @media (max-width: 700px) {
