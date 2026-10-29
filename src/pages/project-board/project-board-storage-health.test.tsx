@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 
 import {
   reportBrowserStorageFailure,
@@ -25,18 +25,24 @@ describe('ProjectBoardStorageHealth', () => {
 
     render(<ProjectBoardStorageHealth />)
 
-    reportBrowserStorageFailure(
-      'indexed-db',
-      new DOMException('Blocked', 'SecurityError'),
-    )
+    act(() => {
+      reportBrowserStorageFailure(
+        'indexed-db',
+        new DOMException('Blocked', 'SecurityError'),
+      )
+    })
 
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Local browser storage is unavailable.',
     )
 
-    reportBrowserStorageSuccess('indexed-db')
+    act(() => {
+      reportBrowserStorageSuccess('indexed-db')
+    })
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
   })
 
   it('uses limited-storage messaging for quota pressure', async () => {
@@ -46,10 +52,12 @@ describe('ProjectBoardStorageHealth', () => {
 
     render(<ProjectBoardStorageHealth />)
 
-    reportBrowserStorageFailure(
-      'local-storage',
-      new DOMException('Full', 'QuotaExceededError'),
-    )
+    act(() => {
+      reportBrowserStorageFailure(
+        'local-storage',
+        new DOMException('Full', 'QuotaExceededError'),
+      )
+    })
 
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Local browser storage is limited.',
