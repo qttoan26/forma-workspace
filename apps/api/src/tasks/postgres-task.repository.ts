@@ -16,9 +16,7 @@ interface TaskRow {
 }
 
 @Injectable()
-export class PostgresTaskRepository
-  implements TaskRepository, OnModuleDestroy
-{
+export class PostgresTaskRepository implements TaskRepository, OnModuleDestroy {
   private readonly pool: Pool
 
   constructor(connectionString = process.env.DATABASE_URL) {
