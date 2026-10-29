@@ -10,6 +10,7 @@ const taskSyncQueueStoreName = 'task-sync-queue'
 const projectTaskRecordSchema = z.object({
   projectId: z.string().min(1),
   tasks: taskCollectionSchema,
+  revision: z.number().int().nonnegative().default(0),
   updatedAt: z.string(),
 })
 
@@ -20,9 +21,10 @@ const queuedProjectTaskSyncSchema = z.object({
   queuedAt: z.string(),
 })
 
-interface ProjectTaskRecord {
+export interface ProjectTaskSnapshot {
   projectId: string
   tasks: Task[]
+  revision: number
   updatedAt: string
 }
 
@@ -33,9 +35,9 @@ export interface QueuedProjectTaskSync {
   queuedAt: string
 }
 
-export async function loadProjectTasksFromIndexedDb(
+export async function loadProjectTaskSnapshotFromIndexedDb(
   projectId: string,
-): Promise<Task[] | null> {
+): Promise<ProjectTaskSnapshot | null> {
   if (!('indexedDB' in globalThis)) return null
 
   const database = await openDatabase()
@@ -55,16 +57,23 @@ export async function loadProjectTasksFromIndexedDb(
       return null
     }
 
-    return recordResult.data.tasks
+    return recordResult.data
   } finally {
     database.close()
   }
 }
 
+export async function loadProjectTasksFromIndexedDb(
+  projectId: string,
+): Promise<Task[] | null> {
+  const snapshot = await loadProjectTaskSnapshotFromIndexedDb(projectId)
+  return snapshot?.tasks ?? null
+}
+
 export async function saveProjectTasksToIndexedDb(
   projectId: string,
   tasks: Task[],
-): Promise<void> {
+): Promise<ProjectTaskSnapshot> {
   if (!('indexedDB' in globalThis)) {
     throw new Error('IndexedDB is unavailable')
   }
@@ -72,13 +81,7 @@ export async function saveProjectTasksToIndexedDb(
   const parsed = parseProjectTasks(projectId, tasks)
   const database = await openDatabase()
   try {
-    const transaction = database.transaction(taskStoreName, 'readwrite')
-    transaction.objectStore(taskStoreName).put({
-      projectId,
-      tasks: parsed,
-      updatedAt: new Date().toISOString(),
-    } satisfies ProjectTaskRecord)
-    await transactionToPromise(transaction)
+    return await saveProjectTaskSnapshot(database, projectId, parsed)
   } finally {
     database.close()
   }
@@ -153,6 +156,45 @@ function parseProjectTasks(projectId: string, tasks: Task[]) {
     throw new Error('Task collection does not match project')
   }
   return parsed
+}
+
+function saveProjectTaskSnapshot(
+  database: IDBDatabase,
+  projectId: string,
+  tasks: Task[],
+): Promise<ProjectTaskSnapshot> {
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(taskStoreName, 'readwrite')
+    const objectStore = transaction.objectStore(taskStoreName)
+    const request = objectStore.get(projectId) as IDBRequest<unknown>
+    let snapshot: ProjectTaskSnapshot | null = null
+
+    request.onsuccess = () => {
+      const current = projectTaskRecordSchema.safeParse(request.result)
+      const revision = current.success ? current.data.revision + 1 : 1
+
+      snapshot = {
+        projectId,
+        tasks,
+        revision,
+        updatedAt: new Date().toISOString(),
+      }
+      objectStore.put(snapshot)
+    }
+    request.onerror = () =>
+      reject(request.error ?? new Error('Failed to read project task snapshot'))
+    transaction.oncomplete = () => {
+      if (!snapshot) {
+        reject(new Error('Project task snapshot was not written'))
+        return
+      }
+      resolve(snapshot)
+    }
+    transaction.onerror = () =>
+      reject(transaction.error ?? new Error('Failed to save project tasks'))
+    transaction.onabort = () =>
+      reject(transaction.error ?? new Error('Project task save aborted'))
+  })
 }
 
 function completeQueuedSync(
