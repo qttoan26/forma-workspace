@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 
+import { PostgresTaskRepository } from './postgres-task.repository'
 import { InMemoryTaskRepository, TASK_REPOSITORY } from './task.repository'
 import { TasksController } from './tasks.controller'
 import { TasksService } from './tasks.service'
@@ -8,10 +9,12 @@ import { TasksService } from './tasks.service'
   controllers: [TasksController],
   providers: [
     TasksService,
-    InMemoryTaskRepository,
     {
       provide: TASK_REPOSITORY,
-      useExisting: InMemoryTaskRepository,
+      useFactory: () =>
+        process.env.DATABASE_URL
+          ? new PostgresTaskRepository()
+          : new InMemoryTaskRepository(),
     },
   ],
 })
