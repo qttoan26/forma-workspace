@@ -81,7 +81,8 @@ function getSyncStatus(hasRemoteSync: boolean, snapshot: SyncSnapshot) {
   if (!snapshot.isOnline) {
     return {
       label: 'Offline · saved locally',
-      title: 'Changes stay in this browser and will sync when connection returns.',
+      title:
+        'Changes stay in this browser and will sync when connection returns.',
       tone: 'offline',
     } as const
   }
