@@ -43,7 +43,6 @@ describe('TaskForm', () => {
           title: 'Prepare release notes',
           description: 'Coordinate launch details',
         }),
-        expect.anything(),
       ),
     )
   })
