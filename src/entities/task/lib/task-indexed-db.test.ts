@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, vi } from 'vitest'
 
-import { getBrowserStorageHealth, reportBrowserStorageSuccess } from '@/shared/lib/browser-storage-health'
+import {
+  getBrowserStorageHealth,
+  reportBrowserStorageSuccess,
+} from '@/shared/lib/browser-storage-health'
 
 import {
   completeProjectTaskSync,
@@ -20,7 +23,9 @@ afterEach(() => {
 
 describe('task IndexedDB fallback', () => {
   it('returns safe empty values when IndexedDB is unavailable', async () => {
-    await expect(loadProjectTaskSnapshotFromIndexedDb('project-1')).resolves.toBeNull()
+    await expect(
+      loadProjectTaskSnapshotFromIndexedDb('project-1'),
+    ).resolves.toBeNull()
     await expect(loadQueuedProjectTaskSync('project-1')).resolves.toBeNull()
     await expect(completeProjectTaskSync('project-1', 'mutation-1')).resolves.toBe(
       false,
