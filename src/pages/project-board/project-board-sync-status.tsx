@@ -5,6 +5,7 @@ import {
   hasMemoryProjectTaskSync,
   memoryProjectTaskSyncChangeEvent,
 } from '@/entities/task/lib/task-memory-sync-queue'
+import { retryConfiguredProjectTaskSync } from '@/entities/task/lib/task-persistence'
 import { loadSessionProjectTaskSync } from '@/entities/task/lib/task-session-sync-queue'
 import {
   getProjectTaskLastSyncedAt,
@@ -31,6 +32,7 @@ export function ProjectBoardSyncStatus({
   projectId,
 }: ProjectBoardSyncStatusProps) {
   const [snapshot, setSnapshot] = useState(() => readSyncSnapshot(projectId))
+  const [isRetrying, setIsRetrying] = useState(false)
   const hasRemoteSync = Boolean(getTaskApiBaseUrl())
 
   useEffect(() => {
@@ -69,6 +71,19 @@ export function ProjectBoardSyncStatus({
   }, [projectId])
 
   const status = getSyncStatus(hasRemoteSync, snapshot)
+  const canRetry =
+    hasRemoteSync && snapshot.isOnline && snapshot.isPending && snapshot.failedAt
+
+  async function retrySync() {
+    if (!canRetry || isRetrying) return
+
+    setIsRetrying(true)
+    try {
+      await retryConfiguredProjectTaskSync(projectId)
+    } finally {
+      setIsRetrying(false)
+    }
+  }
 
   return (
     <div
@@ -78,6 +93,16 @@ export function ProjectBoardSyncStatus({
     >
       <span className="project-sync-status-dot" aria-hidden="true" />
       <span>{status.label}</span>
+      {canRetry ? (
+        <button
+          className="project-sync-status-action"
+          type="button"
+          disabled={isRetrying}
+          onClick={() => void retrySync()}
+        >
+          {isRetrying ? 'Retrying…' : 'Retry'}
+        </button>
+      ) : null}
     </div>
   )
 }
