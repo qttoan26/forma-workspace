@@ -39,6 +39,16 @@ src/
 
 See [`docs/architecture`](docs/architecture/README.md) for the architecture contract.
 
+## Backend persistence
+
+The API runs on port `3001` by default. Copy `.env.example` into your local environment configuration and provide `DATABASE_URL` to enable PostgreSQL persistence.
+
+When `DATABASE_URL` is present, the API applies pending SQL migrations from `apps/api/migrations` before NestJS starts accepting requests. Applied migration filenames are tracked in `schema_migrations`, and an advisory lock prevents multiple API instances from applying the same migration concurrently.
+
+When `DATABASE_URL` is not set, task persistence falls back to the in-memory repository for lightweight local development.
+
+The deployment artifact must include the `apps/api/migrations` directory alongside the compiled API output.
+
 ## Roadmap
 
 1. Architecture contract
