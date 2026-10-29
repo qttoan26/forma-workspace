@@ -27,9 +27,9 @@ describe('task IndexedDB fallback', () => {
       loadProjectTaskSnapshotFromIndexedDb('project-1'),
     ).resolves.toBeNull()
     await expect(loadQueuedProjectTaskSync('project-1')).resolves.toBeNull()
-    await expect(completeProjectTaskSync('project-1', 'mutation-1')).resolves.toBe(
-      false,
-    )
+    await expect(
+      completeProjectTaskSync('project-1', 'mutation-1'),
+    ).resolves.toBe(false)
 
     expect(getBrowserStorageHealth('indexed-db')).toMatchObject({
       status: 'unavailable',
