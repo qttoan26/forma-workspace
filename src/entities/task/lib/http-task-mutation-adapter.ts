@@ -1,5 +1,3 @@
-import type { Task } from '@/entities/task/model/task'
-
 import type { TaskMutationAdapter } from './task-mutation-adapter'
 
 export interface HttpTaskMutationAdapterOptions {
