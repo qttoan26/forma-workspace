@@ -180,9 +180,7 @@ function completeQueuedSync(
       reject(request.error ?? new Error('Failed to read task sync queue'))
     transaction.oncomplete = () => resolve(completed)
     transaction.onerror = () =>
-      reject(
-        transaction.error ?? new Error('Failed to update task sync queue'),
-      )
+      reject(transaction.error ?? new Error('Failed to update task sync queue'))
     transaction.onabort = () =>
       reject(transaction.error ?? new Error('Task sync queue update aborted'))
   })
