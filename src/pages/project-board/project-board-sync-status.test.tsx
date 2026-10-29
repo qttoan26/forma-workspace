@@ -9,6 +9,8 @@ import { enqueueSessionProjectTaskSync } from '@/entities/task/lib/task-session-
 import {
   clearProjectTaskSyncPending,
   markProjectTaskSyncPending,
+  recordProjectTaskSyncFailure,
+  recordProjectTaskSyncSuccess,
 } from '@/entities/task/lib/task-sync-storage'
 import type { Task } from '@/entities/task/model/task'
 
@@ -65,5 +67,28 @@ describe('ProjectBoardSyncStatus recovery states', () => {
     })
 
     expect(await screen.findByRole('status')).toHaveTextContent('Memory only')
+  })
+
+  it('shows a sync failure while unsynced changes remain queued', async () => {
+    markProjectTaskSyncPending(projectId)
+    recordProjectTaskSyncFailure(projectId)
+
+    render(<ProjectBoardSyncStatus projectId={projectId} />)
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Sync failed')
+  })
+
+  it('clears the failure state after sync succeeds', async () => {
+    markProjectTaskSyncPending(projectId)
+    recordProjectTaskSyncFailure(projectId)
+    render(<ProjectBoardSyncStatus projectId={projectId} />)
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Sync failed')
+
+    act(() => {
+      recordProjectTaskSyncSuccess(projectId)
+    })
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Synced')
   })
 })
