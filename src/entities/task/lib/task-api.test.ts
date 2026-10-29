@@ -38,7 +38,9 @@ describe('task API', () => {
   })
 
   it('persists task mutations after the initial board sync', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
     vi.stubGlobal('fetch', fetchMock)
     const adapter = createApiTaskMutationAdapter('https://api.example.test')
 
