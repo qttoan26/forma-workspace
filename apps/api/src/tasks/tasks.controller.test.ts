@@ -26,7 +26,9 @@ describe('TasksController', () => {
 
     controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    expect(controller.getProjectTasks(task.projectId)).toEqual({ tasks: [task] })
+    expect(controller.getProjectTasks(task.projectId)).toEqual({
+      tasks: [task],
+    })
   })
 
   it('isolates task collections by project', () => {
@@ -34,7 +36,9 @@ describe('TasksController', () => {
 
     controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    expect(controller.getProjectTasks('another-project')).toEqual({ tasks: [] })
+    expect(controller.getProjectTasks('another-project')).toEqual({
+      tasks: [],
+    })
   })
 
   it('rejects tasks for a different project', () => {
