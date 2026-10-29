@@ -13,16 +13,18 @@ export interface TaskRepository {
 export class InMemoryTaskRepository implements TaskRepository {
   private readonly tasksByProject = new Map<string, TaskRecord[]>()
 
-  async replaceProjectTasks(projectId: string, tasks: TaskRecord[]) {
+  replaceProjectTasks(projectId: string, tasks: TaskRecord[]) {
     this.tasksByProject.set(
       projectId,
       tasks.map((task) => ({ ...task })),
     )
+
+    return Promise.resolve()
   }
 
-  async getProjectTasks(projectId: string) {
-    return (
-      this.tasksByProject.get(projectId)?.map((task) => ({ ...task })) ?? []
+  getProjectTasks(projectId: string) {
+    return Promise.resolve(
+      this.tasksByProject.get(projectId)?.map((task) => ({ ...task })) ?? [],
     )
   }
 }
