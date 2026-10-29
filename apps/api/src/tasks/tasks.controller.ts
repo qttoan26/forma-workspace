@@ -16,14 +16,19 @@ export class TasksController {
 
   @Put()
   @HttpCode(204)
-  replaceProjectTasks(@Param('projectId') projectId: string, @Body() body: unknown) {
+  replaceProjectTasks(
+    @Param('projectId') projectId: string,
+    @Body() body: unknown,
+  ) {
     const parsed = persistTasksBodySchema.safeParse(body)
     if (!parsed.success) {
       throw new BadRequestException('Invalid task collection')
     }
 
     if (parsed.data.tasks.some((task) => task.projectId !== projectId)) {
-      throw new BadRequestException('Task projectId must match the route projectId')
+      throw new BadRequestException(
+        'Task projectId must match the route projectId',
+      )
     }
 
     this.tasksService.replaceProjectTasks(projectId, parsed.data.tasks)
