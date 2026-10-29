@@ -1,8 +1,16 @@
+import { z } from 'zod'
+
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 
 const databaseName = 'forma-workspace'
 const databaseVersion = 1
 const taskStoreName = 'project-tasks'
+
+const projectTaskRecordSchema = z.object({
+  projectId: z.string().min(1),
+  tasks: taskCollectionSchema,
+  updatedAt: z.string(),
+})
 
 interface ProjectTaskRecord {
   projectId: string
@@ -17,19 +25,21 @@ export async function loadProjectTasksFromIndexedDb(
 
   const database = await openDatabase()
   try {
-    const record = await requestToPromise<ProjectTaskRecord | undefined>(
-      database
-        .transaction(taskStoreName, 'readonly')
-        .objectStore(taskStoreName)
-        .get(projectId),
+    const request = database
+      .transaction(taskStoreName, 'readonly')
+      .objectStore(taskStoreName)
+      .get(projectId) as IDBRequest<unknown>
+    const recordResult = projectTaskRecordSchema.safeParse(
+      await requestToPromise(request),
     )
-    if (!record) return null
 
-    const parsed = taskCollectionSchema.safeParse(record.tasks)
-    if (!parsed.success) return null
-    if (!parsed.data.every((task) => task.projectId === projectId)) return null
+    if (!recordResult.success) return null
+    if (recordResult.data.projectId !== projectId) return null
+    if (!recordResult.data.tasks.every((task) => task.projectId === projectId)) {
+      return null
+    }
 
-    return parsed.data
+    return recordResult.data.tasks
   } finally {
     database.close()
   }
