@@ -25,13 +25,12 @@ export async function loadProjectTasksFromIndexedDb(
 
   const database = await openDatabase()
   try {
-    const request = database
+    const objectStore = database
       .transaction(taskStoreName, 'readonly')
       .objectStore(taskStoreName)
-      .get(projectId) as IDBRequest<unknown>
-    const recordResult = projectTaskRecordSchema.safeParse(
-      await requestToPromise(request),
-    )
+    const request = objectStore.get(projectId) as IDBRequest<unknown>
+    const rawRecord = await requestToPromise(request)
+    const recordResult = projectTaskRecordSchema.safeParse(rawRecord)
 
     if (!recordResult.success) return null
     if (recordResult.data.projectId !== projectId) return null
