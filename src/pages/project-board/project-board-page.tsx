@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
@@ -10,12 +10,11 @@ import {
 } from '@/widgets/task-board/model/task-board-view'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
+import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
 
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
-
-const projectTaskMutationAdapter = createBrowserTaskMutationAdapter()
 
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
@@ -24,7 +23,15 @@ export function ProjectBoardPage() {
     from: projectRoutePath,
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
   const persistedTasks = loadProjectTasks(project.id, initialTasks)
+  const projectTaskMutationAdapter = useMemo(
+    () =>
+      createBrowserTaskMutationAdapter(undefined, () => {
+        setHasPersistenceFailure(true)
+      }),
+    [],
+  )
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -129,6 +136,12 @@ export function ProjectBoardPage() {
           ))}
         </div>
       </header>
+
+      {hasPersistenceFailure ? (
+        <ProjectBoardPersistenceAlert
+          onDismiss={() => setHasPersistenceFailure(false)}
+        />
+      ) : null}
 
       <section className="board-filters" aria-label="Task filters">
         <label>
