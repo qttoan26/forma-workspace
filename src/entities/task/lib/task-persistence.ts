@@ -15,6 +15,11 @@ import {
   type QueuedProjectTaskSync,
 } from './task-indexed-db'
 import {
+  completeMemoryProjectTaskSync,
+  enqueueMemoryProjectTaskSync,
+  loadMemoryProjectTaskSync,
+} from './task-memory-sync-queue'
+import {
   createTaskMutationEffectBoundary,
   type TaskMutationAdapter,
   type TaskMutationFailureHandler,
@@ -28,6 +33,11 @@ import {
   markProjectTaskSyncPending,
   recordProjectTaskSyncSuccess,
 } from './task-sync-storage'
+
+interface RecoverableQueuedProjectTaskSync {
+  source: 'indexed-db' | 'memory'
+  queuedSync: QueuedProjectTaskSync
+}
 
 export async function loadConfiguredProjectTasks(
   projectId: string,
@@ -69,8 +79,9 @@ export function createConfiguredTaskMutationAdapter(
 
       if (!apiBaseUrl) return
 
-      const queuedSync = await enqueueProjectTaskSync(projectId, tasks).catch(
-        () => null,
+      const queuedSync = await enqueueRecoverableProjectTaskSync(
+        projectId,
+        tasks,
       )
       markProjectTaskSyncPending(projectId)
       await syncProjectTasks(projectId, tasks, apiBaseUrl, queuedSync)
@@ -88,11 +99,16 @@ export async function retryConfiguredProjectTaskSync(
   if (!apiBaseUrl) return
 
   try {
-    const queuedSync = await loadQueuedProjectTaskSync(projectId)
+    const queuedSync = await loadRecoverableProjectTaskSync(projectId)
     if (!queuedSync) return
 
     markProjectTaskSyncPending(projectId)
-    await syncProjectTasks(projectId, queuedSync.tasks, apiBaseUrl, queuedSync)
+    await syncProjectTasks(
+      projectId,
+      queuedSync.queuedSync.tasks,
+      apiBaseUrl,
+      queuedSync,
+    )
   } catch (error) {
     onFailure?.(error)
   }
@@ -106,7 +122,7 @@ export async function refreshConfiguredProjectTasks(
   if (!apiBaseUrl) return
 
   try {
-    const queuedSync = await loadQueuedProjectTaskSync(projectId)
+    const queuedSync = await loadRecoverableProjectTaskSync(projectId)
     if (queuedSync) return
 
     const tasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
@@ -122,19 +138,74 @@ async function syncProjectTasks(
   projectId: string,
   tasks: Task[],
   apiBaseUrl: string,
-  queuedSync: QueuedProjectTaskSync | null,
+  queuedSync: RecoverableQueuedProjectTaskSync | null,
 ) {
   await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
 
   if (queuedSync) {
-    const completed = await completeProjectTaskSync(
-      projectId,
-      queuedSync.mutationId,
-    )
+    const completed = await completeRecoverableProjectTaskSync(queuedSync)
     if (!completed) return
   }
 
   recordProjectTaskSyncSuccess(projectId)
+}
+
+async function enqueueRecoverableProjectTaskSync(
+  projectId: string,
+  tasks: Task[],
+): Promise<RecoverableQueuedProjectTaskSync> {
+  const indexedDbQueuedSync = await enqueueProjectTaskSync(
+    projectId,
+    tasks,
+  ).catch(() => null)
+
+  if (indexedDbQueuedSync) {
+    return {
+      source: 'indexed-db',
+      queuedSync: indexedDbQueuedSync,
+    }
+  }
+
+  return {
+    source: 'memory',
+    queuedSync: enqueueMemoryProjectTaskSync(projectId, tasks),
+  }
+}
+
+async function loadRecoverableProjectTaskSync(
+  projectId: string,
+): Promise<RecoverableQueuedProjectTaskSync | null> {
+  const indexedDbQueuedSync = await loadQueuedProjectTaskSync(projectId).catch(
+    () => null,
+  )
+  if (indexedDbQueuedSync) {
+    return {
+      source: 'indexed-db',
+      queuedSync: indexedDbQueuedSync,
+    }
+  }
+
+  const memoryQueuedSync = loadMemoryProjectTaskSync(projectId)
+  if (!memoryQueuedSync) return null
+
+  return {
+    source: 'memory',
+    queuedSync: memoryQueuedSync,
+  }
+}
+
+async function completeRecoverableProjectTaskSync(
+  recoverableSync: RecoverableQueuedProjectTaskSync,
+): Promise<boolean> {
+  const { source, queuedSync } = recoverableSync
+  if (source === 'memory') {
+    return completeMemoryProjectTaskSync(
+      queuedSync.projectId,
+      queuedSync.mutationId,
+    )
+  }
+
+  return completeProjectTaskSync(queuedSync.projectId, queuedSync.mutationId)
 }
 
 async function cacheProjectTasks(
