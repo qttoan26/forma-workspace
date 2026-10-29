@@ -6,8 +6,12 @@ import {
   persistProjectTasksToApi,
 } from './task-api'
 import {
+  completeProjectTaskSync,
+  enqueueProjectTaskSync,
   loadProjectTasksFromIndexedDb,
+  loadQueuedProjectTaskSync,
   saveProjectTasksToIndexedDb,
+  type QueuedProjectTaskSync,
 } from './task-indexed-db'
 import {
   createTaskMutationEffectBoundary,
@@ -63,13 +67,52 @@ export function createConfiguredTaskMutationAdapter(
 
       if (!apiBaseUrl) return
 
+      const queuedSync = await enqueueProjectTaskSync(projectId, tasks).catch(
+        () => null,
+      )
       markProjectTaskSyncPending(projectId)
-      await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
-      recordProjectTaskSyncSuccess(projectId)
+      await syncProjectTasks(projectId, tasks, apiBaseUrl, queuedSync)
     },
   }
 
   return createTaskMutationEffectBoundary(localFirstAdapter, onFailure)
+}
+
+export async function retryConfiguredProjectTaskSync(
+  projectId: string,
+  onFailure?: TaskMutationFailureHandler,
+): Promise<void> {
+  const apiBaseUrl = getTaskApiBaseUrl()
+  if (!apiBaseUrl) return
+
+  try {
+    const queuedSync = await loadQueuedProjectTaskSync(projectId)
+    if (!queuedSync) return
+
+    markProjectTaskSyncPending(projectId)
+    await syncProjectTasks(projectId, queuedSync.tasks, apiBaseUrl, queuedSync)
+  } catch (error) {
+    onFailure?.(error)
+  }
+}
+
+async function syncProjectTasks(
+  projectId: string,
+  tasks: Task[],
+  apiBaseUrl: string,
+  queuedSync: QueuedProjectTaskSync | null,
+) {
+  await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
+
+  if (queuedSync) {
+    const completed = await completeProjectTaskSync(
+      projectId,
+      queuedSync.mutationId,
+    )
+    if (!completed) return
+  }
+
+  recordProjectTaskSyncSuccess(projectId)
 }
 
 async function cacheProjectTasks(projectId: string, tasks: Task[]) {

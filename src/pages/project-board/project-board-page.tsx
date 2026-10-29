@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
-import { createConfiguredTaskMutationAdapter } from '@/entities/task/lib/task-persistence'
+import {
+  createConfiguredTaskMutationAdapter,
+  retryConfiguredProjectTaskSync,
+} from '@/entities/task/lib/task-persistence'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import {
   type TaskBoardSort,
@@ -31,6 +34,18 @@ export function ProjectBoardPage() {
       }),
     [],
   )
+
+  useEffect(() => {
+    function retryPendingSync() {
+      void retryConfiguredProjectTaskSync(project.id, () => {
+        setHasPersistenceFailure(true)
+      })
+    }
+
+    retryPendingSync()
+    window.addEventListener('online', retryPendingSync)
+    return () => window.removeEventListener('online', retryPendingSync)
+  }, [project.id])
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
