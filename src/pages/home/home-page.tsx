@@ -1,6 +1,11 @@
+import { Link } from '@tanstack/react-router'
+
 import './home-page.css'
 
-const projectHref = '/workspaces/forma/projects/project-1'
+const projectParams = {
+  workspaceSlug: 'forma',
+  projectId: 'project-1',
+} as const
 
 const metrics = [
   { label: 'Open tasks', value: '3', detail: '1 urgent' },
@@ -12,16 +17,16 @@ export function HomePage() {
   return (
     <main className="dashboard-shell" id="main-content">
       <header className="dashboard-topbar">
-        <a
+        <Link
           className="dashboard-brand"
-          href="/"
+          to="/"
           aria-label="Forma Workspace home"
         >
           <span className="dashboard-brand-mark" aria-hidden="true">
             F
           </span>
           <span>Forma</span>
-        </a>
+        </Link>
         <div className="dashboard-account" aria-label="Signed in user">
           <span className="dashboard-account-copy">
             <strong>Sam Lee</strong>
@@ -43,9 +48,13 @@ export function HomePage() {
               the team aligned without losing context.
             </p>
           </div>
-          <a className="dashboard-primary-action" href={projectHref}>
+          <Link
+            className="dashboard-primary-action"
+            to="/workspaces/$workspaceSlug/projects/$projectId"
+            params={projectParams}
+          >
             Open project board
-          </a>
+          </Link>
         </div>
 
         <section className="metric-grid" aria-label="Workspace summary">
@@ -68,7 +77,11 @@ export function HomePage() {
               <span className="panel-count">1 active</span>
             </div>
 
-            <a className="project-overview-card" href={projectHref}>
+            <Link
+              className="project-overview-card"
+              to="/workspaces/$workspaceSlug/projects/$projectId"
+              params={projectParams}
+            >
               <div className="project-overview-main">
                 <span className="project-key">FOR</span>
                 <div>
@@ -94,7 +107,7 @@ export function HomePage() {
                 <span>3 members</span>
                 <span aria-hidden="true">→</span>
               </div>
-            </a>
+            </Link>
           </section>
 
           <aside className="dashboard-panel" aria-labelledby="attention-title">
@@ -106,7 +119,12 @@ export function HomePage() {
             </div>
 
             <div className="attention-list">
-              <a href={`${projectHref}?task=FOR-21`} className="attention-item">
+              <Link
+                className="attention-item"
+                to="/workspaces/$workspaceSlug/projects/$projectId"
+                params={projectParams}
+                search={{ task: 'FOR-21' }}
+              >
                 <span className="attention-priority attention-priority-urgent">
                   Urgent
                 </span>
@@ -114,8 +132,13 @@ export function HomePage() {
                   <strong>Build accessible task cards</strong>
                   <small>Overdue · Product launch</small>
                 </span>
-              </a>
-              <a href={`${projectHref}?task=FOR-18`} className="attention-item">
+              </Link>
+              <Link
+                className="attention-item"
+                to="/workspaces/$workspaceSlug/projects/$projectId"
+                params={projectParams}
+                search={{ task: 'FOR-18' }}
+              >
                 <span className="attention-priority attention-priority-high">
                   High
                 </span>
@@ -123,7 +146,7 @@ export function HomePage() {
                   <strong>Create board interaction model</strong>
                   <small>Due today · Product launch</small>
                 </span>
-              </a>
+              </Link>
             </div>
           </aside>
         </div>
