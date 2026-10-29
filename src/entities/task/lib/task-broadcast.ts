@@ -1,6 +1,7 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 
 const channelName = 'forma-task-sync-v1'
+const localEventName = 'forma:project-tasks-updated'
 
 interface TaskBroadcastMessage {
   type: 'project-tasks-updated'
@@ -15,13 +16,18 @@ export function publishProjectTasks(projectId: string, tasks: Task[]) {
   const channel = openChannel()
   if (!channel) return
 
-  channel.postMessage({
-    type: 'project-tasks-updated',
-    projectId,
-    tasks,
-    sourceId,
-  } satisfies TaskBroadcastMessage)
+  channel.postMessage(createMessage(projectId, tasks))
   channel.close()
+}
+
+export function notifyProjectTasks(projectId: string, tasks: Task[]) {
+  if (!('dispatchEvent' in globalThis)) return
+
+  globalThis.dispatchEvent(
+    new CustomEvent(localEventName, {
+      detail: createMessage(projectId, tasks),
+    }),
+  )
 }
 
 export function subscribeProjectTasks(
@@ -29,16 +35,43 @@ export function subscribeProjectTasks(
   onTasks: (tasks: Task[]) => void,
 ) {
   const channel = openChannel()
-  if (!channel) return () => undefined
 
-  channel.onmessage = (event: MessageEvent<unknown>) => {
-    const message = parseMessage(event.data)
-    if (!message) return
-    if (message.sourceId === sourceId || message.projectId !== projectId) return
+  function deliver(value: unknown, allowCurrentSource: boolean) {
+    const message = parseMessage(value)
+    if (!message || message.projectId !== projectId) return
+    if (!allowCurrentSource && message.sourceId === sourceId) return
     onTasks(message.tasks)
   }
 
-  return () => channel.close()
+  const handleLocalEvent = (event: Event) => {
+    const customEvent = event as CustomEvent<unknown>
+    deliver(customEvent.detail, true)
+  }
+
+  if ('addEventListener' in globalThis) {
+    globalThis.addEventListener(localEventName, handleLocalEvent)
+  }
+  if (channel) {
+    channel.onmessage = (event: MessageEvent<unknown>) => {
+      deliver(event.data, false)
+    }
+  }
+
+  return () => {
+    if ('removeEventListener' in globalThis) {
+      globalThis.removeEventListener(localEventName, handleLocalEvent)
+    }
+    channel?.close()
+  }
+}
+
+function createMessage(projectId: string, tasks: Task[]): TaskBroadcastMessage {
+  return {
+    type: 'project-tasks-updated',
+    projectId,
+    tasks,
+    sourceId,
+  }
 }
 
 function parseMessage(value: unknown): TaskBroadcastMessage | null {
