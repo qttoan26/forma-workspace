@@ -34,7 +34,9 @@ export async function loadProjectTasksFromIndexedDb(
 
     if (!recordResult.success) return null
     if (recordResult.data.projectId !== projectId) return null
-    if (!recordResult.data.tasks.every((task) => task.projectId === projectId)) {
+    if (
+      !recordResult.data.tasks.every((task) => task.projectId === projectId)
+    ) {
       return null
     }
 
