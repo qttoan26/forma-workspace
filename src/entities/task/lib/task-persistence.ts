@@ -64,8 +64,8 @@ export function createConfiguredTaskMutationAdapter(
   const apiBaseUrl = getTaskApiBaseUrl()
   const localFirstAdapter: TaskMutationAdapter = {
     async persist(projectId, tasks) {
-      await cacheProjectTasks(projectId, tasks)
-      publishProjectTasks(projectId, tasks)
+      const revision = await cacheProjectTasks(projectId, tasks)
+      publishProjectTasks(projectId, tasks, revision)
 
       if (!apiBaseUrl) return
 
@@ -110,9 +110,9 @@ export async function refreshConfiguredProjectTasks(
     if (queuedSync) return
 
     const tasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
-    await cacheProjectTasks(projectId, tasks)
-    publishProjectTasks(projectId, tasks)
-    notifyProjectTasks(projectId, tasks)
+    const revision = await cacheProjectTasks(projectId, tasks)
+    publishProjectTasks(projectId, tasks, revision)
+    notifyProjectTasks(projectId, tasks, revision)
   } catch (error) {
     onFailure?.(error)
   }
@@ -137,10 +137,15 @@ async function syncProjectTasks(
   recordProjectTaskSyncSuccess(projectId)
 }
 
-async function cacheProjectTasks(projectId: string, tasks: Task[]) {
+async function cacheProjectTasks(
+  projectId: string,
+  tasks: Task[],
+): Promise<number | null> {
   try {
-    await saveProjectTasksToIndexedDb(projectId, tasks)
+    const snapshot = await saveProjectTasksToIndexedDb(projectId, tasks)
+    return snapshot.revision
   } catch {
     saveProjectTasks(projectId, tasks)
+    return null
   }
 }
