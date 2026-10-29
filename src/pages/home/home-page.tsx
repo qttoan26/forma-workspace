@@ -12,7 +12,11 @@ export function HomePage() {
   return (
     <main className="dashboard-shell" id="main-content">
       <header className="dashboard-topbar">
-        <a className="dashboard-brand" href="/" aria-label="Forma Workspace home">
+        <a
+          className="dashboard-brand"
+          href="/"
+          aria-label="Forma Workspace home"
+        >
           <span className="dashboard-brand-mark" aria-hidden="true">
             F
           </span>
@@ -69,10 +73,15 @@ export function HomePage() {
                 <span className="project-key">FOR</span>
                 <div>
                   <h3>Product launch</h3>
-                  <p>Ship the first production-ready Forma Workspace experience.</p>
+                  <p>
+                    Ship the first production-ready Forma Workspace experience.
+                  </p>
                 </div>
               </div>
-              <div className="project-progress" aria-label="Project progress 25 percent">
+              <div
+                className="project-progress"
+                aria-label="Project progress 25 percent"
+              >
                 <span>
                   <strong>25%</strong> complete
                 </span>
@@ -107,7 +116,9 @@ export function HomePage() {
                 </span>
               </a>
               <a href={`${projectHref}?task=FOR-18`} className="attention-item">
-                <span className="attention-priority attention-priority-high">High</span>
+                <span className="attention-priority attention-priority-high">
+                  High
+                </span>
                 <span>
                   <strong>Create board interaction model</strong>
                   <small>Due today · Product launch</small>
