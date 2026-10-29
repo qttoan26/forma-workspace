@@ -12,6 +12,7 @@ import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
+import './project-board-page.css'
 
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
@@ -116,24 +117,32 @@ export function ProjectBoardPage() {
   )
 
   return (
-    <main className="workspace-shell" id="main-content">
-      <header className="workspace-header">
+    <main className="workspace-shell project-board-shell" id="main-content">
+      <nav className="project-board-nav" aria-label="Project navigation">
+        <a href={import.meta.env.BASE_URL}>← Workspace</a>
+        <span>{workspace.name}</span>
+        <span aria-hidden="true">/</span>
+        <strong>{project.key}</strong>
+      </nav>
+
+      <header className="workspace-header project-board-header">
         <div>
-          <p className="eyebrow">
-            {workspace.name} / {project.key}
-          </p>
+          <p className="eyebrow">Active project</p>
           <h1>{project.name}</h1>
           <p className="project-description">{project.description}</p>
         </div>
-        <div
-          className="member-stack"
-          aria-label={`${members.length} project members`}
-        >
-          {members.map((member) => (
-            <span key={member.id} title={`${member.name} · ${member.role}`}>
-              {member.initials}
-            </span>
-          ))}
+        <div className="project-board-members">
+          <span className="project-member-label">Team</span>
+          <div
+            className="member-stack"
+            aria-label={`${members.length} project members`}
+          >
+            {members.map((member) => (
+              <span key={member.id} title={`${member.name} · ${member.role}`}>
+                {member.initials}
+              </span>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -144,7 +153,7 @@ export function ProjectBoardPage() {
       ) : null}
 
       <section className="board-filters" aria-label="Task filters">
-        <label>
+        <label className="board-filter-search">
           <span>Search</span>
           <input
             ref={searchInputRef}
@@ -212,7 +221,7 @@ export function ProjectBoardPage() {
 
         {hasActiveFilters ? (
           <button
-            className="button-secondary"
+            className="button-secondary board-filter-clear"
             type="button"
             onClick={() =>
               void navigate({
