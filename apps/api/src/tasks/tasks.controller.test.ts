@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common'
 
+import { InMemoryTaskRepository } from './task.repository'
 import { TasksController } from './tasks.controller'
 import { TasksService } from './tasks.service'
 
@@ -11,19 +12,37 @@ const task = {
   priority: 'high' as const,
 }
 
+function createSubject() {
+  const repository = new InMemoryTaskRepository()
+  const service = new TasksService(repository)
+  const controller = new TasksController(service)
+
+  return { controller, service }
+}
+
 describe('TasksController', () => {
-  it('replaces a project task collection', () => {
-    const service = new TasksService()
-    const controller = new TasksController(service)
+  it('replaces and reads a project task collection', () => {
+    const { controller } = createSubject()
 
     controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    expect(service.getProjectTasks(task.projectId)).toEqual([task])
+    expect(controller.getProjectTasks(task.projectId)).toEqual({
+      tasks: [task],
+    })
+  })
+
+  it('isolates task collections by project', () => {
+    const { controller } = createSubject()
+
+    controller.replaceProjectTasks(task.projectId, { tasks: [task] })
+
+    expect(controller.getProjectTasks('another-project')).toEqual({
+      tasks: [],
+    })
   })
 
   it('rejects tasks for a different project', () => {
-    const service = new TasksService()
-    const controller = new TasksController(service)
+    const { controller } = createSubject()
 
     expect(() =>
       controller.replaceProjectTasks('another-project', { tasks: [task] }),
@@ -31,8 +50,7 @@ describe('TasksController', () => {
   })
 
   it('rejects duplicate task ids', () => {
-    const service = new TasksService()
-    const controller = new TasksController(service)
+    const { controller } = createSubject()
 
     expect(() =>
       controller.replaceProjectTasks(task.projectId, { tasks: [task, task] }),
