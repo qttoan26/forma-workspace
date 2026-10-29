@@ -186,7 +186,8 @@ function saveProjectTaskSnapshot(
       objectStore.put(snapshot)
     }
     request.onerror = () => {
-      const error = request.error ?? new Error('Failed to read project task snapshot')
+      const error =
+        request.error ?? new Error('Failed to read project task snapshot')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
@@ -201,7 +202,8 @@ function saveProjectTaskSnapshot(
       resolve(snapshot)
     }
     transaction.onerror = () => {
-      const error = transaction.error ?? new Error('Failed to save project tasks')
+      const error =
+        transaction.error ?? new Error('Failed to save project tasks')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
@@ -244,7 +246,8 @@ function completeQueuedSync(
       resolve(completed)
     }
     transaction.onerror = () => {
-      const error = transaction.error ?? new Error('Failed to update task sync queue')
+      const error =
+        transaction.error ?? new Error('Failed to update task sync queue')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
@@ -329,12 +332,14 @@ function transactionToPromise(transaction: IDBTransaction): Promise<void> {
       resolve()
     }
     transaction.onerror = () => {
-      const error = transaction.error ?? new Error('IndexedDB transaction failed')
+      const error =
+        transaction.error ?? new Error('IndexedDB transaction failed')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
     transaction.onabort = () => {
-      const error = transaction.error ?? new Error('IndexedDB transaction aborted')
+      const error =
+        transaction.error ?? new Error('IndexedDB transaction aborted')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
