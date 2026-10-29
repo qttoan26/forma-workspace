@@ -303,7 +303,7 @@ function openDatabase(): Promise<IDBDatabase> {
       }
     } catch (error) {
       reportBrowserStorageFailure('indexed-db', error)
-      reject(error)
+      reject(toError(error))
     }
   })
 }
@@ -339,4 +339,8 @@ function transactionToPromise(transaction: IDBTransaction): Promise<void> {
       reject(error)
     }
   })
+}
+
+function toError(error: unknown) {
+  return error instanceof Error ? error : new Error(String(error))
 }
