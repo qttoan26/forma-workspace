@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
 import { subscribeProjectTasks } from '@/entities/task/lib/task-broadcast'
@@ -36,6 +36,8 @@ export function ProjectLiveTaskBoard({
     tasks: initialTasks,
     revision: 0,
   })
+  const onPersistenceFailureRef = useRef(onPersistenceFailure)
+  onPersistenceFailureRef.current = onPersistenceFailure
 
   useEffect(
     () =>
@@ -49,8 +51,11 @@ export function ProjectLiveTaskBoard({
   )
 
   const mutationAdapter = useMemo(
-    () => createConfiguredTaskMutationAdapter(onPersistenceFailure),
-    [onPersistenceFailure, snapshot.revision],
+    () =>
+      createConfiguredTaskMutationAdapter(() => {
+        onPersistenceFailureRef.current()
+      }),
+    [snapshot.revision],
   )
 
   return (
