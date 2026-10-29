@@ -24,16 +24,19 @@ export function ProjectLiveTaskBoard(props: ProjectLiveTaskBoardProps) {
   const { projectId, initialTasks } = props
   const [snapshot, setSnapshot] = useState({
     tasks: initialTasks,
-    revision: 0,
+    revision: -1,
   })
 
   useEffect(
     () =>
-      subscribeProjectTasks(projectId, (tasks) => {
-        setSnapshot((current) => ({
-          tasks,
-          revision: current.revision + 1,
-        }))
+      subscribeProjectTasks(projectId, (incoming) => {
+        setSnapshot((current) => {
+          if (incoming.revision <= current.revision) return current
+          return {
+            tasks: incoming.tasks,
+            revision: incoming.revision,
+          }
+        })
       }),
     [projectId],
   )
