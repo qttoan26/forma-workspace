@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   Put,
@@ -13,6 +14,11 @@ import { TasksService } from './tasks.service'
 @Controller('projects/:projectId/tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
+
+  @Get()
+  getProjectTasks(@Param('projectId') projectId: string) {
+    return { tasks: this.tasksService.getProjectTasks(projectId) }
+  }
 
   @Put()
   @HttpCode(204)
