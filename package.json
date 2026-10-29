@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "workspaces": ["apps/api"],
+  "workspaces": [
+    "apps/api"
+  ],
   "scripts": {
     "dev": "vite",
     "dev:api": "node apps/api/dist/main.js",
