@@ -8,6 +8,7 @@ import {
 import { loadSessionProjectTaskSync } from '@/entities/task/lib/task-session-sync-queue'
 import {
   getProjectTaskLastSyncedAt,
+  getProjectTaskSyncFailedAt,
   isProjectTaskSyncPending,
   projectTaskSyncChangeEvent,
 } from '@/entities/task/lib/task-sync-storage'
@@ -22,6 +23,7 @@ interface SyncSnapshot {
   isOnline: boolean
   isPending: boolean
   lastSyncedAt: string | null
+  failedAt: string | null
   recoverySource: RecoverySource
 }
 
@@ -87,6 +89,7 @@ function readSyncSnapshot(projectId: string): SyncSnapshot {
     isOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
     isPending,
     lastSyncedAt: getProjectTaskLastSyncedAt(projectId),
+    failedAt: getProjectTaskSyncFailedAt(projectId),
     recoverySource: isPending ? readRecoverySource(projectId) : null,
   }
 }
@@ -103,6 +106,14 @@ function getSyncStatus(hasRemoteSync: boolean, snapshot: SyncSnapshot) {
       label: 'Saved locally',
       title: 'Tasks are stored in this browser.',
       tone: 'local',
+    } as const
+  }
+
+  if (snapshot.isOnline && snapshot.isPending && snapshot.failedAt) {
+    return {
+      label: 'Sync failed',
+      title: `Latest sync attempt failed ${new Date(snapshot.failedAt).toLocaleString()}. Changes remain saved locally and will be retried.`,
+      tone: 'failed',
     } as const
   }
 

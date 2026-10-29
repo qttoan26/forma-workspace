@@ -37,6 +37,24 @@ export function isProjectTaskSyncPending(projectId: string) {
   )
 }
 
+export function recordProjectTaskSyncFailure(projectId: string) {
+  safeStorageSetItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    failureKey(projectId),
+    new Date().toISOString(),
+  )
+  notifyProjectTaskSyncChange(projectId)
+}
+
+export function getProjectTaskSyncFailedAt(projectId: string) {
+  return safeStorageGetItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    failureKey(projectId),
+  )
+}
+
 export function recordProjectTaskSyncSuccess(projectId: string) {
   safeStorageSetItem(
     'local-storage',
@@ -48,6 +66,11 @@ export function recordProjectTaskSyncSuccess(projectId: string) {
     'session-storage',
     resolveBrowserStorage('session-storage'),
     pendingKey(projectId),
+  )
+  safeStorageRemoveItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    failureKey(projectId),
   )
   notifyProjectTaskSyncChange(projectId)
 }
@@ -69,6 +92,10 @@ function notifyProjectTaskSyncChange(projectId: string) {
 
 function pendingKey(projectId: string) {
   return `forma:task-sync:${syncVersion}:pending:${projectId}`
+}
+
+function failureKey(projectId: string) {
+  return `forma:task-sync:${syncVersion}:failed-at:${projectId}`
 }
 
 function lastSyncedKey(projectId: string) {

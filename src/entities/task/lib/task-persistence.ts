@@ -38,6 +38,7 @@ import {
 } from './task-storage'
 import {
   markProjectTaskSyncPending,
+  recordProjectTaskSyncFailure,
   recordProjectTaskSyncSuccess,
 } from './task-sync-storage'
 
@@ -147,14 +148,19 @@ async function syncProjectTasks(
   apiBaseUrl: string,
   queuedSync: RecoverableQueuedProjectTaskSync | null,
 ) {
-  await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
+  try {
+    await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
 
-  if (queuedSync) {
-    const completed = await completeRecoverableProjectTaskSync(queuedSync)
-    if (!completed) return
+    if (queuedSync) {
+      const completed = await completeRecoverableProjectTaskSync(queuedSync)
+      if (!completed) return
+    }
+
+    recordProjectTaskSyncSuccess(projectId)
+  } catch (error) {
+    recordProjectTaskSyncFailure(projectId)
+    throw error
   }
-
-  recordProjectTaskSyncSuccess(projectId)
 }
 
 async function enqueueRecoverableProjectTaskSync(
