@@ -1,5 +1,10 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 
+import {
+  loadProjectTaskSnapshotFromIndexedDb,
+  type ProjectTaskSnapshot,
+} from './task-indexed-db'
+
 const channelName = 'forma-task-sync-v1'
 const localEventName = 'forma:project-tasks-updated'
 
@@ -7,45 +12,83 @@ interface TaskBroadcastMessage {
   type: 'project-tasks-updated'
   projectId: string
   tasks: Task[]
+  revision: number | null
   sourceId: string
 }
 
 const sourceId = createSourceId()
 
-export function publishProjectTasks(projectId: string, tasks: Task[]) {
+export function publishProjectTasks(
+  projectId: string,
+  tasks: Task[],
+  revision: number | null,
+) {
   const channel = openChannel()
   if (!channel) return
 
-  channel.postMessage(createMessage(projectId, tasks))
+  channel.postMessage(createMessage(projectId, tasks, revision))
   channel.close()
 }
 
-export function notifyProjectTasks(projectId: string, tasks: Task[]) {
+export function notifyProjectTasks(
+  projectId: string,
+  tasks: Task[],
+  revision: number | null,
+) {
   if (!('dispatchEvent' in globalThis)) return
 
   globalThis.dispatchEvent(
     new CustomEvent(localEventName, {
-      detail: createMessage(projectId, tasks),
+      detail: createMessage(projectId, tasks, revision),
     }),
   )
 }
 
 export function subscribeProjectTasks(
   projectId: string,
-  onTasks: (tasks: Task[]) => void,
+  onSnapshot: (snapshot: ProjectTaskSnapshot) => void,
 ) {
   const channel = openChannel()
+  let lastDeliveredRevision = -1
 
-  function deliver(value: unknown, allowCurrentSource: boolean) {
+  async function deliver(value: unknown, allowCurrentSource: boolean) {
     const message = parseMessage(value)
     if (!message || message.projectId !== projectId) return
     if (!allowCurrentSource && message.sourceId === sourceId) return
-    onTasks(message.tasks)
+
+    const storedSnapshot = await loadProjectTaskSnapshotFromIndexedDb(
+      projectId,
+    ).catch(() => null)
+    if (storedSnapshot) {
+      if (
+        message.revision !== null &&
+        storedSnapshot.revision < message.revision
+      ) {
+        return
+      }
+      if (storedSnapshot.revision <= lastDeliveredRevision) return
+
+      lastDeliveredRevision = storedSnapshot.revision
+      onSnapshot(storedSnapshot)
+      return
+    }
+
+    const fallbackRevision =
+      message.revision ?? Math.max(lastDeliveredRevision + 1, 0)
+    if (fallbackRevision <= lastDeliveredRevision) return
+
+    lastDeliveredRevision = fallbackRevision
+    onSnapshot({
+      projectId,
+      tasks: message.tasks,
+      revision: fallbackRevision,
+      updatedAt: new Date().toISOString(),
+    })
   }
 
   const handleLocalEvent = (event: Event) => {
     const customEvent = event as CustomEvent<unknown>
-    deliver(customEvent.detail, true)
+    void deliver(customEvent.detail, true)
   }
 
   if ('addEventListener' in globalThis) {
@@ -53,7 +96,7 @@ export function subscribeProjectTasks(
   }
   if (channel) {
     channel.onmessage = (event: MessageEvent<unknown>) => {
-      deliver(event.data, false)
+      void deliver(event.data, false)
     }
   }
 
@@ -65,11 +108,16 @@ export function subscribeProjectTasks(
   }
 }
 
-function createMessage(projectId: string, tasks: Task[]): TaskBroadcastMessage {
+function createMessage(
+  projectId: string,
+  tasks: Task[],
+  revision: number | null,
+): TaskBroadcastMessage {
   return {
     type: 'project-tasks-updated',
     projectId,
     tasks,
+    revision,
     sourceId,
   }
 }
@@ -81,6 +129,14 @@ function parseMessage(value: unknown): TaskBroadcastMessage | null {
   if (candidate.type !== 'project-tasks-updated') return null
   if (typeof candidate.projectId !== 'string') return null
   if (typeof candidate.sourceId !== 'string') return null
+  if (
+    candidate.revision !== null &&
+    (typeof candidate.revision !== 'number' ||
+      !Number.isInteger(candidate.revision) ||
+      candidate.revision < 0)
+  ) {
+    return null
+  }
 
   const tasks = taskCollectionSchema.safeParse(candidate.tasks)
   if (!tasks.success) return null
@@ -92,6 +148,7 @@ function parseMessage(value: unknown): TaskBroadcastMessage | null {
     type: candidate.type,
     projectId: candidate.projectId,
     tasks: tasks.data,
+    revision: candidate.revision ?? null,
     sourceId: candidate.sourceId,
   }
 }
