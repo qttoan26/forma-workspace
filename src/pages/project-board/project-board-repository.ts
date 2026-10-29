@@ -1,3 +1,8 @@
+import {
+  getTaskApiBaseUrl,
+  loadProjectTasksFromApi,
+} from '@/entities/task/lib/task-api'
+
 import { initialTasks, members, project, workspace } from './project-board-data'
 import {
   parseProjectBoardData,
@@ -24,20 +29,23 @@ export interface ProjectBoardRepository {
 }
 
 export const projectBoardRepository: ProjectBoardRepository = {
-  getProjectBoard(input) {
+  async getProjectBoard(input) {
     const { workspaceSlug, projectId } = input
 
     if (workspace.slug !== workspaceSlug || project.id !== projectId) {
-      return Promise.reject(new ProjectBoardNotFoundError(input))
+      throw new ProjectBoardNotFoundError(input)
     }
 
-    return Promise.resolve(
-      parseProjectBoardData({
-        workspace,
-        project,
-        members,
-        initialTasks,
-      }),
-    )
+    const apiBaseUrl = getTaskApiBaseUrl()
+    const tasks = apiBaseUrl
+      ? await loadProjectTasksFromApi(project.id, apiBaseUrl)
+      : initialTasks
+
+    return parseProjectBoardData({
+      workspace,
+      project,
+      members,
+      initialTasks: tasks,
+    })
   },
 }
