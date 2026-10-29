@@ -1,7 +1,10 @@
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
-import { enqueueMemoryProjectTaskSync } from '@/entities/task/lib/task-memory-sync-queue'
+import {
+  clearMemoryProjectTaskSync,
+  enqueueMemoryProjectTaskSync,
+} from '@/entities/task/lib/task-memory-sync-queue'
 import { enqueueSessionProjectTaskSync } from '@/entities/task/lib/task-session-sync-queue'
 import {
   clearProjectTaskSyncPending,
@@ -28,6 +31,7 @@ const tasks: Task[] = [
 
 afterEach(() => {
   sessionStorage.clear()
+  clearMemoryProjectTaskSync(projectId)
   clearProjectTaskSyncPending(projectId)
 })
 
