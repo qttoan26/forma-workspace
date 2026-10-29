@@ -38,6 +38,7 @@ interface TaskBoardProps {
   projectId?: string
   taskIdPrefix?: string
   initialTasks: Task[]
+  externalTasks?: Task[] | null
   members: Member[]
   filters?: TaskBoardFilters
   selectedTaskId?: string | null
@@ -51,6 +52,7 @@ export function TaskBoard({
   projectId: explicitProjectId,
   taskIdPrefix: explicitTaskIdPrefix,
   initialTasks,
+  externalTasks = null,
   members,
   filters,
   selectedTaskId,
@@ -68,9 +70,20 @@ export function TaskBoard({
     explicitTaskIdPrefix ?? inferTaskIdPrefix(initialTasks) ?? 'TASK'
 
   const [tasks, setTasks] = useState(initialTasks)
+  const suppressNextPersistRef = useRef(false)
+
+  useEffect(() => {
+    if (!externalTasks) return
+    suppressNextPersistRef.current = true
+    setTasks(externalTasks)
+  }, [externalTasks])
 
   useEffect(() => {
     if (!mutationAdapter) return
+    if (suppressNextPersistRef.current) {
+      suppressNextPersistRef.current = false
+      return
+    }
     void mutationAdapter.persist(projectId, tasks)
   }, [mutationAdapter, projectId, tasks])
   const [internalEditingTaskId, setInternalEditingTaskId] = useState<
