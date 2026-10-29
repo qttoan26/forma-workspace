@@ -46,8 +46,11 @@ const projectRoute = createRoute({
 })
 
 const routeTree = rootRoute.addChildren([homeRoute, projectRoute])
+const basepath = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 export const router = createRouter({
   routeTree,
+  basepath,
   defaultErrorComponent: RouterErrorBoundary,
 })
 
