@@ -14,7 +14,11 @@ import {
   type TaskMutationAdapter,
   type TaskMutationFailureHandler,
 } from './task-mutation-adapter'
-import { clearProjectTasks, loadProjectTasks } from './task-storage'
+import {
+  clearProjectTasks,
+  loadProjectTasks,
+  saveProjectTasks,
+} from './task-storage'
 import {
   markProjectTaskSyncPending,
   recordProjectTaskSyncSuccess,
@@ -31,19 +35,21 @@ export async function loadConfiguredProjectTasks(
 
   const legacyTasks = loadProjectTasks(projectId, [])
   if (legacyTasks.length > 0) {
-    await saveProjectTasksToIndexedDb(projectId, legacyTasks).catch(() => undefined)
-    clearProjectTasks(projectId)
+    const migrated = await saveProjectTasksToIndexedDb(projectId, legacyTasks)
+      .then(() => true)
+      .catch(() => false)
+    if (migrated) clearProjectTasks(projectId)
     return legacyTasks
   }
 
   const apiBaseUrl = getTaskApiBaseUrl()
   if (apiBaseUrl) {
     const apiTasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
-    await saveProjectTasksToIndexedDb(projectId, apiTasks).catch(() => undefined)
+    await cacheProjectTasks(projectId, apiTasks)
     return apiTasks
   }
 
-  await saveProjectTasksToIndexedDb(projectId, fallback).catch(() => undefined)
+  await cacheProjectTasks(projectId, fallback)
   return fallback
 }
 
@@ -53,7 +59,7 @@ export function createConfiguredTaskMutationAdapter(
   const apiBaseUrl = getTaskApiBaseUrl()
   const localFirstAdapter: TaskMutationAdapter = {
     async persist(projectId, tasks) {
-      await saveProjectTasksToIndexedDb(projectId, tasks)
+      await cacheProjectTasks(projectId, tasks)
 
       if (!apiBaseUrl) return
 
@@ -64,4 +70,12 @@ export function createConfiguredTaskMutationAdapter(
   }
 
   return createTaskMutationEffectBoundary(localFirstAdapter, onFailure)
+}
+
+async function cacheProjectTasks(projectId: string, tasks: Task[]) {
+  try {
+    await saveProjectTasksToIndexedDb(projectId, tasks)
+  } catch {
+    saveProjectTasks(projectId, tasks)
+  }
 }
