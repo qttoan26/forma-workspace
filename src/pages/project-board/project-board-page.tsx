@@ -11,6 +11,7 @@ import {
   taskBoardSorts,
 } from '@/widgets/task-board/model/task-board-view'
 
+import { ProjectBoardMemoryRecovery } from './project-board-memory-recovery'
 import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
 import { ProjectBoardStorageHealth } from './project-board-storage-health'
@@ -160,6 +161,7 @@ export function ProjectBoardPage() {
       </header>
 
       <ProjectBoardStorageHealth />
+      <ProjectBoardMemoryRecovery projectId={project.id} />
 
       {hasPersistenceFailure ? (
         <ProjectBoardPersistenceAlert

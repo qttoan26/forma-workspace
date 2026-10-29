@@ -2,6 +2,9 @@ import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 
 import type { QueuedProjectTaskSync } from './task-indexed-db'
 
+export const memoryProjectTaskSyncChangeEvent =
+  'forma:memory-project-task-sync-change'
+
 const queuedProjectSyncs = new Map<string, QueuedProjectTaskSync>()
 
 export function enqueueMemoryProjectTaskSync(
@@ -15,6 +18,7 @@ export function enqueueMemoryProjectTaskSync(
     queuedAt: new Date().toISOString(),
   }
   queuedProjectSyncs.set(projectId, queuedSync)
+  notifyMemoryProjectTaskSyncChange(projectId)
   return queuedSync
 }
 
@@ -22,6 +26,10 @@ export function loadMemoryProjectTaskSync(
   projectId: string,
 ): QueuedProjectTaskSync | null {
   return queuedProjectSyncs.get(projectId) ?? null
+}
+
+export function hasMemoryProjectTaskSync(projectId: string): boolean {
+  return queuedProjectSyncs.has(projectId)
 }
 
 export function completeMemoryProjectTaskSync(
@@ -32,11 +40,23 @@ export function completeMemoryProjectTaskSync(
   if (!queuedSync || queuedSync.mutationId !== mutationId) return false
 
   queuedProjectSyncs.delete(projectId)
+  notifyMemoryProjectTaskSyncChange(projectId)
   return true
 }
 
 export function clearMemoryProjectTaskSync(projectId: string) {
-  queuedProjectSyncs.delete(projectId)
+  const deleted = queuedProjectSyncs.delete(projectId)
+  if (deleted) notifyMemoryProjectTaskSyncChange(projectId)
+}
+
+function notifyMemoryProjectTaskSyncChange(projectId: string) {
+  if (typeof window === 'undefined') return
+
+  window.dispatchEvent(
+    new CustomEvent(memoryProjectTaskSyncChangeEvent, {
+      detail: { projectId },
+    }),
+  )
 }
 
 function parseProjectTasks(projectId: string, tasks: Task[]) {
