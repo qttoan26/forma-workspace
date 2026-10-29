@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import {
-  createConfiguredTaskMutationAdapter,
+  refreshConfiguredProjectTasks,
   retryConfiguredProjectTaskSync,
 } from '@/entities/task/lib/task-persistence'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
@@ -10,11 +10,11 @@ import {
   type TaskBoardSort,
   taskBoardSorts,
 } from '@/widgets/task-board/model/task-board-view'
-import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
+import { ProjectLiveTaskBoard } from './project-live-task-board'
 import './project-board-page.css'
 
 const projectRoutePath =
@@ -28,24 +28,21 @@ export function ProjectBoardPage() {
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
-  const projectTaskMutationAdapter = useMemo(
-    () =>
-      createConfiguredTaskMutationAdapter(() => {
-        setHasPersistenceFailure(true)
-      }),
-    [],
-  )
 
   useEffect(() => {
-    function retryPendingSync() {
+    function syncAndRefresh() {
       void retryConfiguredProjectTaskSync(project.id, () => {
         setHasPersistenceFailure(true)
-      })
+      }).then(() =>
+        refreshConfiguredProjectTasks(project.id, () => {
+          setHasPersistenceFailure(true)
+        }),
+      )
     }
 
-    retryPendingSync()
-    window.addEventListener('online', retryPendingSync)
-    return () => window.removeEventListener('online', retryPendingSync)
+    syncAndRefresh()
+    window.addEventListener('online', syncAndRefresh)
+    return () => window.removeEventListener('online', syncAndRefresh)
   }, [project.id])
 
   useEffect(() => {
@@ -257,7 +254,7 @@ export function ProjectBoardPage() {
         ) : null}
       </section>
 
-      <TaskBoard
+      <ProjectLiveTaskBoard
         projectId={project.id}
         taskIdPrefix={project.key}
         initialTasks={initialTasks}
@@ -266,7 +263,7 @@ export function ProjectBoardPage() {
         onSelectedTaskChange={selectTask}
         isCreatingTask={search.newTask === '1'}
         onCreatingTaskChange={setCreatingTask}
-        mutationAdapter={projectTaskMutationAdapter}
+        onPersistenceFailure={() => setHasPersistenceFailure(true)}
         filters={{
           ...(search.priority ? { priority: search.priority } : {}),
           ...(search.assignee ? { assigneeId: search.assignee } : {}),
