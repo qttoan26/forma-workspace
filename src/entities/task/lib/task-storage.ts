@@ -36,6 +36,17 @@ export function saveProjectTasks(
   }
 }
 
+export function clearProjectTasks(
+  projectId: string,
+  storage: Storage = window.localStorage,
+) {
+  try {
+    storage.removeItem(storageKey(projectId))
+  } catch {
+    // Legacy cleanup is best-effort.
+  }
+}
+
 function storageKey(projectId: string) {
   return `forma:tasks:${storageVersion}:${projectId}`
 }

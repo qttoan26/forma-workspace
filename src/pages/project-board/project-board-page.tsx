@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
-import {
-  createConfiguredTaskMutationAdapter,
-  resolveInitialProjectTasks,
-} from '@/entities/task/lib/task-persistence'
+import { createConfiguredTaskMutationAdapter } from '@/entities/task/lib/task-persistence'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
 import {
   type TaskBoardSort,
@@ -27,7 +24,6 @@ export function ProjectBoardPage() {
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
-  const persistedTasks = resolveInitialProjectTasks(project.id, initialTasks)
   const projectTaskMutationAdapter = useMemo(
     () =>
       createConfiguredTaskMutationAdapter(() => {
@@ -247,7 +243,7 @@ export function ProjectBoardPage() {
       <TaskBoard
         projectId={project.id}
         taskIdPrefix={project.key}
-        initialTasks={persistedTasks}
+        initialTasks={initialTasks}
         members={members}
         selectedTaskId={search.task ?? null}
         onSelectedTaskChange={selectTask}

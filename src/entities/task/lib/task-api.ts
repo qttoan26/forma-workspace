@@ -24,24 +24,29 @@ export async function loadProjectTasksFromApi(
   return taskCollectionSchema.parse(body.tasks)
 }
 
+export async function persistProjectTasksToApi(
+  projectId: string,
+  tasks: Task[],
+  baseUrl = getTaskApiBaseUrl(),
+) {
+  const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tasks }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to persist project tasks (${response.status})`)
+  }
+}
+
 export function createApiTaskMutationAdapter(
   baseUrl = getTaskApiBaseUrl(),
   onFailure?: TaskMutationFailureHandler,
 ): TaskMutationAdapter {
   const apiAdapter: TaskMutationAdapter = {
-    async persist(projectId: string, tasks: Task[]) {
-      const response = await fetch(
-        `${baseUrl}/api/projects/${projectId}/tasks`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tasks }),
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error(`Failed to persist project tasks (${response.status})`)
-      }
+    persist(projectId: string, tasks: Task[]) {
+      return persistProjectTasksToApi(projectId, tasks, baseUrl)
     },
   }
 
