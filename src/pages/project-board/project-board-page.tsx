@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router'
 
 import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
 import { loadProjectTasks } from '@/entities/task/lib/task-storage'
@@ -119,7 +124,7 @@ export function ProjectBoardPage() {
   return (
     <main className="workspace-shell project-board-shell" id="main-content">
       <nav className="project-board-nav" aria-label="Project navigation">
-        <a href="/">← Workspace</a>
+        <Link to="/">← Workspace</Link>
         <span>{workspace.name}</span>
         <span aria-hidden="true">/</span>
         <strong>{project.key}</strong>
