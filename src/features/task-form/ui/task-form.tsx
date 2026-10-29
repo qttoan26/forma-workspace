@@ -11,29 +11,61 @@ import {
 } from '@/entities/task/model/task'
 import { Button, Field } from '@/shared/ui'
 
+import {
+  clearTaskFormDraft,
+  loadTaskFormDraft,
+  saveTaskFormDraft,
+} from '../lib/task-form-draft'
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 
 interface TaskFormProps {
   members: Member[]
   task?: Task
+  draftKey?: string
   onCancel: () => void
   onSubmit: (values: TaskFormValues) => void
 }
 
-export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
+export function TaskForm({
+  members,
+  task,
+  draftKey,
+  onCancel,
+  onSubmit,
+}: TaskFormProps) {
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: toFormValues(task),
+    defaultValues: getInitialValues(task, draftKey),
   })
 
   useEffect(() => {
-    reset(toFormValues(task))
-  }, [reset, task])
+    reset(getInitialValues(task, draftKey))
+  }, [draftKey, reset, task])
+
+  useEffect(() => {
+    if (!draftKey) return
+
+    const subscription = watch((values) => {
+      saveTaskFormDraft(draftKey, values)
+    })
+    return () => subscription.unsubscribe()
+  }, [draftKey, watch])
+
+  function cancelForm() {
+    if (draftKey) clearTaskFormDraft(draftKey)
+    onCancel()
+  }
+
+  function submitForm(values: TaskFormValues) {
+    if (draftKey) clearTaskFormDraft(draftKey)
+    onSubmit(values)
+  }
 
   return (
     <form
@@ -41,10 +73,10 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
       onKeyDown={(event) => {
         if (event.key !== 'Escape') return
         event.preventDefault()
-        onCancel()
+        cancelForm()
       }}
       onSubmit={(event) => {
-        void handleSubmit(onSubmit)(event)
+        void handleSubmit(submitForm)(event)
       }}
     >
       <div className="task-form-heading">
@@ -52,7 +84,7 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
           <p className="eyebrow">{task ? 'Edit task' : 'New task'}</p>
           <h2>{task ? task.title : 'Create a task'}</h2>
         </div>
-        <Button type="button" aria-keyshortcuts="Escape" onClick={onCancel}>
+        <Button type="button" aria-keyshortcuts="Escape" onClick={cancelForm}>
           Cancel
         </Button>
       </div>
@@ -109,6 +141,14 @@ export function TaskForm({ members, task, onCancel, onSubmit }: TaskFormProps) {
       </Button>
     </form>
   )
+}
+
+function getInitialValues(task?: Task, draftKey?: string): TaskFormValues {
+  if (draftKey) {
+    const draft = loadTaskFormDraft(draftKey)
+    if (draft) return draft
+  }
+  return toFormValues(task)
 }
 
 function toFormValues(task?: Task): TaskFormValues {
