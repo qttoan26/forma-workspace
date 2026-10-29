@@ -55,7 +55,10 @@ export function ProjectBoardSyncStatus({
       window.removeEventListener('online', updateSnapshot)
       window.removeEventListener('offline', updateSnapshot)
       window.removeEventListener('storage', updateSnapshot)
-      window.removeEventListener(projectTaskSyncChangeEvent, handleProjectChange)
+      window.removeEventListener(
+        projectTaskSyncChangeEvent,
+        handleProjectChange,
+      )
       window.removeEventListener(
         memoryProjectTaskSyncChangeEvent,
         handleProjectChange,
@@ -126,9 +129,7 @@ function getSyncStatus(hasRemoteSync: boolean, snapshot: SyncSnapshot) {
 
   if (snapshot.isPending) {
     return {
-      label: snapshot.isOnline
-        ? 'Waiting to sync'
-        : 'Offline · saved locally',
+      label: snapshot.isOnline ? 'Waiting to sync' : 'Offline · saved locally',
       title: snapshot.isOnline
         ? 'Local changes are safely stored and waiting to sync.'
         : 'Changes are safely stored in this browser and will sync when connection returns.',
