@@ -16,13 +16,13 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  getProjectTasks(@Param('projectId') projectId: string) {
-    return { tasks: this.tasksService.getProjectTasks(projectId) }
+  async getProjectTasks(@Param('projectId') projectId: string) {
+    return { tasks: await this.tasksService.getProjectTasks(projectId) }
   }
 
   @Put()
   @HttpCode(204)
-  replaceProjectTasks(
+  async replaceProjectTasks(
     @Param('projectId') projectId: string,
     @Body() body: unknown,
   ) {
@@ -37,6 +37,6 @@ export class TasksController {
       )
     }
 
-    this.tasksService.replaceProjectTasks(projectId, parsed.data.tasks)
+    await this.tasksService.replaceProjectTasks(projectId, parsed.data.tasks)
   }
 }

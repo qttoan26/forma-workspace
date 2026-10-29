@@ -21,39 +21,41 @@ function createSubject() {
 }
 
 describe('TasksController', () => {
-  it('replaces and reads a project task collection', () => {
+  it('replaces and reads a project task collection', async () => {
     const { controller } = createSubject()
 
-    controller.replaceProjectTasks(task.projectId, { tasks: [task] })
+    await controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    expect(controller.getProjectTasks(task.projectId)).toEqual({
+    await expect(controller.getProjectTasks(task.projectId)).resolves.toEqual({
       tasks: [task],
     })
   })
 
-  it('isolates task collections by project', () => {
+  it('isolates task collections by project', async () => {
     const { controller } = createSubject()
 
-    controller.replaceProjectTasks(task.projectId, { tasks: [task] })
+    await controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    expect(controller.getProjectTasks('another-project')).toEqual({
+    await expect(
+      controller.getProjectTasks('another-project'),
+    ).resolves.toEqual({
       tasks: [],
     })
   })
 
-  it('rejects tasks for a different project', () => {
+  it('rejects tasks for a different project', async () => {
     const { controller } = createSubject()
 
-    expect(() =>
+    await expect(
       controller.replaceProjectTasks('another-project', { tasks: [task] }),
-    ).toThrow(BadRequestException)
+    ).rejects.toThrow(BadRequestException)
   })
 
-  it('rejects duplicate task ids', () => {
+  it('rejects duplicate task ids', async () => {
     const { controller } = createSubject()
 
-    expect(() =>
+    await expect(
       controller.replaceProjectTasks(task.projectId, { tasks: [task, task] }),
-    ).toThrow(BadRequestException)
+    ).rejects.toThrow(BadRequestException)
   })
 })

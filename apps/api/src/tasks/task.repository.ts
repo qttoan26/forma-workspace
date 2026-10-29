@@ -5,8 +5,8 @@ import type { TaskRecord } from './task.schema'
 export const TASK_REPOSITORY = Symbol('TASK_REPOSITORY')
 
 export interface TaskRepository {
-  replaceProjectTasks: (projectId: string, tasks: TaskRecord[]) => void
-  getProjectTasks: (projectId: string) => TaskRecord[]
+  replaceProjectTasks: (projectId: string, tasks: TaskRecord[]) => Promise<void>
+  getProjectTasks: (projectId: string) => Promise<TaskRecord[]>
 }
 
 @Injectable()
@@ -18,11 +18,13 @@ export class InMemoryTaskRepository implements TaskRepository {
       projectId,
       tasks.map((task) => ({ ...task })),
     )
+
+    return Promise.resolve()
   }
 
   getProjectTasks(projectId: string) {
-    return (
-      this.tasksByProject.get(projectId)?.map((task) => ({ ...task })) ?? []
+    return Promise.resolve(
+      this.tasksByProject.get(projectId)?.map((task) => ({ ...task })) ?? [],
     )
   }
 }
