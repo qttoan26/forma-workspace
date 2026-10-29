@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
 import { subscribeProjectTasks } from '@/entities/task/lib/task-broadcast'
@@ -20,24 +20,12 @@ interface ProjectLiveTaskBoardProps {
   onPersistenceFailure: () => void
 }
 
-export function ProjectLiveTaskBoard({
-  projectId,
-  taskIdPrefix,
-  initialTasks,
-  members,
-  selectedTaskId,
-  onSelectedTaskChange,
-  isCreatingTask,
-  onCreatingTaskChange,
-  filters,
-  onPersistenceFailure,
-}: ProjectLiveTaskBoardProps) {
+export function ProjectLiveTaskBoard(props: ProjectLiveTaskBoardProps) {
+  const { projectId, initialTasks } = props
   const [snapshot, setSnapshot] = useState({
     tasks: initialTasks,
     revision: 0,
   })
-  const onPersistenceFailureRef = useRef(onPersistenceFailure)
-  onPersistenceFailureRef.current = onPersistenceFailure
 
   useEffect(
     () =>
@@ -50,20 +38,37 @@ export function ProjectLiveTaskBoard({
     [projectId],
   )
 
+  return (
+    <ProjectTaskBoardSnapshot
+      key={snapshot.revision}
+      {...props}
+      initialTasks={snapshot.tasks}
+    />
+  )
+}
+
+function ProjectTaskBoardSnapshot({
+  projectId,
+  taskIdPrefix,
+  initialTasks,
+  members,
+  selectedTaskId,
+  onSelectedTaskChange,
+  isCreatingTask,
+  onCreatingTaskChange,
+  filters,
+  onPersistenceFailure,
+}: ProjectLiveTaskBoardProps) {
   const mutationAdapter = useMemo(
-    () =>
-      createConfiguredTaskMutationAdapter(() => {
-        onPersistenceFailureRef.current()
-      }),
-    [snapshot.revision],
+    () => createConfiguredTaskMutationAdapter(onPersistenceFailure),
+    [onPersistenceFailure],
   )
 
   return (
     <TaskBoard
-      key={snapshot.revision}
       projectId={projectId}
       taskIdPrefix={taskIdPrefix}
-      initialTasks={snapshot.tasks}
+      initialTasks={initialTasks}
       members={members}
       selectedTaskId={selectedTaskId}
       onSelectedTaskChange={onSelectedTaskChange}
