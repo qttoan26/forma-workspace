@@ -1,11 +1,14 @@
 const syncVersion = 'v1'
+export const projectTaskSyncChangeEvent = 'forma:project-task-sync-change'
 
 export function markProjectTaskSyncPending(projectId: string) {
   safeSessionStorage()?.setItem(pendingKey(projectId), '1')
+  notifyProjectTaskSyncChange(projectId)
 }
 
 export function clearProjectTaskSyncPending(projectId: string) {
   safeSessionStorage()?.removeItem(pendingKey(projectId))
+  notifyProjectTaskSyncChange(projectId)
 }
 
 export function isProjectTaskSyncPending(projectId: string) {
@@ -17,11 +20,19 @@ export function recordProjectTaskSyncSuccess(projectId: string) {
     lastSyncedKey(projectId),
     new Date().toISOString(),
   )
-  clearProjectTaskSyncPending(projectId)
+  safeSessionStorage()?.removeItem(pendingKey(projectId))
+  notifyProjectTaskSyncChange(projectId)
 }
 
 export function getProjectTaskLastSyncedAt(projectId: string) {
   return safeLocalStorage()?.getItem(lastSyncedKey(projectId)) ?? null
+}
+
+function notifyProjectTaskSyncChange(projectId: string) {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(
+    new CustomEvent(projectTaskSyncChangeEvent, { detail: { projectId } }),
+  )
 }
 
 function safeLocalStorage() {
