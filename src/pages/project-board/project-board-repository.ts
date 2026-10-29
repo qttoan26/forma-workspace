@@ -1,7 +1,4 @@
-import {
-  getTaskApiBaseUrl,
-  loadProjectTasksFromApi,
-} from '@/entities/task/lib/task-api'
+import { loadConfiguredProjectTasks } from '@/entities/task/lib/task-persistence'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
 import {
@@ -36,10 +33,7 @@ export const projectBoardRepository: ProjectBoardRepository = {
       throw new ProjectBoardNotFoundError(input)
     }
 
-    const apiBaseUrl = getTaskApiBaseUrl()
-    const tasks = apiBaseUrl
-      ? await loadProjectTasksFromApi(project.id, apiBaseUrl)
-      : initialTasks
+    const tasks = await loadConfiguredProjectTasks(project.id, initialTasks)
 
     return parseProjectBoardData({
       workspace,
