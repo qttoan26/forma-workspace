@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/performance.yml'
+      - 'src/app/styles/**'
+      - 'src/pages/home/**'
+      - 'src/pages/project-board/**'
       - 'src/widgets/task-board/**'
       - 'tests/performance/**'
       - 'docs/performance/**'
