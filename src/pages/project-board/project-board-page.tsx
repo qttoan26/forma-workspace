@@ -14,6 +14,7 @@ import { TaskBoard } from '@/widgets/task-board/task-board'
 
 import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
+import { ProjectBoardSyncStatus } from './project-board-sync-status'
 import './project-board-page.css'
 
 const projectRoutePath =
@@ -145,6 +146,7 @@ export function ProjectBoardPage() {
           <p className="project-description">{project.description}</p>
         </div>
         <div className="project-board-members">
+          <ProjectBoardSyncStatus projectId={project.id} />
           <span className="project-member-label">Team</span>
           <div
             className="member-stack"
