@@ -57,7 +57,8 @@
 
 .board-filters {
   display: grid;
-  grid-template-columns: minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 0.7fr)) auto;
+  grid-template-columns:
+    minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 0.7fr)) auto;
   gap: 0.75rem;
   align-items: end;
   margin-bottom: 1.25rem;
