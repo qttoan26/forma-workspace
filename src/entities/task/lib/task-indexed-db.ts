@@ -208,7 +208,8 @@ function saveProjectTaskSnapshot(
       reject(error)
     }
     transaction.onabort = () => {
-      const error = transaction.error ?? new Error('Project task save aborted')
+      const error =
+        transaction.error ?? new Error('Project task save aborted')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
@@ -237,7 +238,8 @@ function completeQueuedSync(
       }
     }
     request.onerror = () => {
-      const error = request.error ?? new Error('Failed to read task sync queue')
+      const error =
+        request.error ?? new Error('Failed to read task sync queue')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
@@ -252,7 +254,8 @@ function completeQueuedSync(
       reject(error)
     }
     transaction.onabort = () => {
-      const error = transaction.error ?? new Error('Task sync queue update aborted')
+      const error =
+        transaction.error ?? new Error('Task sync queue update aborted')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
