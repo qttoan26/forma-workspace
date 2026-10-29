@@ -90,12 +90,7 @@ export async function retryConfiguredProjectTaskSync(
     if (!queuedSync) return
 
     markProjectTaskSyncPending(projectId)
-    await syncProjectTasks(
-      projectId,
-      queuedSync.tasks,
-      apiBaseUrl,
-      queuedSync,
-    )
+    await syncProjectTasks(projectId, queuedSync.tasks, apiBaseUrl, queuedSync)
   } catch (error) {
     onFailure?.(error)
   }
