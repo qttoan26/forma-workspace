@@ -1,7 +1,5 @@
 .project-board-shell {
-  background:
-    radial-gradient(circle at top right, rgb(24 24 27 / 4%), transparent 28rem),
-    #f7f7f8;
+  background: #f7f7f8;
 }
 
 .project-board-nav {
@@ -57,8 +55,7 @@
 
 .board-filters {
   display: grid;
-  grid-template-columns:
-    minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 0.7fr)) auto;
+  grid-template-columns: 1.5fr 0.7fr 0.7fr 0.7fr auto;
   gap: 0.75rem;
   align-items: end;
   margin-bottom: 1.25rem;
