@@ -36,7 +36,9 @@ describe('TasksController', () => {
 
     await controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
-    await expect(controller.getProjectTasks('another-project')).resolves.toEqual({
+    await expect(
+      controller.getProjectTasks('another-project'),
+    ).resolves.toEqual({
       tasks: [],
     })
   })
