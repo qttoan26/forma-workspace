@@ -93,6 +93,12 @@
   color: #9a3412;
 }
 
+.project-sync-status-failed {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .project-sync-status-offline {
   border-color: #d4d4d8;
   background: #f4f4f5;
