@@ -1,4 +1,11 @@
-import { BadRequestException, Body, Controller, HttpCode, Param, Put } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  Param,
+  Put,
+} from '@nestjs/common'
 
 import { persistTasksBodySchema } from './task.schema'
 import { TasksService } from './tasks.service'
