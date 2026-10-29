@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import type { Member } from '@/entities/member/model/member'
 import {
@@ -34,15 +34,16 @@ export function TaskForm({
   onSubmit,
 }: TaskFormProps) {
   const {
+    control,
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: getInitialValues(task, draftKey),
   })
+  const draftValues = useWatch({ control })
 
   useEffect(() => {
     reset(getInitialValues(task, draftKey))
@@ -50,12 +51,8 @@ export function TaskForm({
 
   useEffect(() => {
     if (!draftKey) return
-
-    const subscription = watch((values) => {
-      saveTaskFormDraft(draftKey, values)
-    })
-    return () => subscription.unsubscribe()
-  }, [draftKey, watch])
+    saveTaskFormDraft(draftKey, draftValues)
+  }, [draftKey, draftValues])
 
   function cancelForm() {
     if (draftKey) clearTaskFormDraft(draftKey)
