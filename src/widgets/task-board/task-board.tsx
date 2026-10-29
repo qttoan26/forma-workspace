@@ -19,6 +19,7 @@ import {
   type TaskWriteValues,
   updateTaskValues,
 } from '@/entities/task/model/task-mutations'
+import { createTaskFormDraftKey } from '@/features/task-form/lib/task-form-draft'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
@@ -205,6 +206,7 @@ export function TaskBoard({
       {isCreating ? (
         <TaskForm
           members={members}
+          draftKey={createTaskFormDraftKey(scopedProjectId)}
           onCancel={() => setCreatingTask(false)}
           onSubmit={createTask}
         />
@@ -214,6 +216,7 @@ export function TaskBoard({
         <TaskForm
           members={members}
           task={editingTask}
+          draftKey={createTaskFormDraftKey(scopedProjectId, editingTask.id)}
           onCancel={() => setEditingTask(null)}
           onSubmit={updateTask}
         />
