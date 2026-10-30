@@ -7,7 +7,10 @@ export function LoginPage() {
   const [isStarting, setIsStarting] = useState(false)
 
   return (
-    <main id="main-content" style={{ maxWidth: 520, margin: '0 auto', padding: '5rem 1.5rem' }}>
+    <main
+      id="main-content"
+      style={{ maxWidth: 520, margin: '0 auto', padding: '5rem 1.5rem' }}
+    >
       <p className="eyebrow">Forma Workspace</p>
       <h1>Sign in to continue</h1>
       <p>
