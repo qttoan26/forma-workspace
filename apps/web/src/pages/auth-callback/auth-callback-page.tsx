@@ -12,7 +12,9 @@ export function AuthCallbackPage() {
     void completeOidcLogin()
       .then(() => {
         if (!active) return
-        window.location.assign(consumeAuthReturnTo() ?? import.meta.env.BASE_URL)
+        window.location.assign(
+          consumeAuthReturnTo() ?? import.meta.env.BASE_URL,
+        )
       })
       .catch((reason: unknown) => {
         if (!active) return
