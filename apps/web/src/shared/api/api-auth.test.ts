@@ -18,8 +18,8 @@ describe('API auth token boundary', () => {
   })
 
   it('supports async session token providers and trims the token', async () => {
-    resetAccessTokenProvider = configureApiAccessTokenProvider(
-      async () => '  access-token  ',
+    resetAccessTokenProvider = configureApiAccessTokenProvider(() =>
+      Promise.resolve('  access-token  '),
     )
 
     await expect(getApiAuthorizationHeader()).resolves.toEqual({
