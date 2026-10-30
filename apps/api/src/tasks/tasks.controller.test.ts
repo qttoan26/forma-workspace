@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common'
+import { BadRequestException, ConflictException } from '@nestjs/common'
 
 import { InMemoryTaskRepository } from './task.repository'
 import { TasksController } from './tasks.controller'
@@ -21,13 +21,48 @@ function createSubject() {
 }
 
 describe('TasksController', () => {
-  it('replaces and reads a project task collection', async () => {
+  it('replaces and reads a project task collection with a revision', async () => {
+    const { controller } = createSubject()
+
+    await expect(
+      controller.replaceProjectTasks(task.projectId, { tasks: [task] }),
+    ).resolves.toEqual({ revision: 1 })
+
+    await expect(controller.getProjectTasks(task.projectId)).resolves.toEqual({
+      tasks: [task],
+      revision: 1,
+    })
+  })
+
+  it('increments the revision after each successful replacement', async () => {
+    const { controller } = createSubject()
+
+    await expect(
+      controller.replaceProjectTasks(task.projectId, { tasks: [task] }),
+    ).resolves.toEqual({ revision: 1 })
+    await expect(
+      controller.replaceProjectTasks(task.projectId, {
+        tasks: [task],
+        expectedRevision: 1,
+      }),
+    ).resolves.toEqual({ revision: 2 })
+  })
+
+  it('rejects a stale expected revision without replacing tasks', async () => {
     const { controller } = createSubject()
 
     await controller.replaceProjectTasks(task.projectId, { tasks: [task] })
 
+    await expect(
+      controller.replaceProjectTasks(task.projectId, {
+        tasks: [],
+        expectedRevision: 0,
+      }),
+    ).rejects.toThrow(ConflictException)
+
     await expect(controller.getProjectTasks(task.projectId)).resolves.toEqual({
       tasks: [task],
+      revision: 1,
     })
   })
 
@@ -40,6 +75,7 @@ describe('TasksController', () => {
       controller.getProjectTasks('another-project'),
     ).resolves.toEqual({
       tasks: [],
+      revision: 0,
     })
   })
 
