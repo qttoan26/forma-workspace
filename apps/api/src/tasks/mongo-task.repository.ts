@@ -1,11 +1,11 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
-  MongoClient,
   MongoServerError,
   type Collection,
   type WithId,
 } from 'mongodb'
 
+import { MongoDatabaseService } from '../database/mongo-database.service'
 import type { TaskRecord } from './task.schema'
 import {
   ProjectTaskRevisionConflictError,
@@ -20,22 +20,13 @@ interface ProjectTaskDocument {
 }
 
 @Injectable()
-export class MongoTaskRepository implements TaskRepository, OnModuleDestroy {
-  private readonly client: MongoClient
+export class MongoTaskRepository implements TaskRepository {
   private readonly collection: Collection<ProjectTaskDocument>
 
-  constructor(
-    connectionString = process.env.MONGODB_URI,
-    databaseName = process.env.MONGODB_DB ?? 'forma_workspace',
-  ) {
-    if (!connectionString) {
-      throw new Error('MONGODB_URI is required for MongoTaskRepository')
-    }
-
-    this.client = new MongoClient(connectionString)
-    this.collection = this.client
-      .db(databaseName)
-      .collection<ProjectTaskDocument>('project_task_snapshots')
+  constructor(database: MongoDatabaseService) {
+    this.collection = database.collection<ProjectTaskDocument>(
+      'project_task_snapshots',
+    )
   }
 
   async replaceProjectTasks(
@@ -103,10 +94,6 @@ export class MongoTaskRepository implements TaskRepository, OnModuleDestroy {
     if (!snapshot) return { tasks: [], revision: 0 }
 
     return toProjectTaskSnapshot(snapshot)
-  }
-
-  async onModuleDestroy() {
-    await this.client.close()
   }
 }
 
