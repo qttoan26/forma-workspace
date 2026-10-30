@@ -1,0 +1,54 @@
+name: API Container
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - '.dockerignore'
+      - '.github/workflows/api-container.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - '.dockerignore'
+      - '.github/workflows/api-container.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-container-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build API image
+        run: docker build -f apps/api/Dockerfile -t forma-api:test .
+
+      - name: Start API container
+        run: docker run --detach --publish 3001:3001 --name forma-api forma-api:test
+
+      - name: Verify health endpoint
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3001/api/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become healthy"
+          exit 1
+
+      - name: Show API logs on failure
+        if: failure()
+        run: docker logs forma-api

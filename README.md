@@ -61,6 +61,24 @@ CORS_ORIGINS=https://qttoan26.github.io
 
 The frontend deployment must also build with `VITE_API_BASE_URL` pointing at the deployed API origin. Do not include a path suffix such as `/api`; the frontend client adds the API routes itself.
 
+### API container
+
+Build the production API image from the repository root:
+
+```text
+docker build -f apps/api/Dockerfile -t forma-api .
+```
+
+Run it locally with the in-memory repository:
+
+```text
+docker run --rm -p 3001:3001 forma-api
+```
+
+For production, provide `DATABASE_URL` and `CORS_ORIGINS` through the hosting platform. The image includes the SQL migrations and runs them automatically before the API starts listening. The container also defines a health check against `/api/health`.
+
+GitHub Actions validates the image by building it, starting a container, and calling the health endpoint whenever API container inputs change.
+
 ## Roadmap
 
 1. Architecture contract
