@@ -48,6 +48,7 @@ jobs:
             --publish 3001:3001 \
             --env MONGODB_URI=mongodb://forma-mongo:27017 \
             --env MONGODB_DB=forma_workspace_test \
+            --env CORS_ORIGINS=http://localhost:5173 \
             --name forma-api \
             forma-api:test
 
@@ -108,6 +109,11 @@ jobs:
 
           test "$ready_status" = '503'
           grep -q '"status":"unavailable"' /tmp/readiness-response.json
+
+      - name: Verify graceful API shutdown
+        run: |
+          docker stop --time 10 forma-api
+          test "$(docker inspect --format '{{.State.ExitCode}}' forma-api)" = '0'
 
       - name: Show container logs on failure
         if: failure()
