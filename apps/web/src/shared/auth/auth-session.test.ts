@@ -25,9 +25,7 @@ describe('auth session', () => {
     )
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(
-      loadAuthSession('https://api.example.test'),
-    ).resolves.toEqual({
+    await expect(loadAuthSession('https://api.example.test')).resolves.toEqual({
       user: { id: 'user-123' },
     })
     expect(fetchMock).toHaveBeenCalledWith(
@@ -37,11 +35,13 @@ describe('auth session', () => {
   })
 
   it('returns null when the API rejects the session', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(null, { status: 401 }),
-    )
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 401 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(loadAuthSession('https://api.example.test')).resolves.toBeNull()
+    await expect(
+      loadAuthSession('https://api.example.test'),
+    ).resolves.toBeNull()
   })
 })
