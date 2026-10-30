@@ -42,6 +42,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Format probe
+        run: |
+          pnpm exec prettier --write apps/web/src/shared/auth/auth-session.test.ts
+          git diff -- apps/web/src/shared/auth/auth-session.test.ts
+          exit 1
+
       - name: Format check
         run: pnpm format:check
 
