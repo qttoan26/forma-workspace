@@ -9,11 +9,19 @@ export class TasksService {
     @Inject(TASK_REPOSITORY) private readonly taskRepository: TaskRepository,
   ) {}
 
-  async replaceProjectTasks(projectId: string, tasks: TaskRecord[]) {
-    await this.taskRepository.replaceProjectTasks(projectId, tasks)
+  replaceProjectTasks(
+    projectId: string,
+    tasks: TaskRecord[],
+    expectedRevision?: number,
+  ) {
+    return this.taskRepository.replaceProjectTasks(
+      projectId,
+      tasks,
+      expectedRevision,
+    )
   }
 
-  async getProjectTasks(projectId: string) {
+  getProjectTasks(projectId: string) {
     return this.taskRepository.getProjectTasks(projectId)
   }
 }
