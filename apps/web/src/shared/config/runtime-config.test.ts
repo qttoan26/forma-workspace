@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { validateWebRuntimeConfiguration } from './runtime-config'
 
 const productionEnvironment = {
-  PROD: true,
+  VITE_DEPLOYMENT_MODE: 'production',
   VITE_API_BASE_URL: 'https://api.example.test',
   VITE_OIDC_AUTHORIZATION_ENDPOINT: 'https://issuer.example.test/authorize',
   VITE_OIDC_TOKEN_ENDPOINT: 'https://issuer.example.test/token',
@@ -20,12 +20,15 @@ describe('web runtime configuration', () => {
 
   it('skips real-auth requirements for the explicit demo build', () => {
     expect(() =>
-      validateWebRuntimeConfiguration({ PROD: true, VITE_DEMO_MODE: 'true' }),
+      validateWebRuntimeConfiguration({
+        VITE_DEPLOYMENT_MODE: 'production',
+        VITE_DEMO_MODE: 'true',
+      }),
     ).not.toThrow()
   })
 
-  it('does not require production auth configuration during development', () => {
-    expect(() => validateWebRuntimeConfiguration({ PROD: false })).not.toThrow()
+  it('does not require production auth configuration for ordinary build/test mode', () => {
+    expect(() => validateWebRuntimeConfiguration({})).not.toThrow()
   })
 
   it('fails fast when required production auth settings are missing', () => {
