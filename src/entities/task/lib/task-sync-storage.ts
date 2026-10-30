@@ -44,6 +44,7 @@ export function recordProjectTaskSyncFailure(projectId: string) {
     failureKey(projectId),
     new Date().toISOString(),
   )
+  clearProjectTaskSyncConflict(projectId, false)
   notifyProjectTaskSyncChange(projectId)
 }
 
@@ -53,6 +54,44 @@ export function getProjectTaskSyncFailedAt(projectId: string) {
     resolveBrowserStorage('session-storage'),
     failureKey(projectId),
   )
+}
+
+export function recordProjectTaskSyncConflict(
+  projectId: string,
+  actualRevision: number | null,
+) {
+  safeStorageSetItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    failureKey(projectId),
+    new Date().toISOString(),
+  )
+  safeStorageSetItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    conflictKey(projectId),
+    actualRevision === null ? 'unknown' : String(actualRevision),
+  )
+  notifyProjectTaskSyncChange(projectId)
+}
+
+export function getProjectTaskSyncConflictRevision(
+  projectId: string,
+): number | null | undefined {
+  const rawRevision = safeStorageGetItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    conflictKey(projectId),
+  )
+  if (rawRevision === null) return undefined
+  if (rawRevision === 'unknown') return null
+
+  const revision = Number(rawRevision)
+  return Number.isInteger(revision) && revision >= 0 ? revision : null
+}
+
+export function clearProjectTaskSyncConflict(projectId: string) {
+  clearProjectTaskSyncConflict(projectId, true)
 }
 
 export function recordProjectTaskSyncSuccess(
@@ -78,6 +117,7 @@ export function recordProjectTaskSyncSuccess(
     resolveBrowserStorage('session-storage'),
     failureKey(projectId),
   )
+  clearProjectTaskSyncConflict(projectId, false)
   notifyProjectTaskSyncChange(projectId)
 }
 
@@ -113,6 +153,15 @@ export function getProjectTaskServerRevision(projectId: string): number | null {
   return Number.isInteger(revision) && revision >= 0 ? revision : null
 }
 
+function clearProjectTaskSyncConflict(projectId: string, notify: boolean) {
+  safeStorageRemoveItem(
+    'session-storage',
+    resolveBrowserStorage('session-storage'),
+    conflictKey(projectId),
+  )
+  if (notify) notifyProjectTaskSyncChange(projectId)
+}
+
 function notifyProjectTaskSyncChange(projectId: string) {
   if (typeof window === 'undefined') return
   window.dispatchEvent(
@@ -126,6 +175,10 @@ function pendingKey(projectId: string) {
 
 function failureKey(projectId: string) {
   return `forma:task-sync:${syncVersion}:failed-at:${projectId}`
+}
+
+function conflictKey(projectId: string) {
+  return `forma:task-sync:${syncVersion}:conflict-revision:${projectId}`
 }
 
 function lastSyncedKey(projectId: string) {
