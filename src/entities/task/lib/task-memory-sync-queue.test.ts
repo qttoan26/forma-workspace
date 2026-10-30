@@ -1,6 +1,10 @@
 import { afterEach } from 'vitest'
 
 import type { Task } from '@/entities/task/model/task'
+import {
+  resetFrontendAuthSessionProvider,
+  setFrontendAuthSessionProvider,
+} from '@/shared/lib/auth-session'
 
 import {
   clearMemoryProjectTaskSync,
@@ -28,6 +32,7 @@ const secondTask: Task = {
 }
 
 afterEach(() => {
+  resetFrontendAuthSessionProvider()
   clearMemoryProjectTaskSync(projectId)
 })
 
@@ -60,6 +65,27 @@ describe('task memory sync queue', () => {
       completeMemoryProjectTaskSync(projectId, queuedSync.mutationId),
     ).toBe(true)
     expect(loadMemoryProjectTaskSync(projectId)).toBeNull()
+  })
+
+  it('isolates queued mutations between authenticated users', () => {
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+    const userAQueue = enqueueMemoryProjectTaskSync(projectId, [firstTask])
+
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-b',
+      getAccessToken: () => 'token-b',
+    })
+    expect(loadMemoryProjectTaskSync(projectId)).toBeNull()
+    enqueueMemoryProjectTaskSync(projectId, [secondTask])
+
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+    expect(loadMemoryProjectTaskSync(projectId)).toEqual(userAQueue)
   })
 
   it('rejects tasks from another project', () => {
