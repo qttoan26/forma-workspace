@@ -22,7 +22,6 @@ COPY apps/api/package.json ./apps/api/package.json
 RUN npm install --omit=dev --no-audit --no-fund
 
 COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY apps/api/migrations ./apps/api/migrations
 
 EXPOSE 3001
 

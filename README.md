@@ -41,17 +41,15 @@ See [`docs/architecture`](docs/architecture/README.md) for the architecture cont
 
 ## Backend persistence
 
-The API runs on port `3001` by default. Copy `.env.example` into your local environment configuration and provide `DATABASE_URL` to enable PostgreSQL persistence.
+The API runs on port `3001` by default. Copy `.env.example` into your local environment configuration and provide `MONGODB_URI` to enable MongoDB persistence. `MONGODB_DB` defaults to `forma_workspace`.
 
-When `DATABASE_URL` is present, the API applies pending SQL migrations from `apps/api/migrations` before NestJS starts accepting requests. Applied migration filenames are tracked in `schema_migrations`, and an advisory lock prevents multiple API instances from applying the same migration concurrently.
+Project tasks are stored as one snapshot document per project in the `project_task_snapshots` collection. Each document contains the project task array and its server `revision`. Because tasks and revision are updated together in a single MongoDB document, the optimistic-concurrency check remains atomic without requiring a multi-document transaction.
 
-When `DATABASE_URL` is not set, task persistence falls back to the in-memory repository for lightweight local development.
-
-The deployment artifact must include the `apps/api/migrations` directory alongside the compiled API output.
+When `MONGODB_URI` is not set, task persistence falls back to the in-memory repository for lightweight local development.
 
 ## API deployment readiness
 
-The API exposes `GET /api/health` for platform health checks. The response reports whether the process is operational and whether persistence is using PostgreSQL or the in-memory development fallback.
+The API exposes `GET /api/health` for platform health checks. The response reports whether the process is operational and whether persistence is using MongoDB or the in-memory development fallback.
 
 Cross-origin browser access is restricted by `CORS_ORIGINS`, a comma-separated allowlist. Local Vite origins are allowed by default. A production backend serving the deployed GitHub Pages frontend should set:
 
@@ -69,15 +67,24 @@ Build the production API image from the repository root:
 docker build -f apps/api/Dockerfile -t forma-api .
 ```
 
-Run it locally with the in-memory repository:
+Run MongoDB 8.2 locally:
 
 ```text
-docker run --rm -p 3001:3001 forma-api
+docker run --rm -d -p 27017:27017 --name forma-mongo mongo:8.2
 ```
 
-For production, provide `DATABASE_URL` and `CORS_ORIGINS` through the hosting platform. The image includes the SQL migrations and runs them automatically before the API starts listening. The container also defines a health check against `/api/health`.
+Then run the API with MongoDB persistence:
 
-GitHub Actions validates the image by building it, starting a container, and calling the health endpoint whenever API container inputs change.
+```text
+docker run --rm -p 3001:3001 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017 \
+  -e MONGODB_DB=forma_workspace \
+  forma-api
+```
+
+For production, provide `MONGODB_URI`, `MONGODB_DB` and `CORS_ORIGINS` through the hosting platform. The container defines a health check against `/api/health`.
+
+GitHub Actions validates the production path by starting MongoDB 8.2 and the API in containers, waiting for the MongoDB-backed health response, writing a task snapshot with revision `0`, and reading it back at revision `1`.
 
 ## Roadmap
 

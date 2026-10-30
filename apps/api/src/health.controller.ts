@@ -6,7 +6,7 @@ export class HealthController {
   getHealth() {
     return {
       status: 'ok' as const,
-      persistence: process.env.DATABASE_URL ? 'postgresql' : 'memory',
+      persistence: process.env.MONGODB_URI ? 'mongodb' : 'memory',
     }
   }
 }
