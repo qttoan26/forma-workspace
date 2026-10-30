@@ -43,12 +43,12 @@ describe('API auth token boundary', () => {
     const handler = vi.fn()
     resetUnauthorizedHandler = configureApiUnauthorizedHandler(handler)
 
-    expect(handleApiUnauthorizedResponse(new Response(null, { status: 401 }))).toBe(
-      true,
-    )
-    expect(handleApiUnauthorizedResponse(new Response(null, { status: 403 }))).toBe(
-      false,
-    )
+    expect(
+      handleApiUnauthorizedResponse(new Response(null, { status: 401 })),
+    ).toBe(true)
+    expect(
+      handleApiUnauthorizedResponse(new Response(null, { status: 403 })),
+    ).toBe(false)
     expect(handler).toHaveBeenCalledTimes(1)
   })
 })
