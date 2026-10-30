@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
-import { clearAuthSession, loadAuthSession } from './auth-session'
+import {
+  clearAuthSession,
+  getLocalLoginUrl,
+  loadAuthSession,
+} from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
 
@@ -56,6 +60,12 @@ describe('auth session', () => {
     await expect(
       loadAuthSession('https://api.example.test'),
     ).resolves.toBeNull()
+  })
+
+  it('builds the local login route from the Vite base path', () => {
+    vi.stubEnv('BASE_URL', '/forma-workspace/')
+
+    expect(getLocalLoginUrl()).toBe('/forma-workspace/login')
   })
 
   it('clears stored OIDC session and transaction state', () => {
