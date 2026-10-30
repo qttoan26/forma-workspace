@@ -55,6 +55,6 @@ function createDatabase(
 ): MongoDatabaseService {
   return {
     isConfigured,
-    ping: async () => pingResult,
+    ping: () => Promise.resolve(pingResult),
   } as unknown as MongoDatabaseService
 }
