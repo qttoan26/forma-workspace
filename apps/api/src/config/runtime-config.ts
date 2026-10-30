@@ -62,9 +62,7 @@ function validateAuthConfiguration(environment: RuntimeEnvironment) {
   }
 
   if (Boolean(jwksUrl) === Boolean(jwtSecret)) {
-    throw new Error(
-      'Configure exactly one of AUTH_JWKS_URL or AUTH_JWT_SECRET',
-    )
+    throw new Error('Configure exactly one of AUTH_JWKS_URL or AUTH_JWT_SECRET')
   }
 
   if (jwtSecret && jwtSecret.length < MINIMUM_JWT_SECRET_LENGTH) {
@@ -81,7 +79,10 @@ function validateAuthConfiguration(environment: RuntimeEnvironment) {
       throw new Error('AUTH_JWKS_URL must be a valid URL')
     }
 
-    if (environment.NODE_ENV === 'production' && parsedUrl.protocol !== 'https:') {
+    if (
+      environment.NODE_ENV === 'production' &&
+      parsedUrl.protocol !== 'https:'
+    ) {
       throw new Error('AUTH_JWKS_URL must use HTTPS in production')
     }
   }

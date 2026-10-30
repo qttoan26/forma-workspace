@@ -64,7 +64,11 @@ describe('TasksController', () => {
   it('rejects a stale expected revision without replacing tasks', async () => {
     const { controller } = createSubject()
 
-    await controller.replaceProjectTasks(task.projectId, { tasks: [task] }, owner)
+    await controller.replaceProjectTasks(
+      task.projectId,
+      { tasks: [task] },
+      owner,
+    )
 
     await expect(
       controller.replaceProjectTasks(
@@ -88,7 +92,11 @@ describe('TasksController', () => {
   it('isolates task collections by project', async () => {
     const { controller } = createSubject()
 
-    await controller.replaceProjectTasks(task.projectId, { tasks: [task] }, owner)
+    await controller.replaceProjectTasks(
+      task.projectId,
+      { tasks: [task] },
+      owner,
+    )
 
     await expect(
       controller.getProjectTasks('another-project', owner),
@@ -101,7 +109,11 @@ describe('TasksController', () => {
   it('does not reveal another users project snapshot', async () => {
     const { controller } = createSubject()
 
-    await controller.replaceProjectTasks(task.projectId, { tasks: [task] }, owner)
+    await controller.replaceProjectTasks(
+      task.projectId,
+      { tasks: [task] },
+      owner,
+    )
 
     await expect(
       controller.getProjectTasks(task.projectId, anotherUser),
@@ -114,7 +126,11 @@ describe('TasksController', () => {
   it('prevents another user from replacing an owned project', async () => {
     const { controller } = createSubject()
 
-    await controller.replaceProjectTasks(task.projectId, { tasks: [task] }, owner)
+    await controller.replaceProjectTasks(
+      task.projectId,
+      { tasks: [task] },
+      owner,
+    )
 
     await expect(
       controller.replaceProjectTasks(
@@ -129,7 +145,11 @@ describe('TasksController', () => {
     const { controller } = createSubject()
 
     await expect(
-      controller.replaceProjectTasks('another-project', { tasks: [task] }, owner),
+      controller.replaceProjectTasks(
+        'another-project',
+        { tasks: [task] },
+        owner,
+      ),
     ).rejects.toThrow(BadRequestException)
   })
 
