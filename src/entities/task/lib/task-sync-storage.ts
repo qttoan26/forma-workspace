@@ -55,13 +55,19 @@ export function getProjectTaskSyncFailedAt(projectId: string) {
   )
 }
 
-export function recordProjectTaskSyncSuccess(projectId: string) {
+export function recordProjectTaskSyncSuccess(
+  projectId: string,
+  serverRevision?: number,
+) {
   safeStorageSetItem(
     'local-storage',
     resolveBrowserStorage('local-storage'),
     lastSyncedKey(projectId),
     new Date().toISOString(),
   )
+  if (serverRevision !== undefined) {
+    recordProjectTaskServerRevision(projectId, serverRevision)
+  }
   safeStorageRemoveItem(
     'session-storage',
     resolveBrowserStorage('session-storage'),
@@ -83,6 +89,30 @@ export function getProjectTaskLastSyncedAt(projectId: string) {
   )
 }
 
+export function recordProjectTaskServerRevision(
+  projectId: string,
+  revision: number,
+) {
+  safeStorageSetItem(
+    'local-storage',
+    resolveBrowserStorage('local-storage'),
+    serverRevisionKey(projectId),
+    String(revision),
+  )
+}
+
+export function getProjectTaskServerRevision(projectId: string): number | null {
+  const rawRevision = safeStorageGetItem(
+    'local-storage',
+    resolveBrowserStorage('local-storage'),
+    serverRevisionKey(projectId),
+  )
+  if (rawRevision === null) return null
+
+  const revision = Number(rawRevision)
+  return Number.isInteger(revision) && revision >= 0 ? revision : null
+}
+
 function notifyProjectTaskSyncChange(projectId: string) {
   if (typeof window === 'undefined') return
   window.dispatchEvent(
@@ -100,4 +130,8 @@ function failureKey(projectId: string) {
 
 function lastSyncedKey(projectId: string) {
   return `forma:task-sync:${syncVersion}:last-synced:${projectId}`
+}
+
+function serverRevisionKey(projectId: string) {
+  return `forma:task-sync:${syncVersion}:server-revision:${projectId}`
 }
