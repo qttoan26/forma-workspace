@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 
+import { consumeAuthReturnTo } from '@/shared/auth/auth-session'
 import { completeOidcLogin } from '@/shared/auth/oidc-client'
 
 export function AuthCallbackPage() {
-  const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
 
     void completeOidcLogin()
-      .then(async () => {
+      .then(() => {
         if (!active) return
-        await navigate({ to: '/' })
+        window.location.assign(consumeAuthReturnTo() ?? import.meta.env.BASE_URL)
       })
       .catch((reason: unknown) => {
         if (!active) return
@@ -27,7 +26,7 @@ export function AuthCallbackPage() {
     return () => {
       active = false
     }
-  }, [navigate])
+  }, [])
 
   return (
     <main
