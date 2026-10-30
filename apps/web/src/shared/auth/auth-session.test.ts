@@ -2,13 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
-import { loadAuthSession } from './auth-session'
+import { clearAuthSession, loadAuthSession } from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
 
 afterEach(() => {
   resetAccessTokenProvider?.()
   resetAccessTokenProvider = undefined
+  sessionStorage.clear()
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
 })
@@ -55,5 +56,15 @@ describe('auth session', () => {
     await expect(
       loadAuthSession('https://api.example.test'),
     ).resolves.toBeNull()
+  })
+
+  it('clears stored OIDC session and transaction state', () => {
+    sessionStorage.setItem('forma.oidc.session', 'stored-session')
+    sessionStorage.setItem('forma.oidc.transaction', 'stored-transaction')
+
+    clearAuthSession()
+
+    expect(sessionStorage.getItem('forma.oidc.session')).toBeNull()
+    expect(sessionStorage.getItem('forma.oidc.transaction')).toBeNull()
   })
 })
