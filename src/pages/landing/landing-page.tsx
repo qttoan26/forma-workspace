@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import './landing-page.css'
 
@@ -76,18 +76,22 @@ const faqItems = [
 
 const tagline =
   'Know what matters now. Keep the project context close enough that the next action is obvious.'
+const taglineWords = tagline.split(' ')
+
+function initialVisibleWords() {
+  if (
+    typeof window !== 'undefined' &&
+    !('IntersectionObserver' in window)
+  ) {
+    return new Set(taglineWords.map((_, index) => index))
+  }
+
+  return new Set<number>()
+}
 
 function TaglineReveal() {
-  const words = useMemo(() => tagline.split(' '), [])
   const refs = useRef<Array<HTMLSpanElement | null>>([])
-  const [visibleWords, setVisibleWords] = useState(
-    () =>
-      new Set<number>(
-        typeof window !== 'undefined' && !('IntersectionObserver' in window)
-          ? words.map((_, index) => index)
-          : [],
-      ),
-  )
+  const [visibleWords, setVisibleWords] = useState(initialVisibleWords)
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
@@ -100,18 +104,25 @@ function TaglineReveal() {
 
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return
-            const index = Number((entry.target as HTMLElement).dataset.wordIndex)
+
+            const wordIndex = (entry.target as HTMLElement).dataset.wordIndex
+            const index = Number(wordIndex)
+
             if (!next.has(index)) {
               next.add(index)
               changed = true
             }
+
             observer.unobserve(entry.target)
           })
 
           return changed ? next : current
         })
       },
-      { rootMargin: '0px 0px -32% 0px', threshold: 0.15 },
+      {
+        rootMargin: '0px 0px -32% 0px',
+        threshold: 0.15,
+      },
     )
 
     refs.current.forEach((node) => {
@@ -119,11 +130,11 @@ function TaglineReveal() {
     })
 
     return () => observer.disconnect()
-  }, [words])
+  }, [])
 
   return (
     <p className="landing-tagline-copy" aria-label={tagline}>
-      {words.map((word, index) => (
+      {taglineWords.map((word, index) => (
         <span
           aria-hidden="true"
           className={visibleWords.has(index) ? 'is-visible' : undefined}
@@ -153,6 +164,7 @@ function ProductPreview() {
         </div>
         <div className="landing-product-avatar">SL</div>
       </div>
+
       <div className="landing-product-body">
         <aside className="landing-product-sidebar" aria-hidden="true">
           <span className="is-active" />
@@ -160,6 +172,7 @@ function ProductPreview() {
           <span />
           <span />
         </aside>
+
         <div className="landing-product-main">
           <div className="landing-product-heading">
             <div>
@@ -168,6 +181,7 @@ function ProductPreview() {
             </div>
             <span>4 tasks</span>
           </div>
+
           <div className="landing-product-columns">
             <section>
               <header>
@@ -190,6 +204,7 @@ function ProductPreview() {
                 </footer>
               </article>
             </section>
+
             <section>
               <header>
                 In progress <span>1</span>
@@ -203,6 +218,7 @@ function ProductPreview() {
                 </footer>
               </article>
             </section>
+
             <section>
               <header>
                 Done <span>1</span>
@@ -236,20 +252,27 @@ export function LandingPage() {
             <span aria-hidden="true">F</span>
             <strong>Forma</strong>
           </a>
+
           <div className="landing-nav-links">
             <a href="#benefits">Benefits</a>
             <a href="#how-it-works">How it works</a>
             <a href="#faq">FAQ</a>
           </div>
+
           <a className="landing-nav-cta" href={workspaceHref}>
             Open workspace
           </a>
         </nav>
       </header>
 
-      <section className="landing-hero" aria-labelledby="landing-hero-title">
+      <section
+        className="landing-hero"
+        aria-labelledby="landing-hero-title"
+      >
         <div className="landing-hero-copy">
-          <p className="landing-eyebrow">Project work with less status chasing</p>
+          <p className="landing-eyebrow">
+            Project work with less status chasing
+          </p>
           <h1 id="landing-hero-title">
             Keep the work moving without losing the context behind it.
           </h1>
@@ -258,6 +281,7 @@ export function LandingPage() {
             to see priority, ownership, progress, and the next decision that
             needs attention.
           </p>
+
           <div className="landing-hero-actions">
             <a className="landing-primary-cta" href={workspaceHref}>
               Open Forma workspace
@@ -265,6 +289,7 @@ export function LandingPage() {
             </a>
             <p>No signup required for this prototype.</p>
           </div>
+
           <div
             className="landing-proof-strip"
             aria-label="Product proof points"
@@ -280,6 +305,7 @@ export function LandingPage() {
             </span>
           </div>
         </div>
+
         <ProductPreview />
       </section>
 
@@ -294,6 +320,7 @@ export function LandingPage() {
             A calmer path from project overview to the next action.
           </h2>
         </div>
+
         <div className="landing-benefit-grid">
           {benefits.map((benefit) => (
             <article className="landing-benefit-card" key={benefit.title}>
@@ -316,6 +343,7 @@ export function LandingPage() {
             Start broad, move closer, act with the right context.
           </h2>
         </div>
+
         <div className="landing-step-list">
           {steps.map((step) => (
             <article key={step.number}>
@@ -338,7 +366,9 @@ export function LandingPage() {
         aria-labelledby="proof-title"
       >
         <div className="landing-proof-copy">
-          <p className="landing-eyebrow">Built around real project pressure</p>
+          <p className="landing-eyebrow">
+            Built around real project pressure
+          </p>
           <h2 id="proof-title">
             The most important work should not be the hardest work to find.
           </h2>
@@ -351,6 +381,7 @@ export function LandingPage() {
             Inspect the project board <span aria-hidden="true">→</span>
           </a>
         </div>
+
         <div className="landing-proof-metrics" aria-label="Prototype metrics">
           <article>
             <strong>25%</strong>
@@ -376,6 +407,7 @@ export function LandingPage() {
           <p className="landing-eyebrow">Questions before you open it</p>
           <h2 id="faq-title">A few useful answers before the first click.</h2>
         </div>
+
         <div className="landing-faq-list">
           {faqItems.map((item) => (
             <details key={item.question}>
