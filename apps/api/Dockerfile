@@ -1,15 +1,32 @@
-FROM node:22.23.3-alpine AS build
+# syntax=docker/dockerfile:1.7
+FROM node:22.23.3-alpine AS base
 
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 WORKDIR /app
 
-COPY package.json ./
+FROM base AS deps
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
-RUN npm install --no-audit --no-fund
+COPY apps/web/package.json ./apps/web/package.json
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+  pnpm config set store-dir /pnpm/store && \
+  pnpm install --frozen-lockfile
 
-COPY tsconfig.json ./
+FROM deps AS build
 COPY apps/api/tsconfig.json ./apps/api/tsconfig.json
 COPY apps/api/src ./apps/api/src
-RUN npx tsc -p apps/api/tsconfig.json
+RUN pnpm --filter @forma/api build
+
+FROM base AS production-deps
+ENV NODE_ENV=production
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+  pnpm config set store-dir /pnpm/store && \
+  pnpm install --frozen-lockfile --prod --filter @forma/api...
 
 FROM node:22.23.3-alpine AS runtime
 
@@ -17,11 +34,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
-COPY package.json ./
-COPY apps/api/package.json ./apps/api/package.json
-RUN npm install --omit=dev --no-audit --no-fund
-
+COPY --from=production-deps /app/node_modules ./node_modules
+COPY --from=production-deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY apps/api/package.json ./apps/api/package.json
 
 EXPOSE 3001
 
