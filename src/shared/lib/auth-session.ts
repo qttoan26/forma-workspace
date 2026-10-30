@@ -1,6 +1,7 @@
 export interface FrontendAuthSessionProvider {
   getSubject: () => string | null
   getAccessToken: () => Promise<string | null> | string | null
+  subscribe?: (listener: () => void) => () => void
 }
 
 export class FrontendAuthSessionChangedError extends Error {
@@ -14,15 +15,30 @@ const localDevelopmentSubject = 'local-development-user'
 const anonymousSubject = 'anonymous'
 
 let authSessionProvider: FrontendAuthSessionProvider | null = null
+let unsubscribeFromProvider: (() => void) | null = null
+const sessionListeners = new Set<() => void>()
 
 export function setFrontendAuthSessionProvider(
   provider: FrontendAuthSessionProvider,
 ): () => void {
+  unsubscribeFromProvider?.()
   authSessionProvider = provider
+  unsubscribeFromProvider = provider.subscribe?.(notifyFrontendAuthSessionChange) ?? null
+  notifyFrontendAuthSessionChange()
 
   return () => {
-    if (authSessionProvider === provider) authSessionProvider = null
+    if (authSessionProvider !== provider) return
+
+    unsubscribeFromProvider?.()
+    unsubscribeFromProvider = null
+    authSessionProvider = null
+    notifyFrontendAuthSessionChange()
   }
+}
+
+export function subscribeFrontendAuthSession(listener: () => void) {
+  sessionListeners.add(listener)
+  return () => sessionListeners.delete(listener)
 }
 
 export function getFrontendAuthSubject(): string {
@@ -51,5 +67,12 @@ export async function getFrontendAccessToken(): Promise<string | null> {
 }
 
 export function resetFrontendAuthSessionProvider() {
+  unsubscribeFromProvider?.()
+  unsubscribeFromProvider = null
   authSessionProvider = null
+  notifyFrontendAuthSessionChange()
+}
+
+function notifyFrontendAuthSessionChange() {
+  for (const listener of sessionListeners) listener()
 }
