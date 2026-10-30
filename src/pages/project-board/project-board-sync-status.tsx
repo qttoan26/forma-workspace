@@ -74,7 +74,10 @@ export function ProjectBoardSyncStatus({
 
   const status = getSyncStatus(hasRemoteSync, snapshot)
   const canRetry =
-    hasRemoteSync && snapshot.isOnline && snapshot.isPending && snapshot.failedAt
+    hasRemoteSync &&
+    snapshot.isOnline &&
+    snapshot.isPending &&
+    snapshot.failedAt
 
   async function retrySync() {
     if (!canRetry || isRetrying) return
