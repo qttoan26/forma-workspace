@@ -11,7 +11,10 @@ const transactionKey = 'forma.oidc.transaction'
 const sessionKey = 'forma.oidc.session'
 
 function configureOidcEnv() {
-  vi.stubEnv('VITE_OIDC_AUTHORIZATION_ENDPOINT', 'https://id.example.test/authorize')
+  vi.stubEnv(
+    'VITE_OIDC_AUTHORIZATION_ENDPOINT',
+    'https://id.example.test/authorize',
+  )
   vi.stubEnv('VITE_OIDC_TOKEN_ENDPOINT', 'https://id.example.test/token')
   vi.stubEnv('VITE_OIDC_CLIENT_ID', 'forma-web')
   vi.stubEnv('VITE_OIDC_REDIRECT_URI', 'https://app.example.test/auth/callback')
@@ -87,7 +90,10 @@ describe('OIDC PKCE client', () => {
   it('does not expose an expired stored access token', async () => {
     sessionStorage.setItem(
       sessionKey,
-      JSON.stringify({ accessToken: 'expired-token', expiresAt: Date.now() - 1 }),
+      JSON.stringify({
+        accessToken: 'expired-token',
+        expiresAt: Date.now() - 1,
+      }),
     )
 
     const resetProvider = initializeOidcAccessTokenProvider()
