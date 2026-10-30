@@ -42,12 +42,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Format probe
-        run: |
-          pnpm exec prettier --write apps/web/src/shared/auth/oidc-client.test.ts apps/web/src/shared/auth/oidc-client.ts
-          git diff -- apps/web/src/shared/auth/oidc-client.test.ts apps/web/src/shared/auth/oidc-client.ts
-          exit 1
-
       - name: Format check
         run: pnpm format:check
 
