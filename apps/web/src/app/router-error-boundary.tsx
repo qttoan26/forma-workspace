@@ -23,7 +23,7 @@ export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
           <button type="button" onClick={onRetry}>
             Retry
           </button>
-          <a href="/">Go home</a>
+          <a href={import.meta.env.BASE_URL}>Go home</a>
         </div>
       </section>
     </main>

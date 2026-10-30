@@ -40,6 +40,7 @@ jobs:
         run: pnpm build:web
         env:
           GITHUB_PAGES: 'true'
+          VITE_DEMO_MODE: 'true'
 
       - name: Prepare SPA fallback
         run: cp apps/web/dist/index.html apps/web/dist/404.html

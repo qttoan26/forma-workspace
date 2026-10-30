@@ -18,9 +18,17 @@ export function getAuthLogoutUrl(): string | undefined {
   return import.meta.env.VITE_AUTH_LOGOUT_URL?.trim() || undefined
 }
 
+export function isDemoMode(): boolean {
+  return import.meta.env.VITE_DEMO_MODE === 'true'
+}
+
 export async function loadAuthSession(
   baseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? '',
 ): Promise<AuthSession | null> {
+  if (isDemoMode()) {
+    return { user: { id: 'demo-user' } }
+  }
+
   const authorizationHeader = await getApiAuthorizationHeader()
   const response = await fetch(`${baseUrl}/api/auth/me`, {
     ...(authorizationHeader ? { headers: authorizationHeader } : {}),
