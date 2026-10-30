@@ -30,6 +30,7 @@ const taskCollectionSchema = z.array(taskSchema).superRefine((tasks, ctx) => {
 
 export const persistTasksBodySchema = z.object({
   tasks: taskCollectionSchema,
+  expectedRevision: z.number().int().nonnegative().optional(),
 })
 
 export type TaskRecord = z.infer<typeof taskSchema>
