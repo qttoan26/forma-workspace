@@ -30,10 +30,17 @@ export function AuthCallbackPage() {
   }, [navigate])
 
   return (
-    <main id="main-content" style={{ maxWidth: 520, margin: '0 auto', padding: '5rem 1.5rem' }}>
+    <main
+      id="main-content"
+      style={{ maxWidth: 520, margin: '0 auto', padding: '5rem 1.5rem' }}
+    >
       <p className="eyebrow">Forma Workspace</p>
       <h1>{error ? 'Sign-in failed' : 'Completing sign-in…'}</h1>
-      {error ? <p role="alert">{error}</p> : <p>Verifying your secure session.</p>}
+      {error ? (
+        <p role="alert">{error}</p>
+      ) : (
+        <p>Verifying your secure session.</p>
+      )}
     </main>
   )
 }
