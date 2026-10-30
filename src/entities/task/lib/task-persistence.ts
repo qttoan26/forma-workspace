@@ -4,6 +4,7 @@ import {
   getTaskApiBaseUrl,
   loadProjectTasksFromApi,
   persistProjectTasksToApi,
+  ProjectTaskApiConflictError,
 } from './task-api'
 import { notifyProjectTasks, publishProjectTasks } from './task-broadcast'
 import {
@@ -40,6 +41,7 @@ import {
   getProjectTaskServerRevision,
   markProjectTaskSyncPending,
   recordProjectTaskServerRevision,
+  recordProjectTaskSyncConflict,
   recordProjectTaskSyncFailure,
   recordProjectTaskSyncSuccess,
 } from './task-sync-storage'
@@ -128,6 +130,30 @@ export async function retryConfiguredProjectTaskSync(
   }
 }
 
+export async function resolveProjectTaskSyncWithServer(
+  projectId: string,
+  onFailure?: TaskMutationFailureHandler,
+): Promise<void> {
+  const apiBaseUrl = getTaskApiBaseUrl()
+  if (!apiBaseUrl) return
+
+  try {
+    const queuedSync = await loadRecoverableProjectTaskSync(projectId)
+    if (!queuedSync) return
+
+    const apiSnapshot = await loadProjectTasksFromApi(projectId, apiBaseUrl)
+    const completed = await completeRecoverableProjectTaskSync(queuedSync)
+    if (!completed) return
+
+    const revision = await cacheProjectTasks(projectId, apiSnapshot.tasks)
+    publishProjectTasks(projectId, apiSnapshot.tasks, revision)
+    notifyProjectTasks(projectId, apiSnapshot.tasks, revision)
+    recordProjectTaskSyncSuccess(projectId, apiSnapshot.revision)
+  } catch (error) {
+    onFailure?.(error)
+  }
+}
+
 export async function refreshConfiguredProjectTasks(
   projectId: string,
   onFailure?: TaskMutationFailureHandler,
@@ -170,7 +196,11 @@ async function syncProjectTasks(
 
     recordProjectTaskSyncSuccess(projectId, serverRevision)
   } catch (error) {
-    recordProjectTaskSyncFailure(projectId)
+    if (error instanceof ProjectTaskApiConflictError) {
+      recordProjectTaskSyncConflict(projectId, error.actualRevision)
+    } else {
+      recordProjectTaskSyncFailure(projectId)
+    }
     throw error
   }
 }

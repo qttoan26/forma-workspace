@@ -5,10 +5,14 @@ import {
   hasMemoryProjectTaskSync,
   memoryProjectTaskSyncChangeEvent,
 } from '@/entities/task/lib/task-memory-sync-queue'
-import { retryConfiguredProjectTaskSync } from '@/entities/task/lib/task-persistence'
+import {
+  resolveProjectTaskSyncWithServer,
+  retryConfiguredProjectTaskSync,
+} from '@/entities/task/lib/task-persistence'
 import { loadSessionProjectTaskSync } from '@/entities/task/lib/task-session-sync-queue'
 import {
   getProjectTaskLastSyncedAt,
+  getProjectTaskSyncConflictRevision,
   getProjectTaskSyncFailedAt,
   isProjectTaskSyncPending,
   projectTaskSyncChangeEvent,
@@ -25,6 +29,7 @@ interface SyncSnapshot {
   isPending: boolean
   lastSyncedAt: string | null
   failedAt: string | null
+  conflictRevision: number | null | undefined
   recoverySource: RecoverySource
 }
 
@@ -33,6 +38,7 @@ export function ProjectBoardSyncStatus({
 }: ProjectBoardSyncStatusProps) {
   const [snapshot, setSnapshot] = useState(() => readSyncSnapshot(projectId))
   const [isRetrying, setIsRetrying] = useState(false)
+  const [isResolving, setIsResolving] = useState(false)
   const hasRemoteSync = Boolean(getTaskApiBaseUrl())
 
   useEffect(() => {
@@ -71,11 +77,15 @@ export function ProjectBoardSyncStatus({
   }, [projectId])
 
   const status = getSyncStatus(hasRemoteSync, snapshot)
+  const hasConflict = snapshot.conflictRevision !== undefined
+  const canResolveConflict =
+    hasRemoteSync && snapshot.isOnline && snapshot.isPending && hasConflict
   const canRetry =
     hasRemoteSync &&
     snapshot.isOnline &&
     snapshot.isPending &&
-    snapshot.failedAt
+    Boolean(snapshot.failedAt) &&
+    !hasConflict
 
   async function retrySync() {
     if (!canRetry || isRetrying) return
@@ -88,6 +98,17 @@ export function ProjectBoardSyncStatus({
     }
   }
 
+  async function resolveWithServerVersion() {
+    if (!canResolveConflict || isResolving) return
+
+    setIsResolving(true)
+    try {
+      await resolveProjectTaskSyncWithServer(projectId)
+    } finally {
+      setIsResolving(false)
+    }
+  }
+
   return (
     <div
       className={`project-sync-status project-sync-status-${status.tone}`}
@@ -96,6 +117,16 @@ export function ProjectBoardSyncStatus({
     >
       <span className="project-sync-status-dot" aria-hidden="true" />
       <span>{status.label}</span>
+      {canResolveConflict ? (
+        <button
+          className="project-sync-status-action"
+          type="button"
+          disabled={isResolving}
+          onClick={() => void resolveWithServerVersion()}
+        >
+          {isResolving ? 'Loading…' : 'Use server'}
+        </button>
+      ) : null}
       {canRetry ? (
         <button
           className="project-sync-status-action"
@@ -118,6 +149,7 @@ function readSyncSnapshot(projectId: string): SyncSnapshot {
     isPending,
     lastSyncedAt: getProjectTaskLastSyncedAt(projectId),
     failedAt: getProjectTaskSyncFailedAt(projectId),
+    conflictRevision: getProjectTaskSyncConflictRevision(projectId),
     recoverySource: isPending ? readRecoverySource(projectId) : null,
   }
 }
@@ -134,6 +166,22 @@ function getSyncStatus(hasRemoteSync: boolean, snapshot: SyncSnapshot) {
       label: 'Saved locally',
       title: 'Tasks are stored in this browser.',
       tone: 'local',
+    } as const
+  }
+
+  if (
+    snapshot.isOnline &&
+    snapshot.isPending &&
+    snapshot.conflictRevision !== undefined
+  ) {
+    const revisionDetail =
+      snapshot.conflictRevision === null
+        ? ''
+        : ` Server revision ${snapshot.conflictRevision} is newer.`
+    return {
+      label: 'Sync conflict',
+      title: `Your local changes were based on an older server version.${revisionDetail} Use the server version to resolve without overwriting newer remote changes.`,
+      tone: 'failed',
     } as const
   }
 
