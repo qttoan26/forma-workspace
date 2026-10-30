@@ -56,5 +56,5 @@ function createDatabase(
   return {
     isConfigured,
     ping: async () => pingResult,
-  } as MongoDatabaseService
+  } as unknown as MongoDatabaseService
 }
