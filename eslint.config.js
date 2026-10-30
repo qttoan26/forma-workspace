@@ -42,7 +42,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/widgets/task-board/task-board.tsx'],
+    files: ['apps/web/src/widgets/task-board/task-board.tsx'],
     rules: {
       // TanStack Virtual intentionally exposes imperative functions that React Compiler skips memoizing.
       'react-hooks/incompatible-library': 'off',
