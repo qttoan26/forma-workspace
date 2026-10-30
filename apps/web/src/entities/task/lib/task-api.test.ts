@@ -52,8 +52,8 @@ describe('task API', () => {
       }),
     )
     vi.stubGlobal('fetch', fetchMock)
-    resetAccessTokenProvider = configureApiAccessTokenProvider(
-      async () => 'session-access-token',
+    resetAccessTokenProvider = configureApiAccessTokenProvider(() =>
+      Promise.resolve('session-access-token'),
     )
 
     await loadProjectTasksFromApi('project-forma', 'https://api.example.test')
