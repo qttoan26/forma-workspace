@@ -19,6 +19,7 @@
     "vite.performance.config.ts",
     "vitest.config.ts",
     "playwright.performance.config.ts",
+    "playwright.frontend.config.ts",
     "eslint.config.js"
   ]
 }
