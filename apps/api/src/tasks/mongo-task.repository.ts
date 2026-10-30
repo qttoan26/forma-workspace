@@ -60,7 +60,9 @@ export class MongoTaskRepository implements TaskRepository, OnModuleDestroy {
       )
 
       if (!snapshot) {
-        throw new Error('MongoDB did not return the updated project task snapshot')
+        throw new Error(
+          'MongoDB did not return the updated project task snapshot',
+        )
       }
 
       return snapshot.revision
