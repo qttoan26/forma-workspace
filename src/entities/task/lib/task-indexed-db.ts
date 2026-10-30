@@ -1,17 +1,30 @@
 import { z } from 'zod'
 
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 import {
   reportBrowserStorageFailure,
   reportBrowserStorageSuccess,
 } from '@/shared/lib/browser-storage-health'
 
 const databaseName = 'forma-workspace'
-const databaseVersion = 2
-const taskStoreName = 'project-tasks'
-const taskSyncQueueStoreName = 'task-sync-queue'
+const databaseVersion = 3
+const taskStoreName = 'project-tasks-scoped'
+const taskSyncQueueStoreName = 'task-sync-queue-scoped'
+const legacyTaskStoreName = 'project-tasks'
+const legacyTaskSyncQueueStoreName = 'task-sync-queue'
+const localDevelopmentStorageScope = 'local-development-user'
 
 const projectTaskRecordSchema = z.object({
+  storageId: z.string().min(1),
+  authScope: z.string().min(1),
+  projectId: z.string().min(1),
+  tasks: taskCollectionSchema,
+  revision: z.number().int().nonnegative().default(0),
+  updatedAt: z.string(),
+})
+
+const legacyProjectTaskRecordSchema = z.object({
   projectId: z.string().min(1),
   tasks: taskCollectionSchema,
   revision: z.number().int().nonnegative().default(0),
@@ -19,6 +32,16 @@ const projectTaskRecordSchema = z.object({
 })
 
 const queuedProjectTaskSyncSchema = z.object({
+  storageId: z.string().min(1),
+  authScope: z.string().min(1),
+  projectId: z.string().min(1),
+  tasks: taskCollectionSchema,
+  mutationId: z.string().min(1),
+  queuedAt: z.string(),
+  expectedRevision: z.number().int().nonnegative().optional(),
+})
+
+const legacyQueuedProjectTaskSyncSchema = z.object({
   projectId: z.string().min(1),
   tasks: taskCollectionSchema,
   mutationId: z.string().min(1),
@@ -41,6 +64,16 @@ export interface QueuedProjectTaskSync {
   expectedRevision?: number | undefined
 }
 
+interface ScopedProjectTaskSnapshot extends ProjectTaskSnapshot {
+  storageId: string
+  authScope: string
+}
+
+interface ScopedQueuedProjectTaskSync extends QueuedProjectTaskSync {
+  storageId: string
+  authScope: string
+}
+
 export async function loadProjectTaskSnapshotFromIndexedDb(
   projectId: string,
 ): Promise<ProjectTaskSnapshot | null> {
@@ -48,22 +81,19 @@ export async function loadProjectTaskSnapshotFromIndexedDb(
 
   const database = await openDatabase()
   try {
-    const objectStore = database
-      .transaction(taskStoreName, 'readonly')
-      .objectStore(taskStoreName)
-    const request = objectStore.get(projectId) as IDBRequest<unknown>
-    const rawRecord = await requestToPromise(request)
-    const recordResult = projectTaskRecordSchema.safeParse(rawRecord)
+    const authScope = getFrontendAuthStorageScope()
+    const storageId = createStorageId(authScope, projectId)
+    const rawRecord = await readStoreValue(database, taskStoreName, storageId)
+    const record = parseScopedProjectTaskSnapshot(
+      rawRecord,
+      authScope,
+      projectId,
+      storageId,
+    )
+    if (record) return toProjectTaskSnapshot(record)
 
-    if (!recordResult.success) return null
-    if (recordResult.data.projectId !== projectId) return null
-    if (
-      !recordResult.data.tasks.every((task) => task.projectId === projectId)
-    ) {
-      return null
-    }
-
-    return recordResult.data
+    if (authScope !== localDevelopmentStorageScope) return null
+    return migrateLegacyProjectTaskSnapshot(database, projectId, storageId)
   } finally {
     database.close()
   }
@@ -102,7 +132,10 @@ export async function enqueueProjectTaskSync(
     throw new Error('IndexedDB is unavailable')
   }
 
-  const queuedSync: QueuedProjectTaskSync = {
+  const authScope = getFrontendAuthStorageScope()
+  const queuedSync: ScopedQueuedProjectTaskSync = {
+    storageId: createStorageId(authScope, projectId),
+    authScope,
     projectId,
     tasks: parseProjectTasks(projectId, tasks),
     mutationId: createMutationId(),
@@ -117,7 +150,7 @@ export async function enqueueProjectTaskSync(
     )
     transaction.objectStore(taskSyncQueueStoreName).put(queuedSync)
     await transactionToPromise(transaction)
-    return queuedSync
+    return toQueuedProjectTaskSync(queuedSync)
   } finally {
     database.close()
   }
@@ -130,15 +163,23 @@ export async function loadQueuedProjectTaskSync(
 
   const database = await openDatabase()
   try {
-    const objectStore = database
-      .transaction(taskSyncQueueStoreName, 'readonly')
-      .objectStore(taskSyncQueueStoreName)
-    const request = objectStore.get(projectId) as IDBRequest<unknown>
-    const rawRecord = await requestToPromise(request)
-    const result = queuedProjectTaskSyncSchema.safeParse(rawRecord)
+    const authScope = getFrontendAuthStorageScope()
+    const storageId = createStorageId(authScope, projectId)
+    const rawRecord = await readStoreValue(
+      database,
+      taskSyncQueueStoreName,
+      storageId,
+    )
+    const queuedSync = parseScopedQueuedSync(
+      rawRecord,
+      authScope,
+      projectId,
+      storageId,
+    )
+    if (queuedSync) return toQueuedProjectTaskSync(queuedSync)
 
-    if (!result.success || result.data.projectId !== projectId) return null
-    return result.data
+    if (authScope !== localDevelopmentStorageScope) return null
+    return migrateLegacyQueuedSync(database, projectId, storageId)
   } finally {
     database.close()
   }
@@ -172,16 +213,25 @@ function saveProjectTaskSnapshot(
   tasks: Task[],
 ): Promise<ProjectTaskSnapshot> {
   return new Promise((resolve, reject) => {
+    const authScope = getFrontendAuthStorageScope()
+    const storageId = createStorageId(authScope, projectId)
     const transaction = database.transaction(taskStoreName, 'readwrite')
     const objectStore = transaction.objectStore(taskStoreName)
-    const request = objectStore.get(projectId) as IDBRequest<unknown>
-    let snapshot: ProjectTaskSnapshot | null = null
+    const request = objectStore.get(storageId) as IDBRequest<unknown>
+    let snapshot: ScopedProjectTaskSnapshot | null = null
 
     request.onsuccess = () => {
-      const current = projectTaskRecordSchema.safeParse(request.result)
-      const revision = current.success ? current.data.revision + 1 : 1
+      const current = parseScopedProjectTaskSnapshot(
+        request.result,
+        authScope,
+        projectId,
+        storageId,
+      )
+      const revision = current ? current.revision + 1 : 1
 
       snapshot = {
+        storageId,
+        authScope,
         projectId,
         tasks,
         revision,
@@ -203,7 +253,7 @@ function saveProjectTaskSnapshot(
         return
       }
       reportBrowserStorageSuccess('indexed-db')
-      resolve(snapshot)
+      resolve(toProjectTaskSnapshot(snapshot))
     }
     transaction.onerror = () => {
       const error =
@@ -225,18 +275,25 @@ function completeQueuedSync(
   mutationId: string,
 ): Promise<boolean> {
   return new Promise((resolve, reject) => {
+    const authScope = getFrontendAuthStorageScope()
+    const storageId = createStorageId(authScope, projectId)
     const transaction = database.transaction(
       taskSyncQueueStoreName,
       'readwrite',
     )
     const objectStore = transaction.objectStore(taskSyncQueueStoreName)
-    const request = objectStore.get(projectId) as IDBRequest<unknown>
+    const request = objectStore.get(storageId) as IDBRequest<unknown>
     let completed = false
 
     request.onsuccess = () => {
-      const result = queuedProjectTaskSyncSchema.safeParse(request.result)
-      if (result.success && result.data.mutationId === mutationId) {
-        objectStore.delete(projectId)
+      const result = parseScopedQueuedSync(
+        request.result,
+        authScope,
+        projectId,
+        storageId,
+      )
+      if (result?.mutationId === mutationId) {
+        objectStore.delete(storageId)
         completed = true
       }
     }
@@ -264,8 +321,139 @@ function completeQueuedSync(
   })
 }
 
-function createMutationId() {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
+async function migrateLegacyProjectTaskSnapshot(
+  database: IDBDatabase,
+  projectId: string,
+  storageId: string,
+): Promise<ProjectTaskSnapshot | null> {
+  if (!database.objectStoreNames.contains(legacyTaskStoreName)) return null
+
+  const rawRecord = await readStoreValue(
+    database,
+    legacyTaskStoreName,
+    projectId,
+  )
+  const legacy = legacyProjectTaskRecordSchema.safeParse(rawRecord)
+  if (!legacy.success) return null
+  if (!legacy.data.tasks.every((task) => task.projectId === projectId)) {
+    return null
+  }
+
+  const scoped: ScopedProjectTaskSnapshot = {
+    storageId,
+    authScope: localDevelopmentStorageScope,
+    ...legacy.data,
+  }
+  await writeStoreValue(database, taskStoreName, scoped)
+  await deleteStoreValue(database, legacyTaskStoreName, projectId).catch(
+    () => undefined,
+  )
+  return toProjectTaskSnapshot(scoped)
+}
+
+async function migrateLegacyQueuedSync(
+  database: IDBDatabase,
+  projectId: string,
+  storageId: string,
+): Promise<QueuedProjectTaskSync | null> {
+  if (!database.objectStoreNames.contains(legacyTaskSyncQueueStoreName)) {
+    return null
+  }
+
+  const rawRecord = await readStoreValue(
+    database,
+    legacyTaskSyncQueueStoreName,
+    projectId,
+  )
+  const legacy = legacyQueuedProjectTaskSyncSchema.safeParse(rawRecord)
+  if (!legacy.success) return null
+  if (!legacy.data.tasks.every((task) => task.projectId === projectId)) {
+    return null
+  }
+
+  const scoped: ScopedQueuedProjectTaskSync = {
+    storageId,
+    authScope: localDevelopmentStorageScope,
+    ...legacy.data,
+  }
+  await writeStoreValue(database, taskSyncQueueStoreName, scoped)
+  await deleteStoreValue(
+    database,
+    legacyTaskSyncQueueStoreName,
+    projectId,
+  ).catch(() => undefined)
+  return toQueuedProjectTaskSync(scoped)
+}
+
+function parseScopedProjectTaskSnapshot(
+  value: unknown,
+  authScope: string,
+  projectId: string,
+  storageId: string,
+): ScopedProjectTaskSnapshot | null {
+  const result = projectTaskRecordSchema.safeParse(value)
+  if (!result.success) return null
+  if (
+    result.data.authScope !== authScope ||
+    result.data.projectId !== projectId ||
+    result.data.storageId !== storageId
+  ) {
+    return null
+  }
+  if (!result.data.tasks.every((task) => task.projectId === projectId)) {
+    return null
+  }
+  return result.data
+}
+
+function parseScopedQueuedSync(
+  value: unknown,
+  authScope: string,
+  projectId: string,
+  storageId: string,
+): ScopedQueuedProjectTaskSync | null {
+  const result = queuedProjectTaskSyncSchema.safeParse(value)
+  if (!result.success) return null
+  if (
+    result.data.authScope !== authScope ||
+    result.data.projectId !== projectId ||
+    result.data.storageId !== storageId
+  ) {
+    return null
+  }
+  if (!result.data.tasks.every((task) => task.projectId === projectId)) {
+    return null
+  }
+  return result.data
+}
+
+function toProjectTaskSnapshot(
+  snapshot: ScopedProjectTaskSnapshot,
+): ProjectTaskSnapshot {
+  return {
+    projectId: snapshot.projectId,
+    tasks: snapshot.tasks,
+    revision: snapshot.revision,
+    updatedAt: snapshot.updatedAt,
+  }
+}
+
+function toQueuedProjectTaskSync(
+  queuedSync: ScopedQueuedProjectTaskSync,
+): QueuedProjectTaskSync {
+  return {
+    projectId: queuedSync.projectId,
+    tasks: queuedSync.tasks,
+    mutationId: queuedSync.mutationId,
+    queuedAt: queuedSync.queuedAt,
+    ...(queuedSync.expectedRevision === undefined
+      ? {}
+      : { expectedRevision: queuedSync.expectedRevision }),
+  }
+}
+
+function createStorageId(authScope: string, projectId: string) {
+  return `${authScope}:${encodeURIComponent(projectId)}`
 }
 
 function hasIndexedDb() {
@@ -292,11 +480,11 @@ function openDatabase(): Promise<IDBDatabase> {
       request.onupgradeneeded = () => {
         const database = request.result
         if (!database.objectStoreNames.contains(taskStoreName)) {
-          database.createObjectStore(taskStoreName, { keyPath: 'projectId' })
+          database.createObjectStore(taskStoreName, { keyPath: 'storageId' })
         }
         if (!database.objectStoreNames.contains(taskSyncQueueStoreName)) {
           database.createObjectStore(taskSyncQueueStoreName, {
-            keyPath: 'projectId',
+            keyPath: 'storageId',
           })
         }
       }
@@ -314,6 +502,37 @@ function openDatabase(): Promise<IDBDatabase> {
       reject(toError(error))
     }
   })
+}
+
+function readStoreValue(
+  database: IDBDatabase,
+  storeName: string,
+  key: IDBValidKey,
+): Promise<unknown> {
+  const objectStore = database
+    .transaction(storeName, 'readonly')
+    .objectStore(storeName)
+  return requestToPromise(objectStore.get(key) as IDBRequest<unknown>)
+}
+
+function writeStoreValue(
+  database: IDBDatabase,
+  storeName: string,
+  value: unknown,
+): Promise<void> {
+  const transaction = database.transaction(storeName, 'readwrite')
+  transaction.objectStore(storeName).put(value)
+  return transactionToPromise(transaction)
+}
+
+function deleteStoreValue(
+  database: IDBDatabase,
+  storeName: string,
+  key: IDBValidKey,
+): Promise<void> {
+  const transaction = database.transaction(storeName, 'readwrite')
+  transaction.objectStore(storeName).delete(key)
+  return transactionToPromise(transaction)
 }
 
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
@@ -343,12 +562,15 @@ function transactionToPromise(transaction: IDBTransaction): Promise<void> {
       reject(error)
     }
     transaction.onabort = () => {
-      const error =
-        transaction.error ?? new Error('IndexedDB transaction aborted')
+      const error = transaction.error ?? new Error('IndexedDB transaction aborted')
       reportBrowserStorageFailure('indexed-db', error)
       reject(error)
     }
   })
+}
+
+function createMutationId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
 }
 
 function toError(error: unknown) {
