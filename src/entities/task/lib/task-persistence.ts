@@ -1,4 +1,5 @@
 import type { Task } from '@/entities/task/model/task'
+import { FrontendAuthSessionChangedError } from '@/shared/lib/auth-session'
 
 import {
   getTaskApiBaseUrl,
@@ -56,7 +57,7 @@ export async function loadConfiguredProjectTasks(
   fallback: Task[],
 ): Promise<Task[]> {
   const indexedDbTasks = await loadProjectTasksFromIndexedDb(projectId).catch(
-    () => null,
+    ignoreRecoverableStorageFailure,
   )
   if (indexedDbTasks) return indexedDbTasks
 
@@ -64,7 +65,10 @@ export async function loadConfiguredProjectTasks(
   if (legacyTasks.length > 0) {
     const migrated = await saveProjectTasksToIndexedDb(projectId, legacyTasks)
       .then(() => true)
-      .catch(() => false)
+      .catch((error: unknown) => {
+        rethrowAuthSessionChange(error)
+        return false
+      })
     if (migrated) clearProjectTasks(projectId)
     return legacyTasks
   }
@@ -196,6 +200,8 @@ async function syncProjectTasks(
 
     recordProjectTaskSyncSuccess(projectId, serverRevision)
   } catch (error) {
+    if (error instanceof FrontendAuthSessionChangedError) throw error
+
     if (error instanceof ProjectTaskApiConflictError) {
       recordProjectTaskSyncConflict(projectId, error.actualRevision)
     } else {
@@ -214,7 +220,7 @@ async function enqueueRecoverableProjectTaskSync(
     projectId,
     tasks,
     expectedRevision,
-  ).catch(() => null)
+  ).catch(ignoreRecoverableStorageFailure)
 
   if (indexedDbQueuedSync) {
     clearSessionProjectTaskSync(projectId)
@@ -252,7 +258,7 @@ async function loadRecoverableProjectTaskSync(
   projectId: string,
 ): Promise<RecoverableQueuedProjectTaskSync | null> {
   const indexedDbQueuedSync = await loadQueuedProjectTaskSync(projectId).catch(
-    () => null,
+    ignoreRecoverableStorageFailure,
   )
   if (indexedDbQueuedSync) {
     return {
@@ -305,8 +311,18 @@ async function cacheProjectTasks(
   try {
     const snapshot = await saveProjectTasksToIndexedDb(projectId, tasks)
     return snapshot.revision
-  } catch {
+  } catch (error) {
+    rethrowAuthSessionChange(error)
     saveProjectTasks(projectId, tasks)
     return null
   }
+}
+
+function ignoreRecoverableStorageFailure(error: unknown) {
+  rethrowAuthSessionChange(error)
+  return null
+}
+
+function rethrowAuthSessionChange(error: unknown) {
+  if (error instanceof FrontendAuthSessionChangedError) throw error
 }
