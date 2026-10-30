@@ -1,12 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Task } from '@/entities/task/model/task'
+import {
+  resetFrontendAuthSessionProvider,
+  setFrontendAuthSessionProvider,
+} from '@/shared/lib/auth-session'
 
 import {
   createApiTaskMutationAdapter,
   loadProjectTasksFromApi,
   persistProjectTasksToApi,
   ProjectTaskApiConflictError,
+  ProjectTaskApiUnauthorizedError,
 } from './task-api'
 
 const task: Task = {
@@ -19,6 +24,7 @@ const task: Task = {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  resetFrontendAuthSessionProvider()
 })
 
 describe('task API', () => {
@@ -36,6 +42,30 @@ describe('task API', () => {
     ).resolves.toEqual({ tasks: [task], revision: 4 })
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.test/api/projects/project-forma/tasks',
+    )
+  })
+
+  it('attaches the current bearer token to project task reads', async () => {
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-1',
+      getAccessToken: () => 'token-1',
+    })
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ tasks: [task], revision: 4 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await loadProjectTasksFromApi(
+      'project-forma',
+      'https://api.example.test',
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.test/api/projects/project-forma/tasks',
+      { headers: { Authorization: 'Bearer token-1' } },
     )
   })
 
@@ -65,6 +95,61 @@ describe('task API', () => {
         body: JSON.stringify({ tasks: [task], expectedRevision: 4 }),
       },
     )
+  })
+
+  it('attaches the current bearer token to project task writes', async () => {
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-1',
+      getAccessToken: async () => 'token-1',
+    })
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ revision: 5 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await persistProjectTasksToApi(
+      'project-forma',
+      [task],
+      'https://api.example.test',
+      4,
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.test/api/projects/project-forma/tasks',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer token-1',
+        },
+        body: JSON.stringify({ tasks: [task], expectedRevision: 4 }),
+      },
+    )
+  })
+
+  it('surfaces authentication failures for project task reads', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 401 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      loadProjectTasksFromApi('project-forma', 'https://api.example.test'),
+    ).rejects.toBeInstanceOf(ProjectTaskApiUnauthorizedError)
+  })
+
+  it('surfaces authentication failures for project task writes', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 401 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      persistProjectTasksToApi(
+        'project-forma',
+        [task],
+        'https://api.example.test',
+      ),
+    ).rejects.toBeInstanceOf(ProjectTaskApiUnauthorizedError)
   })
 
   it('surfaces server revision conflicts', async () => {
