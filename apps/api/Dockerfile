@@ -26,6 +26,6 @@ COPY --from=build /app/apps/api/dist ./apps/api/dist
 EXPOSE 3001
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3001) + '/api/health').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3001) + '/api/health/ready').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"
 
 CMD ["node", "apps/api/dist/main.js"]

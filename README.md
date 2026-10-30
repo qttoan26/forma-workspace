@@ -49,7 +49,12 @@ When `MONGODB_URI` is not set, task persistence falls back to the in-memory repo
 
 ## API deployment readiness
 
-The API exposes `GET /api/health` for platform health checks. The response reports whether the process is operational and whether persistence is using MongoDB or the in-memory development fallback.
+The API exposes two health endpoints:
+
+- `GET /api/health` is a lightweight liveness check for the NestJS process.
+- `GET /api/health/ready` is the traffic-readiness check. When MongoDB is configured, it pings the configured database and returns HTTP `503` while MongoDB is unavailable.
+
+MongoDB uses one shared client across task persistence and readiness checks. This avoids opening separate pools for each API concern and lets container health reflect the same database path used by task requests.
 
 Cross-origin browser access is restricted by `CORS_ORIGINS`, a comma-separated allowlist. Local Vite origins are allowed by default. A production backend serving the deployed GitHub Pages frontend should set:
 
@@ -82,9 +87,9 @@ docker run --rm -p 3001:3001 \
   forma-api
 ```
 
-For production, provide `MONGODB_URI`, `MONGODB_DB` and `CORS_ORIGINS` through the hosting platform. The container defines a health check against `/api/health`.
+For production, provide `MONGODB_URI`, `MONGODB_DB` and `CORS_ORIGINS` through the hosting platform. The container health check uses `/api/health/ready`, so an API instance with an unavailable MongoDB dependency is removed from traffic instead of appearing healthy.
 
-GitHub Actions validates the production path by starting MongoDB 8.2 and the API in containers, waiting for the MongoDB-backed health response, writing a task snapshot with revision `0`, and reading it back at revision `1`.
+GitHub Actions validates the production path by starting MongoDB 8.2 and the API in containers, waiting for database readiness, writing and reading a revisioned task snapshot, verifying stale writes return `409`, then stopping MongoDB and confirming liveness stays up while readiness returns `503`.
 
 ## Roadmap
 
