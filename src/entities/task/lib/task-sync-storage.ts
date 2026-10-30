@@ -1,3 +1,4 @@
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 import {
   resolveBrowserStorage,
   safeStorageGetItem,
@@ -5,7 +6,7 @@ import {
   safeStorageSetItem,
 } from '@/shared/lib/browser-storage-health'
 
-const syncVersion = 'v1'
+const syncVersion = 'v2'
 export const projectTaskSyncChangeEvent = 'forma:project-task-sync-change'
 
 export function markProjectTaskSyncPending(projectId: string) {
@@ -170,21 +171,25 @@ function notifyProjectTaskSyncChange(projectId: string) {
 }
 
 function pendingKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:pending:${projectId}`
+  return scopedKey('pending', projectId)
 }
 
 function failureKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:failed-at:${projectId}`
+  return scopedKey('failed-at', projectId)
 }
 
 function conflictKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:conflict-revision:${projectId}`
+  return scopedKey('conflict-revision', projectId)
 }
 
 function lastSyncedKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:last-synced:${projectId}`
+  return scopedKey('last-synced', projectId)
 }
 
 function serverRevisionKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:server-revision:${projectId}`
+  return scopedKey('server-revision', projectId)
+}
+
+function scopedKey(kind: string, projectId: string) {
+  return `forma:task-sync:${syncVersion}:${kind}:${getFrontendAuthStorageScope()}:${projectId}`
 }
