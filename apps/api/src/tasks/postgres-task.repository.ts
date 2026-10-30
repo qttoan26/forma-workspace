@@ -2,7 +2,10 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common'
 import { Pool, type PoolClient } from 'pg'
 
 import type { TaskRecord } from './task.schema'
-import type { TaskRepository } from './task.repository'
+import {
+  ProjectTaskRevisionConflictError,
+  type TaskRepository,
+} from './task.repository'
 
 interface TaskRow {
   id: string
@@ -13,6 +16,10 @@ interface TaskRow {
   priority: TaskRecord['priority']
   assignee_id: string | null
   due_date: string | null
+}
+
+interface RevisionRow {
+  revision: string
 }
 
 @Injectable()
@@ -27,18 +34,58 @@ export class PostgresTaskRepository implements TaskRepository, OnModuleDestroy {
     this.pool = new Pool({ connectionString })
   }
 
-  async replaceProjectTasks(projectId: string, tasks: TaskRecord[]) {
+  async replaceProjectTasks(
+    projectId: string,
+    tasks: TaskRecord[],
+    expectedRevision?: number,
+  ) {
     const client = await this.pool.connect()
 
     try {
       await client.query('BEGIN')
+      await client.query(
+        `INSERT INTO project_task_revisions (project_id, revision)
+         VALUES ($1, 0)
+         ON CONFLICT (project_id) DO NOTHING`,
+        [projectId],
+      )
+
+      const revisionResult = await client.query<RevisionRow>(
+        `SELECT revision
+         FROM project_task_revisions
+         WHERE project_id = $1
+         FOR UPDATE`,
+        [projectId],
+      )
+      const currentRevision = Number(revisionResult.rows[0]?.revision ?? 0)
+
+      if (
+        expectedRevision !== undefined &&
+        expectedRevision !== currentRevision
+      ) {
+        throw new ProjectTaskRevisionConflictError(
+          expectedRevision,
+          currentRevision,
+        )
+      }
+
       await client.query('DELETE FROM tasks WHERE project_id = $1', [projectId])
 
       for (const task of tasks) {
         await this.insertTask(client, task)
       }
 
+      const nextRevisionResult = await client.query<RevisionRow>(
+        `UPDATE project_task_revisions
+         SET revision = revision + 1
+         WHERE project_id = $1
+         RETURNING revision`,
+        [projectId],
+      )
+      const nextRevision = Number(nextRevisionResult.rows[0]?.revision)
+
       await client.query('COMMIT')
+      return nextRevision
     } catch (error) {
       await client.query('ROLLBACK')
       throw error
@@ -48,15 +95,26 @@ export class PostgresTaskRepository implements TaskRepository, OnModuleDestroy {
   }
 
   async getProjectTasks(projectId: string) {
-    const result = await this.pool.query<TaskRow>(
-      `SELECT id, project_id, title, description, status, priority, assignee_id, due_date
-       FROM tasks
-       WHERE project_id = $1
-       ORDER BY id`,
-      [projectId],
-    )
+    const [tasksResult, revisionResult] = await Promise.all([
+      this.pool.query<TaskRow>(
+        `SELECT id, project_id, title, description, status, priority, assignee_id, due_date
+         FROM tasks
+         WHERE project_id = $1
+         ORDER BY id`,
+        [projectId],
+      ),
+      this.pool.query<RevisionRow>(
+        `SELECT revision
+         FROM project_task_revisions
+         WHERE project_id = $1`,
+        [projectId],
+      ),
+    ])
 
-    return result.rows.map(toTaskRecord)
+    return {
+      tasks: tasksResult.rows.map(toTaskRecord),
+      revision: Number(revisionResult.rows[0]?.revision ?? 0),
+    }
   }
 
   async onModuleDestroy() {
