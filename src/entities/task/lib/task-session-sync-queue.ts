@@ -17,17 +17,20 @@ const queuedProjectTaskSyncSchema = z.object({
   tasks: taskCollectionSchema,
   mutationId: z.string().min(1),
   queuedAt: z.string(),
+  expectedRevision: z.number().int().nonnegative().optional(),
 })
 
 export function enqueueSessionProjectTaskSync(
   projectId: string,
   tasks: Task[],
+  expectedRevision?: number,
 ): QueuedProjectTaskSync | null {
   const queuedSync: QueuedProjectTaskSync = {
     projectId,
     tasks: parseProjectTasks(projectId, tasks),
     mutationId: createMutationId(),
     queuedAt: new Date().toISOString(),
+    ...(expectedRevision === undefined ? {} : { expectedRevision }),
   }
 
   const stored = safeStorageSetItem(
