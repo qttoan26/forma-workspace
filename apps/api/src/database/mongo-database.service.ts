@@ -6,11 +6,9 @@ export class MongoDatabaseService implements OnModuleDestroy {
   private readonly client: MongoClient | null
   private readonly databaseName: string
 
-  constructor(
-    connectionString = process.env.MONGODB_URI,
-    databaseName = process.env.MONGODB_DB ?? 'forma_workspace',
-  ) {
-    this.databaseName = databaseName
+  constructor() {
+    const connectionString = process.env.MONGODB_URI
+    this.databaseName = process.env.MONGODB_DB ?? 'forma_workspace'
     this.client = connectionString
       ? new MongoClient(connectionString, { serverSelectionTimeoutMS: 5_000 })
       : null
