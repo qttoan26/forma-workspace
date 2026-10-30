@@ -1,6 +1,9 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 
-const storageVersion = 'v1'
+const storageVersion = 'v2'
+const legacyStorageVersion = 'v1'
+const localDevelopmentStorageScope = 'local-development-user'
 
 export function loadProjectTasks(
   projectId: string,
@@ -8,17 +11,24 @@ export function loadProjectTasks(
   storage: Storage = window.localStorage,
 ): Task[] {
   try {
-    const saved = storage.getItem(storageKey(projectId))
-    if (!saved) return fallback
+    const scopedKey = storageKey(projectId)
+    const saved = storage.getItem(scopedKey)
+    if (saved) return parseStoredTasks(projectId, saved, fallback)
 
-    const parsed: unknown = JSON.parse(saved)
-    const result = taskCollectionSchema.safeParse(parsed)
-    if (!result.success) return fallback
-    if (!result.data.every((task) => task.projectId === projectId)) {
+    if (getFrontendAuthStorageScope() !== localDevelopmentStorageScope) {
       return fallback
     }
 
-    return result.data
+    const legacyKey = legacyStorageKey(projectId)
+    const legacy = storage.getItem(legacyKey)
+    if (!legacy) return fallback
+
+    const tasks = parseStoredTasks(projectId, legacy, fallback)
+    if (tasks === fallback) return fallback
+
+    storage.setItem(scopedKey, JSON.stringify(tasks))
+    storage.removeItem(legacyKey)
+    return tasks
   } catch {
     return fallback
   }
@@ -42,11 +52,29 @@ export function clearProjectTasks(
 ) {
   try {
     storage.removeItem(storageKey(projectId))
+    if (getFrontendAuthStorageScope() === localDevelopmentStorageScope) {
+      storage.removeItem(legacyStorageKey(projectId))
+    }
   } catch {
     // Legacy cleanup is best-effort.
   }
 }
 
+function parseStoredTasks(projectId: string, saved: string, fallback: Task[]) {
+  const parsed: unknown = JSON.parse(saved)
+  const result = taskCollectionSchema.safeParse(parsed)
+  if (!result.success) return fallback
+  if (!result.data.every((task) => task.projectId === projectId)) {
+    return fallback
+  }
+
+  return result.data
+}
+
 function storageKey(projectId: string) {
-  return `forma:tasks:${storageVersion}:${projectId}`
+  return `forma:tasks:${storageVersion}:${getFrontendAuthStorageScope()}:${projectId}`
+}
+
+function legacyStorageKey(projectId: string) {
+  return `forma:tasks:${legacyStorageVersion}:${projectId}`
 }
