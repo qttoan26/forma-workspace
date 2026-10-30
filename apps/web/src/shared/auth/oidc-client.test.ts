@@ -52,7 +52,11 @@ describe('OIDC PKCE client', () => {
     expect(fetchMock).toHaveBeenCalledOnce()
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(request.method).toBe('POST')
-    expect(request.body?.toString()).toContain('code_verifier=verifier-123')
+    expect(request.body).toBeInstanceOf(URLSearchParams)
+    if (!(request.body instanceof URLSearchParams)) {
+      throw new Error('Expected token request body to be URLSearchParams')
+    }
+    expect(request.body.get('code_verifier')).toBe('verifier-123')
     expect(sessionStorage.getItem(transactionKey)).toBeNull()
     expect(sessionStorage.getItem(sessionKey)).toContain('access-123')
 
