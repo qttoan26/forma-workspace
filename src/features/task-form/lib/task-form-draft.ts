@@ -4,10 +4,11 @@ import {
   taskPrioritySchema,
   taskStatusSchema,
 } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 
 import type { TaskFormValues } from '../model/task-form-schema'
 
-const draftVersion = 'v1'
+const draftVersion = 'v2'
 
 const taskFormDraftSchema = z.object({
   title: z.string(),
@@ -20,7 +21,7 @@ const taskFormDraftSchema = z.object({
 
 export function createTaskFormDraftKey(projectId: string, taskId?: string) {
   const scope = taskId ? `edit:${taskId}` : 'new'
-  return `forma:task-draft:${draftVersion}:${projectId}:${scope}`
+  return `forma:task-draft:${draftVersion}:${getFrontendAuthStorageScope()}:${projectId}:${scope}`
 }
 
 export function loadTaskFormDraft(
