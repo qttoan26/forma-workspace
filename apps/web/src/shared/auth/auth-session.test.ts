@@ -2,20 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
-import {
-  clearAuthSession,
-  initializeAuthSessionLifecycle,
-  loadAuthSession,
-} from './auth-session'
+import { clearAuthSession, getLocalLoginUrl, loadAuthSession } from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
-let resetAuthSessionLifecycle: (() => void) | undefined
 
 afterEach(() => {
   resetAccessTokenProvider?.()
   resetAccessTokenProvider = undefined
-  resetAuthSessionLifecycle?.()
-  resetAuthSessionLifecycle = undefined
   sessionStorage.clear()
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
@@ -65,25 +58,10 @@ describe('auth session', () => {
     ).resolves.toBeNull()
   })
 
-  it('clears the expired OIDC session and redirects to the local login route', async () => {
+  it('builds the local login route from the Vite base path', () => {
     vi.stubEnv('BASE_URL', '/forma-workspace/')
-    sessionStorage.setItem('forma.oidc.session', 'stored-session')
-    sessionStorage.setItem('forma.oidc.transaction', 'stored-transaction')
-    const assign = vi.fn()
-    vi.stubGlobal('location', { assign })
-    resetAuthSessionLifecycle = initializeAuthSessionLifecycle()
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
-    )
 
-    await expect(
-      loadAuthSession('https://api.example.test'),
-    ).resolves.toBeNull()
-
-    expect(sessionStorage.getItem('forma.oidc.session')).toBeNull()
-    expect(sessionStorage.getItem('forma.oidc.transaction')).toBeNull()
-    expect(assign).toHaveBeenCalledWith('/forma-workspace/login')
+    expect(getLocalLoginUrl()).toBe('/forma-workspace/login')
   })
 
   it('clears stored OIDC session and transaction state', () => {
