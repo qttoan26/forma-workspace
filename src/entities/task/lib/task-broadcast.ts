@@ -51,17 +51,21 @@ export function subscribeProjectTasks(
   onSnapshot: (snapshot: ProjectTaskSnapshot) => void,
 ) {
   const channel = openChannel()
+  const subscriptionAuthScope = getFrontendAuthStorageScope()
   let lastDeliveredRevision = -1
 
   async function deliver(value: unknown, allowCurrentSource: boolean) {
     const message = parseMessage(value)
     if (!message || message.projectId !== projectId) return
-    if (message.authScope !== getFrontendAuthStorageScope()) return
+    if (getFrontendAuthStorageScope() !== subscriptionAuthScope) return
+    if (message.authScope !== subscriptionAuthScope) return
     if (!allowCurrentSource && message.sourceId === sourceId) return
 
     const storedSnapshot = await loadProjectTaskSnapshotFromIndexedDb(
       projectId,
     ).catch(() => null)
+    if (getFrontendAuthStorageScope() !== subscriptionAuthScope) return
+
     if (storedSnapshot) {
       if (
         message.revision !== null &&
