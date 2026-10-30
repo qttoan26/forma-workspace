@@ -79,10 +79,7 @@ const tagline =
 const taglineWords = tagline.split(' ')
 
 function initialVisibleWords() {
-  if (
-    typeof window !== 'undefined' &&
-    !('IntersectionObserver' in window)
-  ) {
+  if (typeof window !== 'undefined' && !('IntersectionObserver' in window)) {
     return new Set(taglineWords.map((_, index) => index))
   }
 
@@ -265,10 +262,7 @@ export function LandingPage() {
         </nav>
       </header>
 
-      <section
-        className="landing-hero"
-        aria-labelledby="landing-hero-title"
-      >
+      <section className="landing-hero" aria-labelledby="landing-hero-title">
         <div className="landing-hero-copy">
           <p className="landing-eyebrow">
             Project work with less status chasing
@@ -366,16 +360,15 @@ export function LandingPage() {
         aria-labelledby="proof-title"
       >
         <div className="landing-proof-copy">
-          <p className="landing-eyebrow">
-            Built around real project pressure
-          </p>
+          <p className="landing-eyebrow">Built around real project pressure</p>
           <h2 id="proof-title">
             The most important work should not be the hardest work to find.
           </h2>
           <p>
             The current Forma prototype puts urgent work, active project
             progress, and ownership in the same visual system. The design favors
-            quick scanning first, then deeper task context only when you need it.
+            quick scanning first, then deeper task context only when you need
+            it.
           </p>
           <a className="landing-text-link" href={workspaceHref}>
             Inspect the project board <span aria-hidden="true">→</span>
@@ -421,10 +414,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section
-        className="landing-final-cta"
-        aria-labelledby="final-cta-title"
-      >
+      <section className="landing-final-cta" aria-labelledby="final-cta-title">
         <p className="landing-eyebrow">Ready to inspect the product</p>
         <h2 id="final-cta-title">
           Open the workspace and follow the work from overview to task.
