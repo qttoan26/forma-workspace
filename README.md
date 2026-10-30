@@ -70,29 +70,29 @@ See [`docs/architecture`](docs/architecture/README.md) for the architecture cont
 
 ### Workspace
 
-| Package / tool | Current role |
-| --- | --- |
-| pnpm `10.18.3` | workspace package manager and fast cached installs |
-| TypeScript `5.9.x` | strict typing across frontend and API |
-| ESLint `9.x` | type-aware linting |
-| Prettier `3.6.2` | formatting gate |
-| Vitest `3.2.x` | frontend and API unit tests |
+| Package / tool     | Current role                                       |
+| ------------------ | -------------------------------------------------- |
+| pnpm `10.18.3`     | workspace package manager and fast cached installs |
+| TypeScript `5.9.x` | strict typing across frontend and API              |
+| ESLint `9.x`       | type-aware linting                                 |
+| Prettier `3.6.2`   | formatting gate                                    |
+| Vitest `3.2.x`     | frontend and API unit tests                        |
 
 ### Frontend — `@forma/web`
 
-| Package | Current role |
-| --- | --- |
-| React `19.2.x` | UI runtime |
-| React DOM `19.2.x` | browser renderer |
-| Vite `7.1.x` | dev server and production build |
-| TanStack Router `1.132.x` | typed routing, protected routes, loaders |
-| TanStack Virtual `3.14.x` | scalable virtualized UI surfaces |
-| React Hook Form `7.65.x` | form state |
-| `@hookform/resolvers` `5.2.x` | form/schema integration |
-| Zod `4.1.x` | runtime validation |
-| Playwright `1.56.x` | browser smoke and performance tests |
-| Testing Library | component behavior and accessibility-oriented tests |
-| jsdom `27.x` | browser-like unit-test environment |
+| Package                       | Current role                                        |
+| ----------------------------- | --------------------------------------------------- |
+| React `19.2.x`                | UI runtime                                          |
+| React DOM `19.2.x`            | browser renderer                                    |
+| Vite `7.1.x`                  | dev server and production build                     |
+| TanStack Router `1.132.x`     | typed routing, protected routes, loaders            |
+| TanStack Virtual `3.14.x`     | scalable virtualized UI surfaces                    |
+| React Hook Form `7.65.x`      | form state                                          |
+| `@hookform/resolvers` `5.2.x` | form/schema integration                             |
+| Zod `4.1.x`                   | runtime validation                                  |
+| Playwright `1.56.x`           | browser smoke and performance tests                 |
+| Testing Library               | component behavior and accessibility-oriented tests |
+| jsdom `27.x`                  | browser-like unit-test environment                  |
 
 The frontend uses browser storage intentionally:
 
@@ -102,14 +102,14 @@ The frontend uses browser storage intentionally:
 
 ### API — `@forma/api`
 
-| Package | Current role |
-| --- | --- |
-| NestJS `11.1.x` | API framework and dependency injection |
-| MongoDB driver `6.20.x` | durable task snapshot persistence |
-| `jose` `6.2.x` | JWT/JWKS verification |
-| Zod `4.1.x` | runtime configuration/input validation |
-| RxJS `7.8.x` | NestJS runtime dependency |
-| `reflect-metadata` `0.2.x` | NestJS metadata support |
+| Package                    | Current role                           |
+| -------------------------- | -------------------------------------- |
+| NestJS `11.1.x`            | API framework and dependency injection |
+| MongoDB driver `6.20.x`    | durable task snapshot persistence      |
+| `jose` `6.2.x`             | JWT/JWKS verification                  |
+| Zod `4.1.x`                | runtime configuration/input validation |
+| RxJS `7.8.x`               | NestJS runtime dependency              |
+| `reflect-metadata` `0.2.x` | NestJS metadata support                |
 
 ## Getting started
 
