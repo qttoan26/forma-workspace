@@ -4,12 +4,18 @@ import {
   ConflictException,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Put,
 } from '@nestjs/common'
 
+import { CurrentUser } from '../auth/current-user.decorator'
+import type { AuthenticatedUser } from '../auth/auth.types'
 import { persistTasksBodySchema } from './task.schema'
-import { ProjectTaskRevisionConflictError } from './task.repository'
+import {
+  ProjectTaskAccessDeniedError,
+  ProjectTaskRevisionConflictError,
+} from './task.repository'
 import { TasksService } from './tasks.service'
 
 @Controller('projects/:projectId/tasks')
@@ -17,14 +23,18 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  getProjectTasks(@Param('projectId') projectId: string) {
-    return this.tasksService.getProjectTasks(projectId)
+  getProjectTasks(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.tasksService.getProjectTasks(user.id, projectId)
   }
 
   @Put()
   async replaceProjectTasks(
     @Param('projectId') projectId: string,
     @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const parsed = persistTasksBodySchema.safeParse(body)
     if (!parsed.success) {
@@ -39,6 +49,7 @@ export class TasksController {
 
     try {
       const revision = await this.tasksService.replaceProjectTasks(
+        user.id,
         projectId,
         parsed.data.tasks,
         parsed.data.expectedRevision,
@@ -52,6 +63,10 @@ export class TasksController {
           expectedRevision: error.expectedRevision,
           actualRevision: error.actualRevision,
         })
+      }
+
+      if (error instanceof ProjectTaskAccessDeniedError) {
+        throw new NotFoundException('Project not found')
       }
 
       throw error

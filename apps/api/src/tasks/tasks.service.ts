@@ -10,18 +10,20 @@ export class TasksService {
   ) {}
 
   replaceProjectTasks(
+    ownerId: string,
     projectId: string,
     tasks: TaskRecord[],
     expectedRevision?: number,
   ) {
     return this.taskRepository.replaceProjectTasks(
+      ownerId,
       projectId,
       tasks,
       expectedRevision,
     )
   }
 
-  getProjectTasks(projectId: string) {
-    return this.taskRepository.getProjectTasks(projectId)
+  getProjectTasks(ownerId: string, projectId: string) {
+    return this.taskRepository.getProjectTasks(ownerId, projectId)
   }
 }

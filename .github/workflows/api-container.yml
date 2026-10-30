@@ -49,10 +49,13 @@ jobs:
             --env MONGODB_URI=mongodb://forma-mongo:27017 \
             --env MONGODB_DB=forma_workspace_test \
             --env CORS_ORIGINS=http://localhost:5173 \
+            --env AUTH_ISSUER=https://issuer.example.test \
+            --env AUTH_AUDIENCE=forma-api \
+            --env AUTH_JWT_SECRET=forma-api-smoke-secret-at-least-32-characters \
             --name forma-api \
             forma-api:test
 
-      - name: Verify MongoDB-backed API
+      - name: Verify authenticated MongoDB-backed API
         run: |
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:3001/api/health/ready | grep -q '"status":"ready"'; then
@@ -68,14 +71,30 @@ jobs:
           curl --fail --silent http://127.0.0.1:3001/api/health \
             | grep -q '"persistence":"mongodb"'
 
+          unauthenticated_status=$(curl --silent \
+            --output /tmp/unauthenticated-response.json \
+            --write-out '%{http_code}' \
+            http://127.0.0.1:3001/api/projects/project-smoke/tasks)
+          test "$unauthenticated_status" = '401'
+
+          owner_token=$(docker exec forma-api node -e "(async()=>{const {SignJWT}=await import('jose');const token=await new SignJWT({}).setProtectedHeader({alg:'HS256'}).setSubject('smoke-owner').setIssuer(process.env.AUTH_ISSUER).setAudience(process.env.AUTH_AUDIENCE).setExpirationTime('5m').sign(new TextEncoder().encode(process.env.AUTH_JWT_SECRET));process.stdout.write(token)})()")
+          another_token=$(docker exec forma-api node -e "(async()=>{const {SignJWT}=await import('jose');const token=await new SignJWT({}).setProtectedHeader({alg:'HS256'}).setSubject('smoke-another-user').setIssuer(process.env.AUTH_ISSUER).setAudience(process.env.AUTH_AUDIENCE).setExpirationTime('5m').sign(new TextEncoder().encode(process.env.AUTH_JWT_SECRET));process.stdout.write(token)})()")
+
+          curl --fail --silent \
+            --header "Authorization: Bearer $owner_token" \
+            http://127.0.0.1:3001/api/auth/me \
+            | grep -q '"id":"smoke-owner"'
+
           curl --fail --silent \
             --request PUT \
             --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $owner_token" \
             --data '{"tasks":[{"id":"task-smoke","projectId":"project-smoke","title":"Mongo smoke task","status":"todo","priority":"medium"}],"expectedRevision":0}' \
             http://127.0.0.1:3001/api/projects/project-smoke/tasks \
             | grep -q '"revision":1'
 
           curl --fail --silent \
+            --header "Authorization: Bearer $owner_token" \
             http://127.0.0.1:3001/api/projects/project-smoke/tasks \
             | grep -q '"revision":1'
 
@@ -84,6 +103,7 @@ jobs:
             --write-out '%{http_code}' \
             --request PUT \
             --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $owner_token" \
             --data '{"tasks":[{"id":"task-stale","projectId":"project-smoke","title":"Stale overwrite","status":"done","priority":"high"}],"expectedRevision":0}' \
             http://127.0.0.1:3001/api/projects/project-smoke/tasks)
 
@@ -91,8 +111,24 @@ jobs:
           grep -q '"actualRevision":1' /tmp/stale-response.json
 
           curl --fail --silent \
+            --header "Authorization: Bearer $owner_token" \
             http://127.0.0.1:3001/api/projects/project-smoke/tasks \
             | grep -q '"title":"Mongo smoke task"'
+
+          curl --fail --silent \
+            --header "Authorization: Bearer $another_token" \
+            http://127.0.0.1:3001/api/projects/project-smoke/tasks \
+            | grep -q '"revision":0'
+
+          cross_user_status=$(curl --silent \
+            --output /tmp/cross-user-response.json \
+            --write-out '%{http_code}' \
+            --request PUT \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $another_token" \
+            --data '{"tasks":[],"expectedRevision":1}' \
+            http://127.0.0.1:3001/api/projects/project-smoke/tasks)
+          test "$cross_user_status" = '404'
 
       - name: Verify readiness fails when MongoDB is unavailable
         run: |
