@@ -42,6 +42,8 @@ export async function loadAuthSession(
 export async function requireAuthSession(): Promise<AuthSession> {
   const session = await loadAuthSession()
   if (!session) {
+    // TanStack Router intentionally redirects by throwing a Redirect object.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw redirect({ to: '/login' })
   }
   return session
