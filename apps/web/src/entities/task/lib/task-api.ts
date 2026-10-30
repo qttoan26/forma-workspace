@@ -1,4 +1,5 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getApiAuthorizationHeader } from '@/shared/api/api-auth'
 
 import {
   createTaskMutationEffectBoundary,
@@ -29,7 +30,11 @@ export async function loadProjectTasksFromApi(
   projectId: string,
   baseUrl = getTaskApiBaseUrl(),
 ): Promise<ProjectTaskApiSnapshot> {
-  const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`)
+  const url = `${baseUrl}/api/projects/${projectId}/tasks`
+  const authorizationHeader = await getApiAuthorizationHeader()
+  const response = authorizationHeader
+    ? await fetch(url, { headers: authorizationHeader })
+    : await fetch(url)
 
   if (!response.ok) {
     throw new Error(`Failed to load project tasks (${response.status})`)
@@ -53,9 +58,13 @@ export async function persistProjectTasksToApi(
   baseUrl = getTaskApiBaseUrl(),
   expectedRevision?: number,
 ): Promise<number> {
+  const authorizationHeader = await getApiAuthorizationHeader()
   const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...authorizationHeader,
+    },
     body: JSON.stringify({ tasks, expectedRevision }),
   })
 
