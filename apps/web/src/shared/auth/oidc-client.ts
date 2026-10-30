@@ -2,6 +2,7 @@ import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
 const transactionKey = 'forma.oidc.transaction'
 const sessionKey = 'forma.oidc.session'
+const callbackExchanges = new Map<string, Promise<StoredOidcSession>>()
 
 interface OidcConfig {
   authorizationEndpoint: string
@@ -108,19 +109,17 @@ function readTransaction(): OidcTransaction {
   return { state: parsed.state, codeVerifier: parsed.codeVerifier }
 }
 
-export async function completeOidcLogin(callbackUrl = window.location.href) {
+async function exchangeOidcCallback(
+  callbackUrl: string,
+): Promise<StoredOidcSession> {
   const config = getOidcConfig()
   const url = new URL(callbackUrl)
   const code = url.searchParams.get('code')
   const state = url.searchParams.get('state')
   const error = url.searchParams.get('error')
 
-  if (error) {
-    throw new Error(`OIDC authorization failed: ${error}`)
-  }
-  if (!code || !state) {
-    throw new Error('OIDC callback is missing code or state')
-  }
+  if (error) throw new Error(`OIDC authorization failed: ${error}`)
+  if (!code || !state) throw new Error('OIDC callback is missing code or state')
 
   const transaction = readTransaction()
   if (transaction.state !== state) {
@@ -140,10 +139,8 @@ export async function completeOidcLogin(callbackUrl = window.location.href) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   })
-
-  if (!response.ok) {
+  if (!response.ok)
     throw new Error(`OIDC token exchange failed (${response.status})`)
-  }
 
   const token = (await response.json()) as OidcTokenResponse
   if (typeof token.access_token !== 'string' || !token.access_token.trim()) {
@@ -154,15 +151,27 @@ export async function completeOidcLogin(callbackUrl = window.location.href) {
     typeof token.expires_in === 'number' && Number.isFinite(token.expires_in)
       ? token.expires_in
       : 3600
-
   const session: StoredOidcSession = {
     accessToken: token.access_token.trim(),
     expiresAt: Date.now() + Math.max(0, expiresIn - 30) * 1000,
   }
   sessionStorage.setItem(sessionKey, JSON.stringify(session))
   sessionStorage.removeItem(transactionKey)
-
   return session
+}
+
+export function completeOidcLogin(
+  callbackUrl = window.location.href,
+): Promise<StoredOidcSession> {
+  const existingExchange = callbackExchanges.get(callbackUrl)
+  if (existingExchange) return existingExchange
+
+  const exchange = exchangeOidcCallback(callbackUrl).catch((error: unknown) => {
+    callbackExchanges.delete(callbackUrl)
+    throw error
+  })
+  callbackExchanges.set(callbackUrl, exchange)
+  return exchange
 }
 
 function readStoredSession(): StoredOidcSession | null {
@@ -191,6 +200,7 @@ export function initializeOidcAccessTokenProvider(): () => void {
 }
 
 export function clearOidcSession(): void {
+  callbackExchanges.clear()
   sessionStorage.removeItem(sessionKey)
   sessionStorage.removeItem(transactionKey)
 }
