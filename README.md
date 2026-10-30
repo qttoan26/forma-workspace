@@ -49,6 +49,18 @@ When `DATABASE_URL` is not set, task persistence falls back to the in-memory rep
 
 The deployment artifact must include the `apps/api/migrations` directory alongside the compiled API output.
 
+## API deployment readiness
+
+The API exposes `GET /api/health` for platform health checks. The response reports whether the process is operational and whether persistence is using PostgreSQL or the in-memory development fallback.
+
+Cross-origin browser access is restricted by `CORS_ORIGINS`, a comma-separated allowlist. Local Vite origins are allowed by default. A production backend serving the deployed GitHub Pages frontend should set:
+
+```text
+CORS_ORIGINS=https://qttoan26.github.io
+```
+
+The frontend deployment must also build with `VITE_API_BASE_URL` pointing at the deployed API origin. Do not include a path suffix such as `/api`; the frontend client adds the API routes itself.
+
 ## Roadmap
 
 1. Architecture contract
