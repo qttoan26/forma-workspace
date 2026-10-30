@@ -69,13 +69,10 @@ describe('task API', () => {
 
   it('surfaces server revision conflicts', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ expectedRevision: 2, actualRevision: 3 }),
-        {
-          status: 409,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      ),
+      new Response(JSON.stringify({ expectedRevision: 2, actualRevision: 3 }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      }),
     )
     vi.stubGlobal('fetch', fetchMock)
 
