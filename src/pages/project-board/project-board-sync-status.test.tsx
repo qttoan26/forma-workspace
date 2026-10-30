@@ -17,9 +17,8 @@ import type { Task } from '@/entities/task/model/task'
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 
 const { retryConfiguredProjectTaskSync } = vi.hoisted(() => ({
-  retryConfiguredProjectTaskSync: vi.fn<
-    (projectId: string) => Promise<void>
-  >(),
+  retryConfiguredProjectTaskSync:
+    vi.fn<(projectId: string) => Promise<void>>(),
 }))
 
 vi.mock('@/entities/task/lib/task-api', () => ({
@@ -121,9 +120,7 @@ describe('ProjectBoardSyncStatus recovery states', () => {
 
     expect(retryConfiguredProjectTaskSync).toHaveBeenCalledTimes(1)
     expect(retryConfiguredProjectTaskSync).toHaveBeenCalledWith(projectId)
-    expect(
-      screen.getByRole('button', { name: 'Retrying…' }),
-    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Retrying…' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Retrying…' }))
     expect(retryConfiguredProjectTaskSync).toHaveBeenCalledTimes(1)
