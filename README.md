@@ -67,10 +67,10 @@ Build the production API image from the repository root:
 docker build -f apps/api/Dockerfile -t forma-api .
 ```
 
-Run MongoDB locally:
+Run MongoDB 8.2 locally:
 
 ```text
-docker run --rm -d -p 27017:27017 --name forma-mongo mongo:8
+docker run --rm -d -p 27017:27017 --name forma-mongo mongo:8.2
 ```
 
 Then run the API with MongoDB persistence:
@@ -84,7 +84,7 @@ docker run --rm -p 3001:3001 \
 
 For production, provide `MONGODB_URI`, `MONGODB_DB` and `CORS_ORIGINS` through the hosting platform. The container defines a health check against `/api/health`.
 
-GitHub Actions validates the production path by starting MongoDB and the API in containers, waiting for the MongoDB-backed health response, writing a task snapshot with revision `0`, and reading it back at revision `1`.
+GitHub Actions validates the production path by starting MongoDB 8.2 and the API in containers, waiting for the MongoDB-backed health response, writing a task snapshot with revision `0`, and reading it back at revision `1`.
 
 ## Roadmap
 
