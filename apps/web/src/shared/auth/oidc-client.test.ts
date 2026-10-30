@@ -77,12 +77,14 @@ describe('OIDC PKCE client', () => {
       transactionKey,
       JSON.stringify({ state: 'state-456', codeVerifier: 'verifier-456' }),
     )
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ access_token: 'access-456', expires_in: 3600 }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
-    )
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ access_token: 'access-456', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
     vi.stubGlobal('fetch', fetchMock)
 
     const callbackUrl =
