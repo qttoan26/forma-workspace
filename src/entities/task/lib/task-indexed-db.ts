@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
-import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
+import {
+  assertFrontendAuthStorageScope,
+  getFrontendAuthStorageScope,
+} from '@/shared/lib/auth-session'
 import {
   reportBrowserStorageFailure,
   reportBrowserStorageSuccess,
@@ -77,13 +80,14 @@ interface ScopedQueuedProjectTaskSync extends QueuedProjectTaskSync {
 export async function loadProjectTaskSnapshotFromIndexedDb(
   projectId: string,
 ): Promise<ProjectTaskSnapshot | null> {
+  const authScope = getFrontendAuthStorageScope()
   if (!hasIndexedDb()) return null
 
   const database = await openDatabase()
   try {
-    const authScope = getFrontendAuthStorageScope()
     const storageId = createStorageId(authScope, projectId)
     const rawRecord = await readStoreValue(database, taskStoreName, storageId)
+    assertFrontendAuthStorageScope(authScope)
     const record = parseScopedProjectTaskSnapshot(
       rawRecord,
       authScope,
@@ -93,7 +97,13 @@ export async function loadProjectTaskSnapshotFromIndexedDb(
     if (record) return toProjectTaskSnapshot(record)
 
     if (authScope !== localDevelopmentStorageScope) return null
-    return migrateLegacyProjectTaskSnapshot(database, projectId, storageId)
+    const migrated = await migrateLegacyProjectTaskSnapshot(
+      database,
+      projectId,
+      storageId,
+    )
+    assertFrontendAuthStorageScope(authScope)
+    return migrated
   } finally {
     database.close()
   }
@@ -110,6 +120,7 @@ export async function saveProjectTasksToIndexedDb(
   projectId: string,
   tasks: Task[],
 ): Promise<ProjectTaskSnapshot> {
+  const authScope = getFrontendAuthStorageScope()
   if (!hasIndexedDb()) {
     throw new Error('IndexedDB is unavailable')
   }
@@ -117,7 +128,14 @@ export async function saveProjectTasksToIndexedDb(
   const parsed = parseProjectTasks(projectId, tasks)
   const database = await openDatabase()
   try {
-    return await saveProjectTaskSnapshot(database, projectId, parsed)
+    const snapshot = await saveProjectTaskSnapshot(
+      database,
+      authScope,
+      projectId,
+      parsed,
+    )
+    assertFrontendAuthStorageScope(authScope)
+    return snapshot
   } finally {
     database.close()
   }
@@ -128,11 +146,11 @@ export async function enqueueProjectTaskSync(
   tasks: Task[],
   expectedRevision?: number,
 ): Promise<QueuedProjectTaskSync> {
+  const authScope = getFrontendAuthStorageScope()
   if (!hasIndexedDb()) {
     throw new Error('IndexedDB is unavailable')
   }
 
-  const authScope = getFrontendAuthStorageScope()
   const queuedSync: ScopedQueuedProjectTaskSync = {
     storageId: createStorageId(authScope, projectId),
     authScope,
@@ -150,6 +168,7 @@ export async function enqueueProjectTaskSync(
     )
     transaction.objectStore(taskSyncQueueStoreName).put(queuedSync)
     await transactionToPromise(transaction)
+    assertFrontendAuthStorageScope(authScope)
     return toQueuedProjectTaskSync(queuedSync)
   } finally {
     database.close()
@@ -159,17 +178,18 @@ export async function enqueueProjectTaskSync(
 export async function loadQueuedProjectTaskSync(
   projectId: string,
 ): Promise<QueuedProjectTaskSync | null> {
+  const authScope = getFrontendAuthStorageScope()
   if (!hasIndexedDb()) return null
 
   const database = await openDatabase()
   try {
-    const authScope = getFrontendAuthStorageScope()
     const storageId = createStorageId(authScope, projectId)
     const rawRecord = await readStoreValue(
       database,
       taskSyncQueueStoreName,
       storageId,
     )
+    assertFrontendAuthStorageScope(authScope)
     const queuedSync = parseScopedQueuedSync(
       rawRecord,
       authScope,
@@ -179,7 +199,13 @@ export async function loadQueuedProjectTaskSync(
     if (queuedSync) return toQueuedProjectTaskSync(queuedSync)
 
     if (authScope !== localDevelopmentStorageScope) return null
-    return migrateLegacyQueuedSync(database, projectId, storageId)
+    const migrated = await migrateLegacyQueuedSync(
+      database,
+      projectId,
+      storageId,
+    )
+    assertFrontendAuthStorageScope(authScope)
+    return migrated
   } finally {
     database.close()
   }
@@ -189,11 +215,19 @@ export async function completeProjectTaskSync(
   projectId: string,
   mutationId: string,
 ): Promise<boolean> {
+  const authScope = getFrontendAuthStorageScope()
   if (!hasIndexedDb()) return false
 
   const database = await openDatabase()
   try {
-    return await completeQueuedSync(database, projectId, mutationId)
+    const completed = await completeQueuedSync(
+      database,
+      authScope,
+      projectId,
+      mutationId,
+    )
+    assertFrontendAuthStorageScope(authScope)
+    return completed
   } finally {
     database.close()
   }
@@ -209,11 +243,11 @@ function parseProjectTasks(projectId: string, tasks: Task[]) {
 
 function saveProjectTaskSnapshot(
   database: IDBDatabase,
+  authScope: string,
   projectId: string,
   tasks: Task[],
 ): Promise<ProjectTaskSnapshot> {
   return new Promise((resolve, reject) => {
-    const authScope = getFrontendAuthStorageScope()
     const storageId = createStorageId(authScope, projectId)
     const transaction = database.transaction(taskStoreName, 'readwrite')
     const objectStore = transaction.objectStore(taskStoreName)
@@ -271,11 +305,11 @@ function saveProjectTaskSnapshot(
 
 function completeQueuedSync(
   database: IDBDatabase,
+  authScope: string,
   projectId: string,
   mutationId: string,
 ): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const authScope = getFrontendAuthStorageScope()
     const storageId = createStorageId(authScope, projectId)
     const transaction = database.transaction(
       taskSyncQueueStoreName,
