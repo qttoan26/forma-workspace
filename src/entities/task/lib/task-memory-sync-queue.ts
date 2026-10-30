@@ -1,4 +1,5 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 
 import type { QueuedProjectTaskSync } from './task-indexed-db'
 
@@ -19,7 +20,7 @@ export function enqueueMemoryProjectTaskSync(
     queuedAt: new Date().toISOString(),
     ...(expectedRevision === undefined ? {} : { expectedRevision }),
   }
-  queuedProjectSyncs.set(projectId, queuedSync)
+  queuedProjectSyncs.set(queueKey(projectId), queuedSync)
   notifyMemoryProjectTaskSyncChange(projectId)
   return queuedSync
 }
@@ -27,27 +28,28 @@ export function enqueueMemoryProjectTaskSync(
 export function loadMemoryProjectTaskSync(
   projectId: string,
 ): QueuedProjectTaskSync | null {
-  return queuedProjectSyncs.get(projectId) ?? null
+  return queuedProjectSyncs.get(queueKey(projectId)) ?? null
 }
 
 export function hasMemoryProjectTaskSync(projectId: string): boolean {
-  return queuedProjectSyncs.has(projectId)
+  return queuedProjectSyncs.has(queueKey(projectId))
 }
 
 export function completeMemoryProjectTaskSync(
   projectId: string,
   mutationId: string,
 ): boolean {
-  const queuedSync = queuedProjectSyncs.get(projectId)
+  const key = queueKey(projectId)
+  const queuedSync = queuedProjectSyncs.get(key)
   if (!queuedSync || queuedSync.mutationId !== mutationId) return false
 
-  queuedProjectSyncs.delete(projectId)
+  queuedProjectSyncs.delete(key)
   notifyMemoryProjectTaskSyncChange(projectId)
   return true
 }
 
 export function clearMemoryProjectTaskSync(projectId: string) {
-  const deleted = queuedProjectSyncs.delete(projectId)
+  const deleted = queuedProjectSyncs.delete(queueKey(projectId))
   if (deleted) notifyMemoryProjectTaskSyncChange(projectId)
 }
 
@@ -67,6 +69,10 @@ function parseProjectTasks(projectId: string, tasks: Task[]) {
     throw new Error('Task collection does not match project')
   }
   return parsed
+}
+
+function queueKey(projectId: string) {
+  return `${getFrontendAuthStorageScope()}:${projectId}`
 }
 
 function createMutationId() {
