@@ -1,0 +1,35 @@
+.dashboard-sign-out,
+.dashboard-demo-badge {
+  flex: none;
+  border-radius: var(--forma-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.dashboard-sign-out {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--forma-color-border);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-secondary);
+  cursor: pointer;
+}
+
+.dashboard-sign-out:hover,
+.dashboard-sign-out:focus-visible {
+  border-color: #a1a1aa;
+  color: var(--forma-color-text-strong);
+  outline: none;
+}
+
+.dashboard-demo-badge {
+  padding: 0.4rem 0.65rem;
+  background: var(--forma-color-canvas);
+  color: var(--forma-color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .dashboard-sign-out,
+  .dashboard-demo-badge {
+    font-size: 0.7rem;
+  }
+}

@@ -1,3 +1,6 @@
+import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
+
+import './home-auth.css'
 import './home-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
@@ -10,6 +13,8 @@ const metrics = [
 ]
 
 export function HomePage() {
+  const demoMode = isDemoMode()
+
   return (
     <main className="dashboard-shell" id="main-content">
       <header className="dashboard-topbar">
@@ -31,6 +36,17 @@ export function HomePage() {
           <span className="dashboard-avatar" aria-hidden="true">
             SL
           </span>
+          {demoMode ? (
+            <span className="dashboard-demo-badge">Demo mode</span>
+          ) : (
+            <button
+              className="dashboard-sign-out"
+              type="button"
+              onClick={startLogout}
+            >
+              Sign out
+            </button>
+          )}
         </div>
       </header>
 
