@@ -54,15 +54,18 @@ jobs:
       - name: Verify MongoDB-backed API
         run: |
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:3001/api/health | grep -q '"persistence":"mongodb"'; then
+            if curl --fail --silent http://127.0.0.1:3001/api/health/ready | grep -q '"status":"ready"'; then
               break
             fi
             if [ "$attempt" -eq 30 ]; then
-              echo "API did not become healthy with MongoDB"
+              echo "API did not become ready with MongoDB"
               exit 1
             fi
             sleep 1
           done
+
+          curl --fail --silent http://127.0.0.1:3001/api/health \
+            | grep -q '"persistence":"mongodb"'
 
           curl --fail --silent \
             --request PUT \
@@ -89,6 +92,22 @@ jobs:
           curl --fail --silent \
             http://127.0.0.1:3001/api/projects/project-smoke/tasks \
             | grep -q '"title":"Mongo smoke task"'
+
+      - name: Verify readiness fails when MongoDB is unavailable
+        run: |
+          docker stop forma-mongo
+
+          curl --fail --silent http://127.0.0.1:3001/api/health \
+            | grep -q '"status":"ok"'
+
+          ready_status=$(curl --silent \
+            --max-time 10 \
+            --output /tmp/readiness-response.json \
+            --write-out '%{http_code}' \
+            http://127.0.0.1:3001/api/health/ready)
+
+          test "$ready_status" = '503'
+          grep -q '"status":"unavailable"' /tmp/readiness-response.json
 
       - name: Show container logs on failure
         if: failure()
