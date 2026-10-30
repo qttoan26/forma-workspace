@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { App } from '@/app/app'
 import '@/app/styles/tokens.css'
 import '@/app/styles/global.css'
+import { initializeOidcAccessTokenProvider } from '@/shared/auth/oidc-client'
+
+initializeOidcAccessTokenProvider()
 
 const rootElement = document.getElementById('root')
 

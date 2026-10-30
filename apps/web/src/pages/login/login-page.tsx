@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { getAuthLoginUrl, startLogin } from '@/shared/auth/auth-session'
+import { beginOidcLogin } from '@/shared/auth/oidc-client'
 
 export function LoginPage() {
-  const [missingConfiguration, setMissingConfiguration] = useState(false)
-  const loginUrl = getAuthLoginUrl()
+  const [error, setError] = useState<string | null>(null)
+  const [isStarting, setIsStarting] = useState(false)
 
   return (
     <main
@@ -19,19 +19,23 @@ export function LoginPage() {
       </p>
       <button
         type="button"
+        disabled={isStarting}
         onClick={() => {
-          if (!startLogin()) setMissingConfiguration(true)
+          setIsStarting(true)
+          setError(null)
+          void beginOidcLogin().catch((reason: unknown) => {
+            setIsStarting(false)
+            setError(
+              reason instanceof Error
+                ? reason.message
+                : 'Unable to start sign-in.',
+            )
+          })
         }}
-        disabled={!loginUrl && missingConfiguration}
       >
-        Sign in
+        {isStarting ? 'Redirecting…' : 'Sign in'}
       </button>
-      {missingConfiguration ? (
-        <p role="alert">
-          Sign-in is not configured for this environment. Set{' '}
-          VITE_AUTH_LOGIN_URL before enabling protected production access.
-        </p>
-      ) : null}
+      {error ? <p role="alert">{error}</p> : null}
     </main>
   )
 }
