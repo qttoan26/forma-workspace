@@ -1,21 +1,24 @@
 import { expect, test } from '@playwright/test'
 
-test('opens the approved workspace dashboard and project board', async ({ page }) => {
-  await page.goto('/')
+test(
+  'opens the approved workspace dashboard and project board',
+  async ({ page }) => {
+    await page.goto('/')
 
-  await expect(
-    page.getByRole('heading', { name: 'Keep the work moving.' }),
-  ).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Keep the work moving.' }),
+    ).toBeVisible()
 
-  const projectLink = page.getByRole('link', { name: /Open project board/i })
-  await expect(projectLink).toBeVisible()
-  await projectLink.click()
+    const projectLink = page.getByRole('link', { name: /Open project board/i })
+    await expect(projectLink).toBeVisible()
+    await projectLink.click()
 
-  await expect(page).toHaveURL(/\/workspaces\/forma\/projects\/project-1/)
-  await expect(
-    page.getByRole('heading', { name: 'Product launch' }),
-  ).toBeVisible()
-})
+    await expect(page).toHaveURL(/\/workspaces\/forma\/projects\/project-1/)
+    await expect(
+      page.getByRole('heading', { name: 'Product launch' }),
+    ).toBeVisible()
+  },
+)
 
 test('supports a direct deep link to the project board', async ({ page }) => {
   await page.goto('/workspaces/forma/projects/project-1')
