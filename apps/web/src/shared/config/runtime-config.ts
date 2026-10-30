@@ -35,7 +35,11 @@ export function validateWebRuntimeConfiguration(
   const isProductionDeployment =
     environment.VITE_DEPLOYMENT_MODE?.trim() === 'production'
 
-  if (!isProductionDeployment || environment.VITE_DEMO_MODE === 'true') return
+  if (
+    !isProductionDeployment ||
+    environment.VITE_DEMO_MODE === 'true'
+  )
+    return
 
   const apiBaseUrl = required(
     environment.VITE_API_BASE_URL,
