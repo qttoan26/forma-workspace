@@ -18,7 +18,7 @@ async function bootstrap() {
   app.enableCors({
     origin: getCorsOrigins(),
     methods: ['GET', 'PUT', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
   app.setGlobalPrefix('api')
   await app.listen(getApiPort())
