@@ -9,6 +9,7 @@ import { enqueueSessionProjectTaskSync } from '@/entities/task/lib/task-session-
 import {
   clearProjectTaskSyncPending,
   markProjectTaskSyncPending,
+  recordProjectTaskSyncConflict,
   recordProjectTaskSyncFailure,
   recordProjectTaskSyncSuccess,
 } from '@/entities/task/lib/task-sync-storage'
@@ -16,15 +17,20 @@ import type { Task } from '@/entities/task/model/task'
 
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 
-const { retryConfiguredProjectTaskSync } = vi.hoisted(() => ({
-  retryConfiguredProjectTaskSync: vi.fn<(projectId: string) => Promise<void>>(),
-}))
+const { resolveProjectTaskSyncWithServer, retryConfiguredProjectTaskSync } =
+  vi.hoisted(() => ({
+    resolveProjectTaskSyncWithServer:
+      vi.fn<(projectId: string) => Promise<void>>(),
+    retryConfiguredProjectTaskSync:
+      vi.fn<(projectId: string) => Promise<void>>(),
+  }))
 
 vi.mock('@/entities/task/lib/task-api', () => ({
   getTaskApiBaseUrl: () => 'https://example.test',
 }))
 
 vi.mock('@/entities/task/lib/task-persistence', () => ({
+  resolveProjectTaskSyncWithServer,
   retryConfiguredProjectTaskSync,
 }))
 
@@ -43,6 +49,7 @@ afterEach(() => {
   sessionStorage.clear()
   clearMemoryProjectTaskSync(projectId)
   clearProjectTaskSyncPending(projectId)
+  resolveProjectTaskSyncWithServer.mockReset()
   retryConfiguredProjectTaskSync.mockReset()
 })
 
@@ -86,6 +93,49 @@ describe('ProjectBoardSyncStatus recovery states', () => {
 
     expect(await screen.findByRole('status')).toHaveTextContent('Sync failed')
     expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled()
+  })
+
+  it('shows a conflict action instead of retry for stale server revisions', async () => {
+    markProjectTaskSyncPending(projectId)
+    recordProjectTaskSyncConflict(projectId, 4)
+
+    render(<ProjectBoardSyncStatus projectId={projectId} />)
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Sync conflict')
+    expect(screen.getByRole('button', { name: 'Use server' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull()
+  })
+
+  it('resolves a conflict with the server version and blocks duplicate clicks', async () => {
+    let resolveConflict: (() => void) | undefined
+    resolveProjectTaskSyncWithServer.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveConflict = resolve
+        }),
+    )
+    markProjectTaskSyncPending(projectId)
+    recordProjectTaskSyncConflict(projectId, 4)
+    render(<ProjectBoardSyncStatus projectId={projectId} />)
+
+    const useServerButton = await screen.findByRole('button', {
+      name: 'Use server',
+    })
+    fireEvent.click(useServerButton)
+
+    expect(resolveProjectTaskSyncWithServer).toHaveBeenCalledTimes(1)
+    expect(resolveProjectTaskSyncWithServer).toHaveBeenCalledWith(projectId)
+    expect(screen.getByRole('button', { name: 'Loading…' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Loading…' }))
+    expect(resolveProjectTaskSyncWithServer).toHaveBeenCalledTimes(1)
+
+    await act(() => {
+      resolveConflict?.()
+      return Promise.resolve()
+    })
+
+    expect(screen.getByRole('button', { name: 'Use server' })).toBeEnabled()
   })
 
   it('clears the failure state after sync succeeds', async () => {
