@@ -1,5 +1,9 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
-import { getFrontendAccessToken } from '@/shared/lib/auth-session'
+import {
+  assertFrontendAuthStorageScope,
+  getFrontendAccessToken,
+  getFrontendAuthStorageScope,
+} from '@/shared/lib/auth-session'
 
 import {
   createTaskMutationEffectBoundary,
@@ -37,11 +41,15 @@ export async function loadProjectTasksFromApi(
   projectId: string,
   baseUrl = getTaskApiBaseUrl(),
 ): Promise<ProjectTaskApiSnapshot> {
+  const authScope = getFrontendAuthStorageScope()
   const token = await getFrontendAccessToken()
+  assertFrontendAuthStorageScope(authScope)
+
   const url = `${baseUrl}/api/projects/${projectId}/tasks`
   const response = token
     ? await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     : await fetch(url)
+  assertFrontendAuthStorageScope(authScope)
 
   if (response.status === 401) {
     throw new ProjectTaskApiUnauthorizedError()
@@ -69,7 +77,10 @@ export async function persistProjectTasksToApi(
   baseUrl = getTaskApiBaseUrl(),
   expectedRevision?: number,
 ): Promise<number> {
+  const authScope = getFrontendAuthStorageScope()
   const token = await getFrontendAccessToken()
+  assertFrontendAuthStorageScope(authScope)
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
@@ -80,6 +91,7 @@ export async function persistProjectTasksToApi(
     headers,
     body: JSON.stringify({ tasks, expectedRevision }),
   })
+  assertFrontendAuthStorageScope(authScope)
 
   if (response.status === 401) {
     throw new ProjectTaskApiUnauthorizedError()
