@@ -1,7 +1,9 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common'
 
+import { PublicRoute } from './auth/public-route.decorator'
 import { MongoDatabaseService } from './database/mongo-database.service'
 
+@PublicRoute()
 @Controller('health')
 export class HealthController {
   constructor(private readonly database: MongoDatabaseService) {}
