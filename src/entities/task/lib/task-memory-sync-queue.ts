@@ -10,12 +10,14 @@ const queuedProjectSyncs = new Map<string, QueuedProjectTaskSync>()
 export function enqueueMemoryProjectTaskSync(
   projectId: string,
   tasks: Task[],
+  expectedRevision?: number,
 ): QueuedProjectTaskSync {
   const queuedSync: QueuedProjectTaskSync = {
     projectId,
     tasks: parseProjectTasks(projectId, tasks),
     mutationId: createMutationId(),
     queuedAt: new Date().toISOString(),
+    ...(expectedRevision === undefined ? {} : { expectedRevision }),
   }
   queuedProjectSyncs.set(projectId, queuedSync)
   notifyMemoryProjectTaskSyncChange(projectId)

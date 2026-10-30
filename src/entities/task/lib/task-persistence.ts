@@ -37,7 +37,9 @@ import {
   saveProjectTasks,
 } from './task-storage'
 import {
+  getProjectTaskServerRevision,
   markProjectTaskSyncPending,
+  recordProjectTaskServerRevision,
   recordProjectTaskSyncFailure,
   recordProjectTaskSyncSuccess,
 } from './task-sync-storage'
@@ -67,9 +69,10 @@ export async function loadConfiguredProjectTasks(
 
   const apiBaseUrl = getTaskApiBaseUrl()
   if (apiBaseUrl) {
-    const apiTasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
-    await cacheProjectTasks(projectId, apiTasks)
-    return apiTasks
+    const apiSnapshot = await loadProjectTasksFromApi(projectId, apiBaseUrl)
+    recordProjectTaskServerRevision(projectId, apiSnapshot.revision)
+    await cacheProjectTasks(projectId, apiSnapshot.tasks)
+    return apiSnapshot.tasks
   }
 
   await cacheProjectTasks(projectId, fallback)
@@ -87,9 +90,12 @@ export function createConfiguredTaskMutationAdapter(
 
       if (!apiBaseUrl) return
 
+      const expectedRevision =
+        getProjectTaskServerRevision(projectId) ?? undefined
       const queuedSync = await enqueueRecoverableProjectTaskSync(
         projectId,
         tasks,
+        expectedRevision,
       )
       markProjectTaskSyncPending(projectId)
       await syncProjectTasks(projectId, tasks, apiBaseUrl, queuedSync)
@@ -133,10 +139,11 @@ export async function refreshConfiguredProjectTasks(
     const queuedSync = await loadRecoverableProjectTaskSync(projectId)
     if (queuedSync) return
 
-    const tasks = await loadProjectTasksFromApi(projectId, apiBaseUrl)
-    const revision = await cacheProjectTasks(projectId, tasks)
-    publishProjectTasks(projectId, tasks, revision)
-    notifyProjectTasks(projectId, tasks, revision)
+    const apiSnapshot = await loadProjectTasksFromApi(projectId, apiBaseUrl)
+    recordProjectTaskServerRevision(projectId, apiSnapshot.revision)
+    const revision = await cacheProjectTasks(projectId, apiSnapshot.tasks)
+    publishProjectTasks(projectId, apiSnapshot.tasks, revision)
+    notifyProjectTasks(projectId, apiSnapshot.tasks, revision)
   } catch (error) {
     onFailure?.(error)
   }
@@ -149,14 +156,19 @@ async function syncProjectTasks(
   queuedSync: RecoverableQueuedProjectTaskSync | null,
 ) {
   try {
-    await persistProjectTasksToApi(projectId, tasks, apiBaseUrl)
+    const serverRevision = await persistProjectTasksToApi(
+      projectId,
+      tasks,
+      apiBaseUrl,
+      queuedSync?.queuedSync.expectedRevision,
+    )
 
     if (queuedSync) {
       const completed = await completeRecoverableProjectTaskSync(queuedSync)
       if (!completed) return
     }
 
-    recordProjectTaskSyncSuccess(projectId)
+    recordProjectTaskSyncSuccess(projectId, serverRevision)
   } catch (error) {
     recordProjectTaskSyncFailure(projectId)
     throw error
@@ -166,10 +178,12 @@ async function syncProjectTasks(
 async function enqueueRecoverableProjectTaskSync(
   projectId: string,
   tasks: Task[],
+  expectedRevision?: number,
 ): Promise<RecoverableQueuedProjectTaskSync> {
   const indexedDbQueuedSync = await enqueueProjectTaskSync(
     projectId,
     tasks,
+    expectedRevision,
   ).catch(() => null)
 
   if (indexedDbQueuedSync) {
@@ -181,7 +195,11 @@ async function enqueueRecoverableProjectTaskSync(
     }
   }
 
-  const sessionQueuedSync = enqueueSessionProjectTaskSync(projectId, tasks)
+  const sessionQueuedSync = enqueueSessionProjectTaskSync(
+    projectId,
+    tasks,
+    expectedRevision,
+  )
   if (sessionQueuedSync) {
     clearMemoryProjectTaskSync(projectId)
     return {
@@ -192,7 +210,11 @@ async function enqueueRecoverableProjectTaskSync(
 
   return {
     source: 'memory',
-    queuedSync: enqueueMemoryProjectTaskSync(projectId, tasks),
+    queuedSync: enqueueMemoryProjectTaskSync(
+      projectId,
+      tasks,
+      expectedRevision,
+    ),
   }
 }
 

@@ -23,6 +23,7 @@ const queuedProjectTaskSyncSchema = z.object({
   tasks: taskCollectionSchema,
   mutationId: z.string().min(1),
   queuedAt: z.string(),
+  expectedRevision: z.number().int().nonnegative().optional(),
 })
 
 export interface ProjectTaskSnapshot {
@@ -37,6 +38,7 @@ export interface QueuedProjectTaskSync {
   tasks: Task[]
   mutationId: string
   queuedAt: string
+  expectedRevision?: number | undefined
 }
 
 export async function loadProjectTaskSnapshotFromIndexedDb(
@@ -94,6 +96,7 @@ export async function saveProjectTasksToIndexedDb(
 export async function enqueueProjectTaskSync(
   projectId: string,
   tasks: Task[],
+  expectedRevision?: number,
 ): Promise<QueuedProjectTaskSync> {
   if (!hasIndexedDb()) {
     throw new Error('IndexedDB is unavailable')
@@ -104,6 +107,7 @@ export async function enqueueProjectTaskSync(
     tasks: parseProjectTasks(projectId, tasks),
     mutationId: createMutationId(),
     queuedAt: new Date().toISOString(),
+    ...(expectedRevision === undefined ? {} : { expectedRevision }),
   }
   const database = await openDatabase()
   try {

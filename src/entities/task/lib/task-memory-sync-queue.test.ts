@@ -41,6 +41,13 @@ describe('task memory sync queue', () => {
     expect(latest.tasks).toEqual([secondTask])
   })
 
+  it('captures the expected server revision with the mutation', () => {
+    const queuedSync = enqueueMemoryProjectTaskSync(projectId, [firstTask], 7)
+
+    expect(queuedSync.expectedRevision).toBe(7)
+    expect(loadMemoryProjectTaskSync(projectId)).toEqual(queuedSync)
+  })
+
   it('only completes the matching queued mutation', () => {
     const queuedSync = enqueueMemoryProjectTaskSync(projectId, [firstTask])
 

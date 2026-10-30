@@ -40,6 +40,13 @@ describe('task session sync queue', () => {
     expect(loadSessionProjectTaskSync(projectId)).toEqual(queuedSync)
   })
 
+  it('preserves the expected server revision through sessionStorage', () => {
+    const queuedSync = enqueueSessionProjectTaskSync(projectId, [firstTask], 5)
+
+    expect(queuedSync?.expectedRevision).toBe(5)
+    expect(loadSessionProjectTaskSync(projectId)).toEqual(queuedSync)
+  })
+
   it('keeps the latest project mutation', () => {
     enqueueSessionProjectTaskSync(projectId, [firstTask])
     const latest = enqueueSessionProjectTaskSync(projectId, [secondTask])
