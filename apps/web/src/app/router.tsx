@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router'
 
 import { RouterErrorBoundary } from '@/app/router-error-boundary'
+import { AuthCallbackPage } from '@/pages/auth-callback/auth-callback-page'
 import { HomePage } from '@/pages/home/home-page'
 import { LandingPage } from '@/pages/landing/landing-page'
 import { LoginPage } from '@/pages/login/login-page'
@@ -46,6 +47,12 @@ const loginRoute = createRoute({
   component: LoginPage,
 })
 
+const authCallbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auth/callback',
+  component: AuthCallbackPage,
+})
+
 const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspaces/$workspaceSlug/projects/$projectId',
@@ -67,6 +74,7 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   landingRoute,
   loginRoute,
+  authCallbackRoute,
   projectRoute,
 ])
 const basepath = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
