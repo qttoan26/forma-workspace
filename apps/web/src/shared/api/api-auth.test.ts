@@ -1,15 +1,20 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   configureApiAccessTokenProvider,
+  configureApiUnauthorizedHandler,
   getApiAuthorizationHeader,
+  handleApiUnauthorizedResponse,
 } from './api-auth'
 
 let resetAccessTokenProvider: (() => void) | undefined
+let resetUnauthorizedHandler: (() => void) | undefined
 
 afterEach(() => {
   resetAccessTokenProvider?.()
   resetAccessTokenProvider = undefined
+  resetUnauthorizedHandler?.()
+  resetUnauthorizedHandler = undefined
 })
 
 describe('API auth token boundary', () => {
@@ -32,5 +37,18 @@ describe('API auth token boundary', () => {
     dispose()
 
     await expect(getApiAuthorizationHeader()).resolves.toBeUndefined()
+  })
+
+  it('runs the configured unauthorized handler only for 401 responses', () => {
+    const handler = vi.fn()
+    resetUnauthorizedHandler = configureApiUnauthorizedHandler(handler)
+
+    expect(handleApiUnauthorizedResponse(new Response(null, { status: 401 }))).toBe(
+      true,
+    )
+    expect(handleApiUnauthorizedResponse(new Response(null, { status: 403 }))).toBe(
+      false,
+    )
+    expect(handler).toHaveBeenCalledTimes(1)
   })
 })
