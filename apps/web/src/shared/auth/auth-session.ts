@@ -1,6 +1,10 @@
 import { redirect } from '@tanstack/react-router'
 
-import { getApiAuthorizationHeader } from '@/shared/api/api-auth'
+import {
+  configureApiUnauthorizedHandler,
+  getApiAuthorizationHeader,
+  handleApiUnauthorizedResponse,
+} from '@/shared/api/api-auth'
 import { clearOidcSession } from '@/shared/auth/oidc-client'
 
 export interface AuthenticatedUser {
@@ -35,7 +39,7 @@ export async function loadAuthSession(
     ...(authorizationHeader ? { headers: authorizationHeader } : {}),
   })
 
-  if (response.status === 401) return null
+  if (handleApiUnauthorizedResponse(response)) return null
   if (!response.ok) {
     throw new Error(`Failed to load authenticated session (${response.status})`)
   }
@@ -70,8 +74,19 @@ export function clearAuthSession(): void {
   clearOidcSession()
 }
 
+export function getLocalLoginUrl(): string {
+  return `${import.meta.env.BASE_URL}login`
+}
+
+export function initializeAuthSessionLifecycle(): () => void {
+  return configureApiUnauthorizedHandler(() => {
+    clearAuthSession()
+    window.location.assign(getLocalLoginUrl())
+  })
+}
+
 export function startLogout(): void {
   clearAuthSession()
-  const logoutTarget = getAuthLogoutUrl() ?? `${import.meta.env.BASE_URL}login`
+  const logoutTarget = getAuthLogoutUrl() ?? getLocalLoginUrl()
   window.location.assign(logoutTarget)
 }
