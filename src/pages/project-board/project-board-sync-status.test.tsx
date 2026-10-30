@@ -17,8 +17,7 @@ import type { Task } from '@/entities/task/model/task'
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 
 const { retryConfiguredProjectTaskSync } = vi.hoisted(() => ({
-  retryConfiguredProjectTaskSync:
-    vi.fn<(projectId: string) => Promise<void>>(),
+  retryConfiguredProjectTaskSync: vi.fn<(projectId: string) => Promise<void>>(),
 }))
 
 vi.mock('@/entities/task/lib/task-api', () => ({
