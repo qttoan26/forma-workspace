@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test'
 
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/auth/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ id: 'smoke-user' }),
+    })
+  })
+})
+
 test('opens the approved workspace dashboard and project board', async ({
   page,
 }) => {
