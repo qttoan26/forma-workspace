@@ -37,7 +37,10 @@ export function validateWebRuntimeConfiguration(
 
   if (!isProductionDeployment || environment.VITE_DEMO_MODE === 'true') return
 
-  const apiBaseUrl = required(environment.VITE_API_BASE_URL, 'VITE_API_BASE_URL')
+  const apiBaseUrl = required(
+    environment.VITE_API_BASE_URL,
+    'VITE_API_BASE_URL',
+  )
   const authorizationEndpoint = required(
     environment.VITE_OIDC_AUTHORIZATION_ENDPOINT,
     'VITE_OIDC_AUTHORIZATION_ENDPOINT',
