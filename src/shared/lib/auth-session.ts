@@ -3,6 +3,13 @@ export interface FrontendAuthSessionProvider {
   getAccessToken: () => Promise<string | null> | string | null
 }
 
+export class FrontendAuthSessionChangedError extends Error {
+  constructor() {
+    super('Authentication session changed during the operation')
+    this.name = 'FrontendAuthSessionChangedError'
+  }
+}
+
 const localDevelopmentSubject = 'local-development-user'
 const anonymousSubject = 'anonymous'
 
@@ -27,6 +34,12 @@ export function getFrontendAuthSubject(): string {
 
 export function getFrontendAuthStorageScope(): string {
   return encodeURIComponent(getFrontendAuthSubject())
+}
+
+export function assertFrontendAuthStorageScope(expectedScope: string) {
+  if (getFrontendAuthStorageScope() !== expectedScope) {
+    throw new FrontendAuthSessionChangedError()
+  }
 }
 
 export async function getFrontendAccessToken(): Promise<string | null> {
