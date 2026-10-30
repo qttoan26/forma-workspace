@@ -98,7 +98,7 @@ export function ProjectBoardSyncStatus({
     }
   }
 
-  async function useServerVersion() {
+  async function resolveWithServerVersion() {
     if (!canResolveConflict || isResolving) return
 
     setIsResolving(true)
@@ -122,7 +122,7 @@ export function ProjectBoardSyncStatus({
           className="project-sync-status-action"
           type="button"
           disabled={isResolving}
-          onClick={() => void useServerVersion()}
+          onClick={() => void resolveWithServerVersion()}
         >
           {isResolving ? 'Loading…' : 'Use server'}
         </button>
