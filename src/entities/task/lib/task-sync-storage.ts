@@ -44,7 +44,7 @@ export function recordProjectTaskSyncFailure(projectId: string) {
     failureKey(projectId),
     new Date().toISOString(),
   )
-  clearProjectTaskSyncConflict(projectId, false)
+  removeProjectTaskSyncConflict(projectId, false)
   notifyProjectTaskSyncChange(projectId)
 }
 
@@ -91,7 +91,7 @@ export function getProjectTaskSyncConflictRevision(
 }
 
 export function clearProjectTaskSyncConflict(projectId: string) {
-  clearProjectTaskSyncConflict(projectId, true)
+  removeProjectTaskSyncConflict(projectId, true)
 }
 
 export function recordProjectTaskSyncSuccess(
@@ -117,7 +117,7 @@ export function recordProjectTaskSyncSuccess(
     resolveBrowserStorage('session-storage'),
     failureKey(projectId),
   )
-  clearProjectTaskSyncConflict(projectId, false)
+  removeProjectTaskSyncConflict(projectId, false)
   notifyProjectTaskSyncChange(projectId)
 }
 
@@ -153,7 +153,7 @@ export function getProjectTaskServerRevision(projectId: string): number | null {
   return Number.isInteger(revision) && revision >= 0 ? revision : null
 }
 
-function clearProjectTaskSyncConflict(projectId: string, notify: boolean) {
+function removeProjectTaskSyncConflict(projectId: string, notify: boolean) {
   safeStorageRemoveItem(
     'session-storage',
     resolveBrowserStorage('session-storage'),
