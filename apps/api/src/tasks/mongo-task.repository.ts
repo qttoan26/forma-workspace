@@ -1,5 +1,10 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common'
-import { MongoClient, type Collection, type WithId } from 'mongodb'
+import {
+  MongoClient,
+  MongoServerError,
+  type Collection,
+  type WithId,
+} from 'mongodb'
 
 import type { TaskRecord } from './task.schema'
 import {
@@ -61,19 +66,25 @@ export class MongoTaskRepository implements TaskRepository, OnModuleDestroy {
       return snapshot.revision
     }
 
-    const result = await this.collection.findOneAndUpdate(
-      { _id: projectId, revision: expectedRevision },
-      {
-        $set: { tasks },
-        $inc: { revision: 1 },
-      },
-      {
-        upsert: expectedRevision === 0,
-        returnDocument: 'after',
-      },
-    )
+    try {
+      const result = await this.collection.findOneAndUpdate(
+        { _id: projectId, revision: expectedRevision },
+        {
+          $set: { tasks },
+          $inc: { revision: 1 },
+        },
+        {
+          upsert: expectedRevision === 0,
+          returnDocument: 'after',
+        },
+      )
 
-    if (result) return result.revision
+      if (result) return result.revision
+    } catch (error) {
+      if (!(error instanceof MongoServerError) || error.code !== 11000) {
+        throw error
+      }
+    }
 
     const current = await this.collection.findOne(
       { _id: projectId },
