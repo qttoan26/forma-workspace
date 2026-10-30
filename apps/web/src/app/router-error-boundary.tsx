@@ -1,4 +1,4 @@
-import { Link, useRouter } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 
 interface RouterErrorViewProps {
@@ -23,7 +23,7 @@ export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
           <button type="button" onClick={onRetry}>
             Retry
           </button>
-          <Link to="/">Go home</Link>
+          <a href={import.meta.env.BASE_URL}>Go home</a>
         </div>
       </section>
     </main>
