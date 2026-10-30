@@ -1,15 +1,17 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 
 import {
   loadProjectTaskSnapshotFromIndexedDb,
   type ProjectTaskSnapshot,
 } from './task-indexed-db'
 
-const channelName = 'forma-task-sync-v1'
+const channelName = 'forma-task-sync-v2'
 const localEventName = 'forma:project-tasks-updated'
 
 interface TaskBroadcastMessage {
   type: 'project-tasks-updated'
+  authScope: string
   projectId: string
   tasks: Task[]
   revision: number | null
@@ -54,6 +56,7 @@ export function subscribeProjectTasks(
   async function deliver(value: unknown, allowCurrentSource: boolean) {
     const message = parseMessage(value)
     if (!message || message.projectId !== projectId) return
+    if (message.authScope !== getFrontendAuthStorageScope()) return
     if (!allowCurrentSource && message.sourceId === sourceId) return
 
     const storedSnapshot = await loadProjectTaskSnapshotFromIndexedDb(
@@ -115,6 +118,7 @@ function createMessage(
 ): TaskBroadcastMessage {
   return {
     type: 'project-tasks-updated',
+    authScope: getFrontendAuthStorageScope(),
     projectId,
     tasks,
     revision,
@@ -127,6 +131,7 @@ function parseMessage(value: unknown): TaskBroadcastMessage | null {
 
   const candidate = value as Partial<TaskBroadcastMessage>
   if (candidate.type !== 'project-tasks-updated') return null
+  if (typeof candidate.authScope !== 'string') return null
   if (typeof candidate.projectId !== 'string') return null
   if (typeof candidate.sourceId !== 'string') return null
   if (
@@ -146,6 +151,7 @@ function parseMessage(value: unknown): TaskBroadcastMessage | null {
 
   return {
     type: candidate.type,
+    authScope: candidate.authScope,
     projectId: candidate.projectId,
     tasks: tasks.data,
     revision: candidate.revision ?? null,
