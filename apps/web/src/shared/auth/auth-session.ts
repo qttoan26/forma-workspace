@@ -1,6 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 
 import { getApiAuthorizationHeader } from '@/shared/api/api-auth'
+import { clearOidcSession } from '@/shared/auth/oidc-client'
 
 export interface AuthenticatedUser {
   id: string
@@ -65,10 +66,12 @@ export function startLogin() {
   return true
 }
 
-export function startLogout() {
-  const logoutUrl = getAuthLogoutUrl()
-  if (!logoutUrl) return false
+export function clearAuthSession(): void {
+  clearOidcSession()
+}
 
-  window.location.assign(logoutUrl)
-  return true
+export function startLogout(): void {
+  clearAuthSession()
+  const logoutTarget = getAuthLogoutUrl() ?? `${import.meta.env.BASE_URL}login`
+  window.location.assign(logoutTarget)
 }
