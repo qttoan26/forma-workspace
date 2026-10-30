@@ -3,12 +3,9 @@ import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 
 import { AppModule } from './app.module'
-import { runDatabaseMigrations } from './database/run-migrations'
 import { getCorsOrigins } from './http/cors'
 
 async function bootstrap() {
-  await runDatabaseMigrations(process.env.DATABASE_URL)
-
   const app = await NestFactory.create(AppModule)
   app.enableCors({
     origin: getCorsOrigins(),
