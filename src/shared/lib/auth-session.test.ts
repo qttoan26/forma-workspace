@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
 import {
+  assertFrontendAuthStorageScope,
+  FrontendAuthSessionChangedError,
   getFrontendAccessToken,
   getFrontendAuthStorageScope,
   getFrontendAuthSubject,
@@ -39,6 +41,23 @@ describe('frontend auth session', () => {
     expect(getFrontendAuthSubject()).toBe('user@example.com')
     expect(getFrontendAuthStorageScope()).toBe('user%40example.com')
     await expect(getFrontendAccessToken()).resolves.toBe('access-token')
+  })
+
+  it('detects when an async operation crosses an auth session boundary', () => {
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+    const scope = getFrontendAuthStorageScope()
+
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-b',
+      getAccessToken: () => 'token-b',
+    })
+
+    expect(() => assertFrontendAuthStorageScope(scope)).toThrow(
+      FrontendAuthSessionChangedError,
+    )
   })
 
   it('restores the default provider when registration is disposed', () => {
