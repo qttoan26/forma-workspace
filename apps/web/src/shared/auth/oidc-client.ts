@@ -109,7 +109,9 @@ function readTransaction(): OidcTransaction {
   return { state: parsed.state, codeVerifier: parsed.codeVerifier }
 }
 
-async function exchangeOidcCallback(callbackUrl: string): Promise<StoredOidcSession> {
+async function exchangeOidcCallback(
+  callbackUrl: string,
+): Promise<StoredOidcSession> {
   const config = getOidcConfig()
   const url = new URL(callbackUrl)
   const code = url.searchParams.get('code')
@@ -137,7 +139,8 @@ async function exchangeOidcCallback(callbackUrl: string): Promise<StoredOidcSess
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   })
-  if (!response.ok) throw new Error(`OIDC token exchange failed (${response.status})`)
+  if (!response.ok)
+    throw new Error(`OIDC token exchange failed (${response.status})`)
 
   const token = (await response.json()) as OidcTokenResponse
   if (typeof token.access_token !== 'string' || !token.access_token.trim()) {
