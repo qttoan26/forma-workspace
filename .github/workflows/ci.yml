@@ -42,6 +42,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Format probe
+        run: |
+          pnpm exec prettier --write README.md
+          git diff -- README.md
+          exit 1
+
       - name: Format check
         run: pnpm format:check
 
