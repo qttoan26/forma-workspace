@@ -9,10 +9,22 @@ let resetAccessTokenProvider: (() => void) | undefined
 afterEach(() => {
   resetAccessTokenProvider?.()
   resetAccessTokenProvider = undefined
+  vi.unstubAllEnvs()
   vi.unstubAllGlobals()
 })
 
 describe('auth session', () => {
+  it('loads a local demo user without calling the API in demo mode', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(loadAuthSession()).resolves.toEqual({
+      user: { id: 'demo-user' },
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('loads the authenticated user with the configured bearer token', async () => {
     resetAccessTokenProvider = configureApiAccessTokenProvider(
       () => 'token-123',
