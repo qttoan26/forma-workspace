@@ -1,5 +1,5 @@
 type WebRuntimeEnvironment = {
-  PROD?: boolean
+  VITE_DEPLOYMENT_MODE?: string
   VITE_DEMO_MODE?: string
   VITE_API_BASE_URL?: string
   VITE_OIDC_AUTHORIZATION_ENDPOINT?: string
@@ -32,12 +32,12 @@ function validateHttpsUrl(value: string, name: string): void {
 export function validateWebRuntimeConfiguration(
   environment: WebRuntimeEnvironment = import.meta.env,
 ): void {
-  if (!environment.PROD || environment.VITE_DEMO_MODE === 'true') return
+  const isProductionDeployment =
+    environment.VITE_DEPLOYMENT_MODE?.trim() === 'production'
 
-  const apiBaseUrl = required(
-    environment.VITE_API_BASE_URL,
-    'VITE_API_BASE_URL',
-  )
+  if (!isProductionDeployment || environment.VITE_DEMO_MODE === 'true') return
+
+  const apiBaseUrl = required(environment.VITE_API_BASE_URL, 'VITE_API_BASE_URL')
   const authorizationEndpoint = required(
     environment.VITE_OIDC_AUTHORIZATION_ENDPOINT,
     'VITE_OIDC_AUTHORIZATION_ENDPOINT',
