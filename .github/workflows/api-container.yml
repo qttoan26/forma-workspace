@@ -39,7 +39,7 @@ jobs:
         run: docker network create forma-test
 
       - name: Start MongoDB
-        run: docker run --detach --network forma-test --name forma-mongo mongo:8
+        run: docker run --detach --network forma-test --name forma-mongo mongo:8.2
 
       - name: Start API container
         run: |
