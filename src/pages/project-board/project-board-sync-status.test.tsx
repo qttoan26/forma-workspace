@@ -16,15 +16,18 @@ import type { Task } from '@/entities/task/model/task'
 
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
 
-const retryConfiguredProjectTaskSync = vi.fn()
+const { retryConfiguredProjectTaskSync } = vi.hoisted(() => ({
+  retryConfiguredProjectTaskSync: vi.fn<
+    (projectId: string) => Promise<void>
+  >(),
+}))
 
 vi.mock('@/entities/task/lib/task-api', () => ({
   getTaskApiBaseUrl: () => 'https://example.test',
 }))
 
 vi.mock('@/entities/task/lib/task-persistence', () => ({
-  retryConfiguredProjectTaskSync: (...args: unknown[]) =>
-    retryConfiguredProjectTaskSync(...args),
+  retryConfiguredProjectTaskSync,
 }))
 
 const projectId = 'project-1'
@@ -125,8 +128,9 @@ describe('ProjectBoardSyncStatus recovery states', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retrying…' }))
     expect(retryConfiguredProjectTaskSync).toHaveBeenCalledTimes(1)
 
-    await act(async () => {
+    await act(() => {
       resolveRetry?.()
+      return Promise.resolve()
     })
 
     expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled()
