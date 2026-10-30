@@ -80,13 +80,17 @@ const tagline =
 function TaglineReveal() {
   const words = useMemo(() => tagline.split(' '), [])
   const refs = useRef<Array<HTMLSpanElement | null>>([])
-  const [visibleWords, setVisibleWords] = useState(() => new Set<number>())
+  const [visibleWords, setVisibleWords] = useState(
+    () =>
+      new Set<number>(
+        typeof window !== 'undefined' && !('IntersectionObserver' in window)
+          ? words.map((_, index) => index)
+          : [],
+      ),
+  )
 
   useEffect(() => {
-    if (!('IntersectionObserver' in window)) {
-      setVisibleWords(new Set(words.map((_, index) => index)))
-      return
-    }
+    if (!('IntersectionObserver' in window)) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -138,7 +142,10 @@ function TaglineReveal() {
 
 function ProductPreview() {
   return (
-    <div className="landing-product-frame" aria-label="Forma Workspace project board preview">
+    <div
+      className="landing-product-frame"
+      aria-label="Forma Workspace project board preview"
+    >
       <div className="landing-product-topbar">
         <div className="landing-product-brand">
           <span>F</span>
@@ -163,32 +170,50 @@ function ProductPreview() {
           </div>
           <div className="landing-product-columns">
             <section>
-              <header>Todo <span>2</span></header>
+              <header>
+                Todo <span>2</span>
+              </header>
               <article>
                 <small>FOR 21</small>
                 <strong>Build accessible task cards</strong>
-                <footer><span>Urgent</span><span>SL</span></footer>
+                <footer>
+                  <span>Urgent</span>
+                  <span>SL</span>
+                </footer>
               </article>
               <article>
                 <small>FOR 24</small>
                 <strong>Review onboarding copy</strong>
-                <footer><span>Medium</span><span>AM</span></footer>
+                <footer>
+                  <span>Medium</span>
+                  <span>AM</span>
+                </footer>
               </article>
             </section>
             <section>
-              <header>In progress <span>1</span></header>
+              <header>
+                In progress <span>1</span>
+              </header>
               <article>
                 <small>FOR 18</small>
                 <strong>Create board interaction model</strong>
-                <footer><span>High</span><span>JL</span></footer>
+                <footer>
+                  <span>High</span>
+                  <span>JL</span>
+                </footer>
               </article>
             </section>
             <section>
-              <header>Done <span>1</span></header>
+              <header>
+                Done <span>1</span>
+              </header>
               <article>
                 <small>FOR 12</small>
                 <strong>Define workspace navigation</strong>
-                <footer><span>Complete</span><span>SL</span></footer>
+                <footer>
+                  <span>Complete</span>
+                  <span>SL</span>
+                </footer>
               </article>
             </section>
           </div>
@@ -203,7 +228,11 @@ export function LandingPage() {
     <main className="landing-page" id="main-content">
       <header className="landing-nav-wrap">
         <nav className="landing-nav" aria-label="Landing page navigation">
-          <a className="landing-brand" href={`${appBaseUrl}landing`} aria-label="Forma landing page">
+          <a
+            className="landing-brand"
+            href={`${appBaseUrl}landing`}
+            aria-label="Forma landing page"
+          >
             <span aria-hidden="true">F</span>
             <strong>Forma</strong>
           </a>
@@ -225,7 +254,9 @@ export function LandingPage() {
             Keep the work moving without losing the context behind it.
           </h1>
           <p className="landing-hero-lead">
-            Forma Workspace gives product and operations teams one clear place to see priority, ownership, progress, and the next decision that needs attention.
+            Forma Workspace gives product and operations teams one clear place
+            to see priority, ownership, progress, and the next decision that
+            needs attention.
           </p>
           <div className="landing-hero-actions">
             <a className="landing-primary-cta" href={workspaceHref}>
@@ -234,19 +265,34 @@ export function LandingPage() {
             </a>
             <p>No signup required for this prototype.</p>
           </div>
-          <div className="landing-proof-strip" aria-label="Product proof points">
-            <span><strong>4</strong> visible project tasks</span>
-            <span><strong>3</strong> team roles in context</span>
-            <span><strong>1</strong> shared project view</span>
+          <div
+            className="landing-proof-strip"
+            aria-label="Product proof points"
+          >
+            <span>
+              <strong>4</strong> visible project tasks
+            </span>
+            <span>
+              <strong>3</strong> team roles in context
+            </span>
+            <span>
+              <strong>1</strong> shared project view
+            </span>
           </div>
         </div>
         <ProductPreview />
       </section>
 
-      <section className="landing-section landing-benefits" id="benefits" aria-labelledby="benefits-title">
+      <section
+        className="landing-section landing-benefits"
+        id="benefits"
+        aria-labelledby="benefits-title"
+      >
         <div className="landing-section-heading">
           <p className="landing-eyebrow">Why Forma</p>
-          <h2 id="benefits-title">A calmer path from project overview to the next action.</h2>
+          <h2 id="benefits-title">
+            A calmer path from project overview to the next action.
+          </h2>
         </div>
         <div className="landing-benefit-grid">
           {benefits.map((benefit) => (
@@ -259,10 +305,16 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-section landing-steps" id="how-it-works" aria-labelledby="steps-title">
+      <section
+        className="landing-section landing-steps"
+        id="how-it-works"
+        aria-labelledby="steps-title"
+      >
         <div className="landing-section-heading">
           <p className="landing-eyebrow">How it works</p>
-          <h2 id="steps-title">Start broad, move closer, act with the right context.</h2>
+          <h2 id="steps-title">
+            Start broad, move closer, act with the right context.
+          </h2>
         </div>
         <div className="landing-step-list">
           {steps.map((step) => (
@@ -281,25 +333,45 @@ export function LandingPage() {
         <TaglineReveal />
       </section>
 
-      <section className="landing-section landing-proof" aria-labelledby="proof-title">
+      <section
+        className="landing-section landing-proof"
+        aria-labelledby="proof-title"
+      >
         <div className="landing-proof-copy">
           <p className="landing-eyebrow">Built around real project pressure</p>
-          <h2 id="proof-title">The most important work should not be the hardest work to find.</h2>
+          <h2 id="proof-title">
+            The most important work should not be the hardest work to find.
+          </h2>
           <p>
-            The current Forma prototype puts urgent work, active project progress, and ownership in the same visual system. The design favors quick scanning first, then deeper task context only when you need it.
+            The current Forma prototype puts urgent work, active project
+            progress, and ownership in the same visual system. The design favors
+            quick scanning first, then deeper task context only when you need it.
           </p>
           <a className="landing-text-link" href={workspaceHref}>
             Inspect the project board <span aria-hidden="true">→</span>
           </a>
         </div>
         <div className="landing-proof-metrics" aria-label="Prototype metrics">
-          <article><strong>25%</strong><span>project completion shown at a glance</span></article>
-          <article><strong>2</strong><span>priority items surfaced before opening the board</span></article>
-          <article><strong>3</strong><span>team members connected to the active project</span></article>
+          <article>
+            <strong>25%</strong>
+            <span>project completion shown at a glance</span>
+          </article>
+          <article>
+            <strong>2</strong>
+            <span>priority items surfaced before opening the board</span>
+          </article>
+          <article>
+            <strong>3</strong>
+            <span>team members connected to the active project</span>
+          </article>
         </div>
       </section>
 
-      <section className="landing-section landing-faq" id="faq" aria-labelledby="faq-title">
+      <section
+        className="landing-section landing-faq"
+        id="faq"
+        aria-labelledby="faq-title"
+      >
         <div className="landing-section-heading">
           <p className="landing-eyebrow">Questions before you open it</p>
           <h2 id="faq-title">A few useful answers before the first click.</h2>
@@ -307,16 +379,24 @@ export function LandingPage() {
         <div className="landing-faq-list">
           {faqItems.map((item) => (
             <details key={item.question}>
-              <summary>{item.question}<span aria-hidden="true">+</span></summary>
+              <summary>
+                {item.question}
+                <span aria-hidden="true">+</span>
+              </summary>
               <p>{item.answer}</p>
             </details>
           ))}
         </div>
       </section>
 
-      <section className="landing-final-cta" aria-labelledby="final-cta-title">
+      <section
+        className="landing-final-cta"
+        aria-labelledby="final-cta-title"
+      >
         <p className="landing-eyebrow">Ready to inspect the product</p>
-        <h2 id="final-cta-title">Open the workspace and follow the work from overview to task.</h2>
+        <h2 id="final-cta-title">
+          Open the workspace and follow the work from overview to task.
+        </h2>
         <a className="landing-primary-cta" href={workspaceHref}>
           Open Forma workspace
           <span aria-hidden="true">→</span>
