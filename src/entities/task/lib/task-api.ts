@@ -30,10 +30,11 @@ export async function loadProjectTasksFromApi(
   projectId: string,
   baseUrl = getTaskApiBaseUrl(),
 ): Promise<ProjectTaskApiSnapshot> {
+  const url = `${baseUrl}/api/projects/${projectId}/tasks`
   const authorizationHeader = await getApiAuthorizationHeader()
-  const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`, {
-    ...(authorizationHeader ? { headers: authorizationHeader } : {}),
-  })
+  const response = authorizationHeader
+    ? await fetch(url, { headers: authorizationHeader })
+    : await fetch(url)
 
   if (!response.ok) {
     throw new Error(`Failed to load project tasks (${response.status})`)
