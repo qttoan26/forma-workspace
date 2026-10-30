@@ -1,18 +1,18 @@
 import { HealthController } from './health.controller'
 
 describe('HealthController', () => {
-  const originalDatabaseUrl = process.env.DATABASE_URL
+  const originalMongoUri = process.env.MONGODB_URI
 
   afterEach(() => {
-    if (originalDatabaseUrl === undefined) {
-      delete process.env.DATABASE_URL
+    if (originalMongoUri === undefined) {
+      delete process.env.MONGODB_URI
     } else {
-      process.env.DATABASE_URL = originalDatabaseUrl
+      process.env.MONGODB_URI = originalMongoUri
     }
   })
 
   it('reports an operational in-memory API', () => {
-    delete process.env.DATABASE_URL
+    delete process.env.MONGODB_URI
 
     expect(new HealthController().getHealth()).toEqual({
       status: 'ok',
@@ -20,12 +20,12 @@ describe('HealthController', () => {
     })
   })
 
-  it('reports PostgreSQL persistence when configured', () => {
-    process.env.DATABASE_URL = 'postgresql://example.test/forma'
+  it('reports MongoDB persistence when configured', () => {
+    process.env.MONGODB_URI = 'mongodb://example.test:27017'
 
     expect(new HealthController().getHealth()).toEqual({
       status: 'ok',
-      persistence: 'postgresql',
+      persistence: 'mongodb',
     })
   })
 })
