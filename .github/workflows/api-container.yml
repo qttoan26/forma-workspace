@@ -75,6 +75,21 @@ jobs:
             http://127.0.0.1:3001/api/projects/project-smoke/tasks \
             | grep -q '"revision":1'
 
+          stale_status=$(curl --silent \
+            --output /tmp/stale-response.json \
+            --write-out '%{http_code}' \
+            --request PUT \
+            --header 'Content-Type: application/json' \
+            --data '{"tasks":[{"id":"task-stale","projectId":"project-smoke","title":"Stale overwrite","status":"done","priority":"high"}],"expectedRevision":0}' \
+            http://127.0.0.1:3001/api/projects/project-smoke/tasks)
+
+          test "$stale_status" = '409'
+          grep -q '"actualRevision":1' /tmp/stale-response.json
+
+          curl --fail --silent \
+            http://127.0.0.1:3001/api/projects/project-smoke/tasks \
+            | grep -q '"title":"Mongo smoke task"'
+
       - name: Show container logs on failure
         if: failure()
         run: |
