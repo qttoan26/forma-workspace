@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import {
-  MongoServerError,
-  type Collection,
-  type WithId,
-} from 'mongodb'
+import { MongoServerError, type Collection, type WithId } from 'mongodb'
 
 import { MongoDatabaseService } from '../database/mongo-database.service'
 import type { TaskRecord } from './task.schema'

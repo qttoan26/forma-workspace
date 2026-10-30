@@ -1,9 +1,5 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common'
-import {
-  MongoClient,
-  type Collection,
-  type Document,
-} from 'mongodb'
+import { MongoClient, type Collection, type Document } from 'mongodb'
 
 @Injectable()
 export class MongoDatabaseService implements OnModuleDestroy {
