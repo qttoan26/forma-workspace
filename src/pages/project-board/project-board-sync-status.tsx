@@ -5,7 +5,9 @@ import {
   hasMemoryProjectTaskSync,
   memoryProjectTaskSyncChangeEvent,
 } from '@/entities/task/lib/task-memory-sync-queue'
-import { retryConfiguredProjectTaskSync } from '@/entities/task/lib/task-persistence'
+import {
+  retryConfiguredProjectTaskSync,
+} from '@/entities/task/lib/task-persistence'
 import { loadSessionProjectTaskSync } from '@/entities/task/lib/task-session-sync-queue'
 import {
   getProjectTaskLastSyncedAt,
