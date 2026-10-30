@@ -1,4 +1,5 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAccessToken } from '@/shared/lib/auth-session'
 
 import {
   createTaskMutationEffectBoundary,
@@ -21,6 +22,13 @@ export class ProjectTaskApiConflictError extends Error {
   }
 }
 
+export class ProjectTaskApiUnauthorizedError extends Error {
+  constructor() {
+    super('Project task API authentication is required')
+    this.name = 'ProjectTaskApiUnauthorizedError'
+  }
+}
+
 export function getTaskApiBaseUrl(): string {
   return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
 }
@@ -29,7 +37,15 @@ export async function loadProjectTasksFromApi(
   projectId: string,
   baseUrl = getTaskApiBaseUrl(),
 ): Promise<ProjectTaskApiSnapshot> {
-  const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`)
+  const token = await getFrontendAccessToken()
+  const url = `${baseUrl}/api/projects/${projectId}/tasks`
+  const response = token
+    ? await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    : await fetch(url)
+
+  if (response.status === 401) {
+    throw new ProjectTaskApiUnauthorizedError()
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to load project tasks (${response.status})`)
@@ -53,11 +69,21 @@ export async function persistProjectTasksToApi(
   baseUrl = getTaskApiBaseUrl(),
   expectedRevision?: number,
 ): Promise<number> {
+  const token = await getFrontendAccessToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+
   const response = await fetch(`${baseUrl}/api/projects/${projectId}/tasks`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ tasks, expectedRevision }),
   })
+
+  if (response.status === 401) {
+    throw new ProjectTaskApiUnauthorizedError()
+  }
 
   if (response.status === 409) {
     const body = (await response.json().catch(() => null)) as {
