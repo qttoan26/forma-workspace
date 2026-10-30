@@ -5,6 +5,8 @@ import type { Task } from '@/entities/task/model/task'
 import {
   createApiTaskMutationAdapter,
   loadProjectTasksFromApi,
+  persistProjectTasksToApi,
+  ProjectTaskApiConflictError,
 } from './task-api'
 
 const task: Task = {
@@ -20,9 +22,9 @@ afterEach(() => {
 })
 
 describe('task API', () => {
-  it('loads and validates project tasks', async () => {
+  it('loads and validates project tasks with a server revision', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ tasks: [task] }), {
+      new Response(JSON.stringify({ tasks: [task], revision: 4 }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
@@ -31,16 +33,73 @@ describe('task API', () => {
 
     await expect(
       loadProjectTasksFromApi('project-forma', 'https://api.example.test'),
-    ).resolves.toEqual([task])
+    ).resolves.toEqual({ tasks: [task], revision: 4 })
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.test/api/projects/project-forma/tasks',
     )
   })
 
+  it('sends the expected revision and returns the next server revision', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ revision: 5 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      persistProjectTasksToApi(
+        'project-forma',
+        [task],
+        'https://api.example.test',
+        4,
+      ),
+    ).resolves.toBe(5)
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.test/api/projects/project-forma/tasks',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks: [task], expectedRevision: 4 }),
+      },
+    )
+  })
+
+  it('surfaces server revision conflicts', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ expectedRevision: 2, actualRevision: 3 }),
+        {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const request = persistProjectTasksToApi(
+      'project-forma',
+      [task],
+      'https://api.example.test',
+      2,
+    )
+
+    await expect(request).rejects.toBeInstanceOf(ProjectTaskApiConflictError)
+    await expect(request).rejects.toMatchObject({
+      expectedRevision: 2,
+      actualRevision: 3,
+    })
+  })
+
   it('persists task mutations after the initial board sync', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 204 }))
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ revision: 1 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
     vi.stubGlobal('fetch', fetchMock)
     const adapter = createApiTaskMutationAdapter('https://api.example.test')
 
