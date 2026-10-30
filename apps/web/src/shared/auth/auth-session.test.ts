@@ -4,8 +4,10 @@ import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
 import {
   clearAuthSession,
+  consumeAuthReturnTo,
   getLocalLoginUrl,
   loadAuthSession,
+  rememberAuthReturnTo,
 } from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
@@ -66,6 +68,27 @@ describe('auth session', () => {
     vi.stubEnv('BASE_URL', '/forma-workspace/')
 
     expect(getLocalLoginUrl()).toBe('/forma-workspace/login')
+  })
+
+  it('remembers and consumes the protected route once', () => {
+    vi.stubEnv('BASE_URL', '/forma-workspace/')
+    rememberAuthReturnTo({
+      pathname: '/forma-workspace/projects/project-forma',
+      search: '?view=board',
+      hash: '#task-FOR-501',
+    })
+
+    expect(consumeAuthReturnTo()).toBe(
+      '/forma-workspace/projects/project-forma?view=board#task-FOR-501',
+    )
+    expect(consumeAuthReturnTo()).toBeUndefined()
+  })
+
+  it('rejects a return target outside the configured app base path', () => {
+    vi.stubEnv('BASE_URL', '/forma-workspace/')
+    sessionStorage.setItem('forma.auth.return-to', 'https://evil.example.test/')
+
+    expect(consumeAuthReturnTo()).toBeUndefined()
   })
 
   it('clears stored OIDC session and transaction state', () => {
