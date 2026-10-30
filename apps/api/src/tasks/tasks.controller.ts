@@ -1,14 +1,15 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
-  HttpCode,
   Param,
   Put,
 } from '@nestjs/common'
 
 import { persistTasksBodySchema } from './task.schema'
+import { ProjectTaskRevisionConflictError } from './task.repository'
 import { TasksService } from './tasks.service'
 
 @Controller('projects/:projectId/tasks')
@@ -16,12 +17,11 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  async getProjectTasks(@Param('projectId') projectId: string) {
-    return { tasks: await this.tasksService.getProjectTasks(projectId) }
+  getProjectTasks(@Param('projectId') projectId: string) {
+    return this.tasksService.getProjectTasks(projectId)
   }
 
   @Put()
-  @HttpCode(204)
   async replaceProjectTasks(
     @Param('projectId') projectId: string,
     @Body() body: unknown,
@@ -37,6 +37,24 @@ export class TasksController {
       )
     }
 
-    await this.tasksService.replaceProjectTasks(projectId, parsed.data.tasks)
+    try {
+      const revision = await this.tasksService.replaceProjectTasks(
+        projectId,
+        parsed.data.tasks,
+        parsed.data.expectedRevision,
+      )
+
+      return { revision }
+    } catch (error) {
+      if (error instanceof ProjectTaskRevisionConflictError) {
+        throw new ConflictException({
+          message: 'Project task revision conflict',
+          expectedRevision: error.expectedRevision,
+          actualRevision: error.actualRevision,
+        })
+      }
+
+      throw error
+    }
   }
 }
