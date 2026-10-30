@@ -1,6 +1,10 @@
 import { afterEach } from 'vitest'
 
 import type { Task } from '@/entities/task/model/task'
+import {
+  resetFrontendAuthSessionProvider,
+  setFrontendAuthSessionProvider,
+} from '@/shared/lib/auth-session'
 
 import {
   clearSessionProjectTaskSync,
@@ -28,8 +32,8 @@ const secondTask: Task = {
 }
 
 afterEach(() => {
-  clearSessionProjectTaskSync(projectId)
-  clearSessionProjectTaskSync('project-2')
+  sessionStorage.clear()
+  resetFrontendAuthSessionProvider()
 })
 
 describe('task session sync queue', () => {
@@ -67,6 +71,70 @@ describe('task session sync queue', () => {
     expect(
       completeSessionProjectTaskSync(projectId, queuedSync!.mutationId),
     ).toBe(true)
+    expect(loadSessionProjectTaskSync(projectId)).toBeNull()
+  })
+
+  it('isolates queued mutations between authenticated users', () => {
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+    const userAQueue = enqueueSessionProjectTaskSync(projectId, [firstTask])
+
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-b',
+      getAccessToken: () => 'token-b',
+    })
+    expect(loadSessionProjectTaskSync(projectId)).toBeNull()
+    const userBQueue = enqueueSessionProjectTaskSync(projectId, [secondTask])
+
+    expect(userBQueue?.tasks).toEqual([secondTask])
+
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+    expect(loadSessionProjectTaskSync(projectId)).toEqual(userAQueue)
+  })
+
+  it('migrates the legacy development queue', () => {
+    const queuedSync = {
+      projectId,
+      tasks: [firstTask],
+      mutationId: 'legacy-mutation',
+      queuedAt: new Date().toISOString(),
+    }
+    sessionStorage.setItem(
+      'forma:task-sync:v1:queue:project-1',
+      JSON.stringify(queuedSync),
+    )
+
+    expect(loadSessionProjectTaskSync(projectId)).toEqual(queuedSync)
+    expect(
+      sessionStorage.getItem('forma:task-sync:v1:queue:project-1'),
+    ).toBeNull()
+    expect(
+      sessionStorage.getItem(
+        'forma:task-sync:v2:queue:local-development-user:project-1',
+      ),
+    ).toBe(JSON.stringify(queuedSync))
+  })
+
+  it('does not expose legacy development queue data to authenticated users', () => {
+    sessionStorage.setItem(
+      'forma:task-sync:v1:queue:project-1',
+      JSON.stringify({
+        projectId,
+        tasks: [firstTask],
+        mutationId: 'legacy-mutation',
+        queuedAt: new Date().toISOString(),
+      }),
+    )
+    setFrontendAuthSessionProvider({
+      getSubject: () => 'user-a',
+      getAccessToken: () => 'token-a',
+    })
+
     expect(loadSessionProjectTaskSync(projectId)).toBeNull()
   })
 
