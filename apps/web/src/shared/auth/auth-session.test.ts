@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
-import { clearAuthSession, getLocalLoginUrl, loadAuthSession } from './auth-session'
+import {
+  clearAuthSession,
+  getLocalLoginUrl,
+  loadAuthSession,
+} from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
 
