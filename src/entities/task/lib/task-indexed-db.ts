@@ -38,7 +38,7 @@ export interface QueuedProjectTaskSync {
   tasks: Task[]
   mutationId: string
   queuedAt: string
-  expectedRevision?: number
+  expectedRevision?: number | undefined
 }
 
 export async function loadProjectTaskSnapshotFromIndexedDb(
