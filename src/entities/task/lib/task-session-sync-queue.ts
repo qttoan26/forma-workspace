@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { getFrontendAuthStorageScope } from '@/shared/lib/auth-session'
 import {
   resolveBrowserStorage,
   safeStorageGetItem,
@@ -10,7 +11,9 @@ import {
 
 import type { QueuedProjectTaskSync } from './task-indexed-db'
 
-const syncVersion = 'v1'
+const syncVersion = 'v2'
+const legacySyncVersion = 'v1'
+const localDevelopmentStorageScope = 'local-development-user'
 
 const queuedProjectTaskSyncSchema = z.object({
   projectId: z.string().min(1),
@@ -46,28 +49,30 @@ export function enqueueSessionProjectTaskSync(
 export function loadSessionProjectTaskSync(
   projectId: string,
 ): QueuedProjectTaskSync | null {
-  const raw = safeStorageGetItem(
-    'session-storage',
-    resolveBrowserStorage('session-storage'),
-    queueKey(projectId),
-  )
-  if (!raw) return null
+  const storage = resolveBrowserStorage('session-storage')
+  const currentKey = queueKey(projectId)
+  const raw = safeStorageGetItem('session-storage', storage, currentKey)
+  if (raw) return parseQueuedSync(projectId, raw, currentKey)
 
-  try {
-    const parsed = queuedProjectTaskSyncSchema.safeParse(JSON.parse(raw))
-    if (!parsed.success || parsed.data.projectId !== projectId) {
-      clearSessionProjectTaskSync(projectId)
-      return null
-    }
-    if (!parsed.data.tasks.every((task) => task.projectId === projectId)) {
-      clearSessionProjectTaskSync(projectId)
-      return null
-    }
-    return parsed.data
-  } catch {
-    clearSessionProjectTaskSync(projectId)
+  if (getFrontendAuthStorageScope() !== localDevelopmentStorageScope) {
     return null
   }
+
+  const oldKey = legacyQueueKey(projectId)
+  const legacy = safeStorageGetItem('session-storage', storage, oldKey)
+  if (!legacy) return null
+
+  const queuedSync = parseQueuedSync(projectId, legacy, oldKey)
+  if (!queuedSync) return null
+
+  safeStorageSetItem(
+    'session-storage',
+    storage,
+    currentKey,
+    JSON.stringify(queuedSync),
+  )
+  safeStorageRemoveItem('session-storage', storage, oldKey)
+  return queuedSync
 }
 
 export function completeSessionProjectTaskSync(
@@ -81,10 +86,45 @@ export function completeSessionProjectTaskSync(
 }
 
 export function clearSessionProjectTaskSync(projectId: string): boolean {
-  return safeStorageRemoveItem(
+  const storage = resolveBrowserStorage('session-storage')
+  const removed = safeStorageRemoveItem(
+    'session-storage',
+    storage,
+    queueKey(projectId),
+  )
+  if (getFrontendAuthStorageScope() === localDevelopmentStorageScope) {
+    safeStorageRemoveItem(
+      'session-storage',
+      storage,
+      legacyQueueKey(projectId),
+    )
+  }
+  return removed
+}
+
+function parseQueuedSync(projectId: string, raw: string, key: string) {
+  try {
+    const parsed = queuedProjectTaskSyncSchema.safeParse(JSON.parse(raw))
+    if (!parsed.success || parsed.data.projectId !== projectId) {
+      removeQueueKey(key)
+      return null
+    }
+    if (!parsed.data.tasks.every((task) => task.projectId === projectId)) {
+      removeQueueKey(key)
+      return null
+    }
+    return parsed.data
+  } catch {
+    removeQueueKey(key)
+    return null
+  }
+}
+
+function removeQueueKey(key: string) {
+  safeStorageRemoveItem(
     'session-storage',
     resolveBrowserStorage('session-storage'),
-    queueKey(projectId),
+    key,
   )
 }
 
@@ -97,7 +137,11 @@ function parseProjectTasks(projectId: string, tasks: Task[]) {
 }
 
 function queueKey(projectId: string) {
-  return `forma:task-sync:${syncVersion}:queue:${projectId}`
+  return `forma:task-sync:${syncVersion}:queue:${getFrontendAuthStorageScope()}:${projectId}`
+}
+
+function legacyQueueKey(projectId: string) {
+  return `forma:task-sync:${legacySyncVersion}:queue:${projectId}`
 }
 
 function createMutationId() {
