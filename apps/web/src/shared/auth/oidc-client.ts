@@ -26,20 +26,32 @@ interface StoredOidcSession {
   expiresAt: number
 }
 
-function readRequiredEnv(name: keyof ImportMetaEnv): string {
-  const value = import.meta.env[name]?.trim()
-  if (!value) {
+function readRequiredEnv(value: string | undefined, name: string): string {
+  const normalizedValue = value?.trim()
+  if (!normalizedValue) {
     throw new Error(`${name} is required for OIDC authentication`)
   }
-  return value
+  return normalizedValue
 }
 
 export function getOidcConfig(): OidcConfig {
   return {
-    authorizationEndpoint: readRequiredEnv('VITE_OIDC_AUTHORIZATION_ENDPOINT'),
-    tokenEndpoint: readRequiredEnv('VITE_OIDC_TOKEN_ENDPOINT'),
-    clientId: readRequiredEnv('VITE_OIDC_CLIENT_ID'),
-    redirectUri: readRequiredEnv('VITE_OIDC_REDIRECT_URI'),
+    authorizationEndpoint: readRequiredEnv(
+      import.meta.env.VITE_OIDC_AUTHORIZATION_ENDPOINT,
+      'VITE_OIDC_AUTHORIZATION_ENDPOINT',
+    ),
+    tokenEndpoint: readRequiredEnv(
+      import.meta.env.VITE_OIDC_TOKEN_ENDPOINT,
+      'VITE_OIDC_TOKEN_ENDPOINT',
+    ),
+    clientId: readRequiredEnv(
+      import.meta.env.VITE_OIDC_CLIENT_ID,
+      'VITE_OIDC_CLIENT_ID',
+    ),
+    redirectUri: readRequiredEnv(
+      import.meta.env.VITE_OIDC_REDIRECT_URI,
+      'VITE_OIDC_REDIRECT_URI',
+    ),
     scope: import.meta.env.VITE_OIDC_SCOPE?.trim() || 'openid profile email',
   }
 }
