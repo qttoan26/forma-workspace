@@ -1,5 +1,6 @@
 import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
 
+import './home-auth.css'
 import './home-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
