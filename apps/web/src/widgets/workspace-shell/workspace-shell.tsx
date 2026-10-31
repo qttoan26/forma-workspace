@@ -27,8 +27,10 @@ import { workspaceModules } from '@/shared/workspace/module-registry'
 import { workSectionPath } from '@/shared/workspace/work-section-registry'
 
 import './workspace-shell.css'
+import './workspace-sidebar-bitrix.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
+const sidebarPreferenceKey = 'forma-workspace:sidebar-expanded:v1'
 
 function hrefFor(path: string) {
   return `${appBaseUrl}${path.replace(/^\//, '')}`
@@ -78,10 +80,25 @@ export function WorkspaceShell({
   children,
 }: WorkspaceShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(readSidebarPreference)
   const demoMode = isDemoMode()
+  const adminModule = workspaceModules.find((module) => module.id === 'admin')
+  const primaryModules = workspaceModules.filter(
+    (module) => module.id !== 'admin',
+  )
+
+  function toggleSidebar() {
+    setSidebarExpanded((expanded) => {
+      const next = !expanded
+      saveSidebarPreference(next)
+      return next
+    })
+  }
 
   return (
-    <div className="workspace-shell">
+    <div
+      className={`workspace-shell${sidebarExpanded ? ' is-sidebar-expanded' : ' is-sidebar-collapsed'}`}
+    >
       <button
         className={`workspace-shell-backdrop${mobileOpen ? ' is-visible' : ''}`}
         type="button"
@@ -98,15 +115,28 @@ export function WorkspaceShell({
             className="workspace-sidebar-brand"
             href={appBaseUrl}
             aria-label="Forma Workspace home"
+            title={sidebarExpanded ? undefined : 'Forma Workspace'}
           >
             <span className="workspace-sidebar-brand-mark" aria-hidden="true">
               F
             </span>
-            <span>
+            <span className="workspace-sidebar-brand-copy">
               <strong>Forma</strong>
               <small>Workspace</small>
             </span>
           </a>
+          <button
+            className="workspace-sidebar-collapse"
+            type="button"
+            aria-label={
+              sidebarExpanded ? 'Collapse navigation' : 'Expand navigation'
+            }
+            aria-expanded={sidebarExpanded}
+            title={sidebarExpanded ? 'Collapse menu' : 'Expand menu'}
+            onClick={toggleSidebar}
+          >
+            <MenuIcon />
+          </button>
           <button
             className="workspace-sidebar-close"
             type="button"
@@ -123,12 +153,13 @@ export function WorkspaceShell({
             className="workspace-sidebar-link"
             aria-current={!activeModuleId ? 'page' : undefined}
             href={appBaseUrl}
+            title={sidebarExpanded ? undefined : 'Overview'}
             onClick={() => setMobileOpen(false)}
           >
             <span className="workspace-sidebar-icon" aria-hidden="true">
               <HomeIcon />
             </span>
-            <span>Overview</span>
+            <span className="workspace-sidebar-label">Overview</span>
           </a>
 
           {personalLinks.map((item) => {
@@ -142,12 +173,13 @@ export function WorkspaceShell({
                 aria-current={active ? 'page' : undefined}
                 href={hrefFor(item.path)}
                 key={item.id}
+                title={sidebarExpanded ? undefined : item.label}
                 onClick={() => setMobileOpen(false)}
               >
                 <span className="workspace-sidebar-icon" aria-hidden="true">
                   <PersonalIcon />
                 </span>
-                <span>{item.label}</span>
+                <span className="workspace-sidebar-label">{item.label}</span>
                 <span className="workspace-sidebar-counter">
                   {item.counter}
                 </span>
@@ -156,7 +188,7 @@ export function WorkspaceShell({
           })}
 
           <p className="workspace-sidebar-section-label">Operations</p>
-          {workspaceModules.map((module) => {
+          {primaryModules.map((module) => {
             const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
             const active = activeModuleId === module.id && !activeSectionId
 
@@ -166,6 +198,7 @@ export function WorkspaceShell({
                 aria-current={active ? 'page' : undefined}
                 href={hrefFor(module.path)}
                 key={module.id}
+                title={sidebarExpanded ? undefined : module.label}
                 onClick={() => setMobileOpen(false)}
               >
                 <span className="workspace-sidebar-icon" aria-hidden="true">
@@ -190,13 +223,22 @@ export function WorkspaceShell({
           })}
         </nav>
 
-        <div className="workspace-sidebar-footer">
-          <span className="workspace-sidebar-footer-dot" aria-hidden="true" />
-          <span>
-            <strong>System online</strong>
-            <small>Demo workspace</small>
-          </span>
-        </div>
+        {adminModule ? (
+          <div className="workspace-sidebar-footer">
+            <a
+              className="workspace-sidebar-link workspace-sidebar-settings"
+              aria-current={activeModuleId === 'admin' ? 'page' : undefined}
+              href={hrefFor(adminModule.path)}
+              title={sidebarExpanded ? undefined : 'Settings'}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span className="workspace-sidebar-icon" aria-hidden="true">
+                <SettingsIcon />
+              </span>
+              <span className="workspace-sidebar-label">Settings</span>
+            </a>
+          </div>
+        ) : null}
       </aside>
 
       <div className="workspace-shell-main">
@@ -265,4 +307,22 @@ export function WorkspaceShell({
       </div>
     </div>
   )
+}
+
+function readSidebarPreference() {
+  if (typeof window === 'undefined') return false
+
+  try {
+    return window.localStorage.getItem(sidebarPreferenceKey) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function saveSidebarPreference(expanded: boolean) {
+  try {
+    window.localStorage.setItem(sidebarPreferenceKey, String(expanded))
+  } catch {
+    // Sidebar preference is non-critical and may remain session-only.
+  }
 }

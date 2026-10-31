@@ -1,0 +1,201 @@
+.workspace-sidebar,
+.workspace-shell-main {
+  transition:
+    width 160ms ease,
+    margin-left 160ms ease;
+}
+
+.workspace-sidebar-collapse {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #7b8389;
+  cursor: pointer;
+}
+
+.workspace-sidebar-collapse:hover {
+  background: #f0f2f3;
+  color: #30363b;
+}
+
+.workspace-sidebar-collapse svg {
+  width: 18px;
+  height: 18px;
+}
+
+.workspace-sidebar-footer {
+  display: block;
+  min-height: auto;
+  padding: 0.55rem;
+  background: #f8f9fa;
+}
+
+.workspace-sidebar-settings {
+  width: 100%;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar {
+  width: 72px;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-shell-main {
+  margin-left: 72px;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-brand-row {
+  justify-content: center;
+  padding: 0;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-brand {
+  display: none;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-collapse {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e2e5e7;
+  background: #fff;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-nav {
+  padding: 0.65rem 0.55rem 1rem;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-section-label {
+  height: 1px;
+  margin: 0.65rem 0.35rem;
+  overflow: hidden;
+  background: #e1e4e6;
+  color: transparent;
+  font-size: 0;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-link {
+  position: relative;
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 0;
+  padding: 0.45rem;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-label,
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-link-copy {
+  display: none;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-counter {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.1rem;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  line-height: 1.05rem;
+  font-size: 0.56rem;
+}
+
+.workspace-shell.is-sidebar-collapsed
+  .workspace-sidebar-link[aria-current='page']::before {
+  position: absolute;
+  inset: 9px auto 9px -0.55rem;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #1aa183;
+  content: '';
+}
+
+.workspace-shell.is-sidebar-collapsed .workspace-sidebar-footer {
+  padding: 0.55rem;
+}
+
+.workspace-sidebar-collapse:focus-visible {
+  outline: 2px solid #28b99a;
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar,
+  .workspace-shell.is-sidebar-expanded .workspace-sidebar {
+    width: min(86vw, 286px);
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-shell-main,
+  .workspace-shell.is-sidebar-expanded .workspace-shell-main {
+    margin-left: 0;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-brand-row {
+    justify-content: space-between;
+    padding: 0 0.85rem;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-brand {
+    display: inline-flex;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-label,
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-link-copy {
+    display: grid;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-section-label {
+    height: auto;
+    margin: 0.95rem 0.7rem 0.35rem;
+    overflow: visible;
+    background: transparent;
+    color: #9aa1a6;
+    font-size: 0.63rem;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-link {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    justify-items: stretch;
+    gap: 0.55rem;
+    min-height: 42px;
+    padding: 0.42rem 0.6rem;
+  }
+
+  .workspace-shell.is-sidebar-collapsed .workspace-sidebar-counter {
+    position: static;
+    min-width: 1.35rem;
+    height: auto;
+    padding: 0.11rem 0.34rem;
+    line-height: normal;
+    font-size: 0.66rem;
+  }
+
+  .workspace-shell.is-sidebar-collapsed
+    .workspace-sidebar-link[aria-current='page']::before {
+    display: none;
+  }
+
+  .workspace-sidebar-collapse {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-sidebar,
+  .workspace-shell-main {
+    transition: none;
+  }
+}
