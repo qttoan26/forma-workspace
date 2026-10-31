@@ -1,6 +1,22 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
 
 import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
+import {
+  BellIcon,
+  BuildingIcon,
+  ChevronDownIcon,
+  ClipboardIcon,
+  FactoryIcon,
+  FileStackIcon,
+  HomeIcon,
+  MenuIcon,
+  SearchIcon,
+  SettingsIcon,
+  ShieldIcon,
+  SparkIcon,
+  UsersIcon,
+  XIcon,
+} from '@/shared/ui/workspace-icons'
 import { workspaceModules } from '@/shared/workspace/module-registry'
 
 import './workspace-shell.css'
@@ -11,15 +27,17 @@ function hrefFor(path: string) {
   return `${appBaseUrl}${path.replace(/^\//, '')}`
 }
 
-const moduleGlyphs: Record<string, string> = {
-  work: 'W',
-  production: 'P',
-  documents: 'D',
-  automation: 'A',
-  vendors: 'V',
-  customers: 'C',
-  governance: 'G',
-  admin: 'S',
+type WorkspaceIcon = ComponentType<SVGProps<SVGSVGElement>>
+
+const moduleIcons: Record<string, WorkspaceIcon> = {
+  work: ClipboardIcon,
+  production: FactoryIcon,
+  documents: FileStackIcon,
+  automation: SparkIcon,
+  vendors: UsersIcon,
+  customers: BuildingIcon,
+  governance: ShieldIcon,
+  admin: SettingsIcon,
 }
 
 type WorkspaceShellProps = {
@@ -69,7 +87,7 @@ export function WorkspaceShell({
             aria-label="Close navigation"
             onClick={() => setMobileOpen(false)}
           >
-            ×
+            <XIcon />
           </button>
         </div>
 
@@ -81,40 +99,44 @@ export function WorkspaceShell({
             href={appBaseUrl}
             onClick={() => setMobileOpen(false)}
           >
-            <span className="workspace-sidebar-glyph" aria-hidden="true">
-              O
+            <span className="workspace-sidebar-icon" aria-hidden="true">
+              <HomeIcon />
             </span>
             <span>Overview</span>
           </a>
 
           <p className="workspace-sidebar-section-label">Operations</p>
-          {workspaceModules.map((module) => (
-            <a
-              className="workspace-sidebar-link"
-              aria-current={activeModuleId === module.id ? 'page' : undefined}
-              href={hrefFor(module.path)}
-              key={module.id}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span className="workspace-sidebar-glyph" aria-hidden="true">
-                {moduleGlyphs[module.id] ?? module.label.charAt(0)}
-              </span>
-              <span className="workspace-sidebar-link-copy">
-                <span>{module.label}</span>
-                {module.status === 'implementation' ? (
-                  <small>In progress</small>
-                ) : null}
-              </span>
-              {module.id === 'work' ? (
-                <span
-                  className="workspace-sidebar-counter"
-                  aria-label="3 open tasks"
-                >
-                  3
+          {workspaceModules.map((module) => {
+            const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
+
+            return (
+              <a
+                className="workspace-sidebar-link"
+                aria-current={activeModuleId === module.id ? 'page' : undefined}
+                href={hrefFor(module.path)}
+                key={module.id}
+                onClick={() => setMobileOpen(false)}
+              >
+                <span className="workspace-sidebar-icon" aria-hidden="true">
+                  <ModuleIcon />
                 </span>
-              ) : null}
-            </a>
-          ))}
+                <span className="workspace-sidebar-link-copy">
+                  <span>{module.label}</span>
+                  {module.status === 'implementation' ? (
+                    <small>In progress</small>
+                  ) : null}
+                </span>
+                {module.id === 'work' ? (
+                  <span
+                    className="workspace-sidebar-counter"
+                    aria-label="3 open tasks"
+                  >
+                    3
+                  </span>
+                ) : null}
+              </a>
+            )
+          })}
         </nav>
 
         <div className="workspace-sidebar-footer">
@@ -136,7 +158,7 @@ export function WorkspaceShell({
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(true)}
             >
-              <span aria-hidden="true">☰</span>
+              <MenuIcon />
             </button>
             <div>
               <small>Forma Workspace</small>
@@ -146,8 +168,8 @@ export function WorkspaceShell({
 
           <div className="workspace-topbar-actions">
             <button className="workspace-search-button" type="button">
-              <span aria-hidden="true">⌕</span>
-              <span>Search workspace</span>
+              <SearchIcon />
+              <span>Search</span>
               <kbd>⌘ K</kbd>
             </button>
             <button
@@ -155,10 +177,10 @@ export function WorkspaceShell({
               type="button"
               aria-label="Notifications, 2 unread"
             >
-              <span aria-hidden="true">◌</span>
+              <BellIcon />
               <span className="workspace-notification-count">2</span>
             </button>
-            <div className="workspace-account" aria-label="Signed in user">
+            <button className="workspace-account" type="button" aria-label="Open account menu">
               <span className="workspace-account-copy">
                 <strong>Sam Lee</strong>
                 <small>Frontend</small>
@@ -166,18 +188,19 @@ export function WorkspaceShell({
               <span className="workspace-avatar" aria-hidden="true">
                 SL
               </span>
-              {demoMode ? (
-                <span className="workspace-demo-badge">Demo</span>
-              ) : (
-                <button
-                  className="workspace-sign-out"
-                  type="button"
-                  onClick={startLogout}
-                >
-                  Sign out
-                </button>
-              )}
-            </div>
+              <ChevronDownIcon className="workspace-account-chevron" />
+            </button>
+            {demoMode ? (
+              <span className="workspace-demo-badge">Demo</span>
+            ) : (
+              <button
+                className="workspace-sign-out"
+                type="button"
+                onClick={startLogout}
+              >
+                Sign out
+              </button>
+            )}
           </div>
         </header>
 
