@@ -1,0 +1,293 @@
+.project-view-surface {
+  overflow: hidden;
+  border: 1px solid var(--forma-color-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.project-view-heading {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #e8ebed;
+}
+
+.project-view-heading > div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.project-view-heading small,
+.project-view-heading > span {
+  color: #92999f;
+  font-size: 0.64rem;
+  font-weight: 720;
+}
+
+.project-view-heading small {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.project-view-heading h2 {
+  margin: 0;
+  color: #2a3136;
+  font-size: 0.95rem;
+}
+
+.project-list-groups {
+  display: grid;
+}
+
+.project-list-group + .project-list-group {
+  border-top: 1px solid #eceeef;
+}
+
+.project-list-group > header {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  background: #fafbfb;
+}
+
+.project-list-group > header strong {
+  color: #41494f;
+  font-size: 0.72rem;
+}
+
+.project-list-group > header span {
+  display: grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #eef1f2;
+  color: #7a8389;
+  font-size: 0.62rem;
+  font-weight: 760;
+}
+
+.project-list-task {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 36px;
+  gap: 0.65rem;
+  align-items: center;
+  min-height: 3.3rem;
+  padding: 0.65rem 0.85rem;
+}
+
+.project-list-task + .project-list-task {
+  border-top: 1px solid #f0f1f2;
+}
+
+.project-list-task > div,
+.project-calendar-task,
+.project-timeline-copy,
+.project-timeline-meta {
+  display: grid;
+  gap: 0.14rem;
+}
+
+.project-list-task strong,
+.project-calendar-task strong,
+.project-timeline-copy strong,
+.project-task-table-row strong {
+  color: #30383d;
+  font-size: 0.73rem;
+}
+
+.project-list-task small,
+.project-calendar-task small,
+.project-timeline-copy small,
+.project-timeline-meta small {
+  color: #8e969b;
+  font-size: 0.63rem;
+}
+
+.project-task-key {
+  color: #8b949a;
+  font-size: 0.62rem;
+  font-weight: 720;
+}
+
+.project-task-assignee {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaf7f3;
+  color: #247661;
+  font-size: 0.6rem;
+  font-weight: 780;
+}
+
+.project-task-unassigned {
+  color: #a0a7ac;
+}
+
+.project-view-empty-row {
+  margin: 0;
+  padding: 0.85rem;
+  color: #9aa1a6;
+  font-size: 0.68rem;
+}
+
+.project-table-wrap {
+  overflow-x: auto;
+}
+
+.project-task-table {
+  min-width: 760px;
+}
+
+.project-task-table-row {
+  display: grid;
+  grid-template-columns: 70px minmax(220px, 1fr) 110px 90px 150px 100px;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.55rem 0.8rem;
+  color: #626b71;
+  font-size: 0.69rem;
+}
+
+.project-task-table-row + .project-task-table-row {
+  border-top: 1px solid #edf0f1;
+}
+
+.project-task-table-row.is-header {
+  min-height: 2.3rem;
+  background: #fafbfb;
+  color: #949ca1;
+  font-size: 0.61rem;
+  font-weight: 740;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.project-calendar-list,
+.project-timeline-list {
+  display: grid;
+}
+
+.project-calendar-item {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 36px;
+  gap: 0.8rem;
+  align-items: center;
+  min-height: 4rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.project-calendar-item + .project-calendar-item,
+.project-timeline-item + .project-timeline-item {
+  border-top: 1px solid #edf0f1;
+}
+
+.project-calendar-date {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.project-calendar-date strong,
+.project-timeline-meta strong {
+  color: #287b68;
+  font-size: 0.69rem;
+}
+
+.project-calendar-date small {
+  color: #90989d;
+  font-size: 0.62rem;
+}
+
+.project-timeline-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(130px, auto);
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 4rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.project-timeline-marker {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid #cde4dd;
+  border-radius: 50%;
+  background: #f2faf7;
+  color: #23816a;
+  font-size: 0.6rem;
+  font-weight: 780;
+}
+
+.project-timeline-meta {
+  justify-items: end;
+}
+
+.project-files-empty {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1.2rem;
+}
+
+.project-files-empty > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #d6e8e2;
+  border-radius: 0.7rem;
+  background: #f3faf7;
+  color: #23816a;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.project-files-empty strong {
+  color: #30383d;
+  font-size: 0.8rem;
+}
+
+.project-files-empty p {
+  max-width: 62ch;
+  margin: 0.3rem 0 0;
+  color: #7d868c;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .project-view-heading,
+  .project-files-empty {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .project-list-task {
+    grid-template-columns: 58px minmax(0, 1fr) 32px;
+  }
+
+  .project-calendar-item,
+  .project-timeline-item {
+    grid-template-columns: 1fr;
+  }
+
+  .project-task-assignee,
+  .project-timeline-marker {
+    grid-row: 1;
+  }
+
+  .project-timeline-meta {
+    justify-items: start;
+  }
+}
