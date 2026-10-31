@@ -1,0 +1,41 @@
+.workspace-navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--color-border-subtle, #e6e8ec);
+  background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+  scrollbar-width: thin;
+}
+
+.workspace-navbar-home,
+.workspace-navbar-link {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: var(--color-text-secondary, #5d6470);
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1;
+  padding: 0.65rem 0.8rem;
+  text-decoration: none;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.workspace-navbar-home:hover,
+.workspace-navbar-link:hover,
+.workspace-navbar-link[aria-current='page'] {
+  background: var(--color-surface-muted, #f2f4f7);
+  color: var(--color-text-primary, #17191d);
+}
+
+.workspace-navbar-home {
+  color: var(--color-text-primary, #17191d);
+}
+
+.workspace-navbar-modules {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

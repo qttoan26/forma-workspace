@@ -10,6 +10,7 @@ import { AuthCallbackPage } from '@/pages/auth-callback/auth-callback-page'
 import { HomePage } from '@/pages/home/home-page'
 import { LandingPage } from '@/pages/landing/landing-page'
 import { LoginPage } from '@/pages/login/login-page'
+import { ModuleRoutePage } from '@/pages/module/module-route-page'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
 import { ProjectBoardLoading } from '@/pages/project-board/project-board-loading'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
@@ -53,6 +54,13 @@ const authCallbackRoute = createRoute({
   component: AuthCallbackPage,
 })
 
+const moduleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/modules/$moduleId',
+  beforeLoad: requireAuthSession,
+  component: ModuleRoutePage,
+})
+
 const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspaces/$workspaceSlug/projects/$projectId',
@@ -75,6 +83,7 @@ const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
   authCallbackRoute,
+  moduleRoute,
   projectRoute,
 ])
 const basepath = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
