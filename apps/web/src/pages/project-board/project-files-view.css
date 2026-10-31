@@ -1,0 +1,125 @@
+.project-files-boundary-note {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #edf0f1;
+  background: #fafbfb;
+}
+
+.project-files-boundary-note strong {
+  color: #3a4348;
+  font-size: 0.72rem;
+}
+
+.project-files-boundary-note span {
+  max-width: 78ch;
+  color: #818a90;
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
+.project-files-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-files-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto);
+  gap: 1rem;
+  align-items: center;
+  min-height: 4.2rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.project-files-list > li + li {
+  border-top: 1px solid #edf0f1;
+}
+
+.project-file-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.project-file-main > div,
+.project-file-context {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.project-file-main strong {
+  overflow: hidden;
+  color: #30383d;
+  font-size: 0.73rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-file-main small,
+.project-file-context span {
+  overflow: hidden;
+  color: #8b949a;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-file-mark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #d6e8e2;
+  border-radius: 0.45rem;
+  background: #f3faf7;
+  color: #23816a;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.project-file-context {
+  justify-items: end;
+}
+
+.project-file-context button,
+.project-file-context a {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #247661;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 720;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.project-file-context button:hover,
+.project-file-context a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.14rem;
+}
+
+.project-file-context button:focus-visible,
+.project-file-context a:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid #45a58d;
+  outline-offset: 0.16rem;
+}
+
+@media (max-width: 700px) {
+  .project-files-list > li {
+    grid-template-columns: 1fr;
+  }
+
+  .project-file-context {
+    justify-items: start;
+    padding-left: 2.7rem;
+  }
+}
