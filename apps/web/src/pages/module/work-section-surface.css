@@ -138,10 +138,9 @@
 
 .work-data-table-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(92px, 0.32fr) minmax(
-      72px,
-      0.22fr
-    ) 48px;
+  grid-template-columns:
+    minmax(220px, 1fr) minmax(92px, 0.32fr) minmax(72px, 0.22fr)
+    48px;
   gap: 0.6rem;
   align-items: center;
   min-height: 3.25rem;
