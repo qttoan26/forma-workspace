@@ -83,7 +83,9 @@ export function WorkspaceShell({
   const [sidebarExpanded, setSidebarExpanded] = useState(readSidebarPreference)
   const demoMode = isDemoMode()
   const adminModule = workspaceModules.find((module) => module.id === 'admin')
-  const primaryModules = workspaceModules.filter((module) => module.id !== 'admin')
+  const primaryModules = workspaceModules.filter(
+    (module) => module.id !== 'admin',
+  )
 
   function toggleSidebar() {
     setSidebarExpanded((expanded) => {
@@ -126,7 +128,9 @@ export function WorkspaceShell({
           <button
             className="workspace-sidebar-collapse"
             type="button"
-            aria-label={sidebarExpanded ? 'Collapse navigation' : 'Expand navigation'}
+            aria-label={
+              sidebarExpanded ? 'Collapse navigation' : 'Expand navigation'
+            }
             aria-expanded={sidebarExpanded}
             title={sidebarExpanded ? 'Collapse menu' : 'Expand menu'}
             onClick={toggleSidebar}
