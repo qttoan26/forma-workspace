@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import type { Member } from '@/entities/member/model/member'
+import { appendTaskActivityToIndexedDb } from '@/entities/task/lib/task-indexed-db'
+import { createTaskActivityEntry } from '@/entities/task/model/task-activity'
 import {
   taskPriorities,
   taskStatusLabels,
@@ -17,6 +19,7 @@ import {
   saveTaskFormDraft,
 } from '../lib/task-form-draft'
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
+import { TaskActivityPanel } from './task-activity-panel'
 
 interface TaskFormProps {
   members: Member[]
@@ -26,6 +29,8 @@ interface TaskFormProps {
   onSubmit: (values: TaskFormValues) => void
 }
 
+type TaskDetailSection = 'details' | 'activity'
+
 export function TaskForm({
   members,
   task,
@@ -33,6 +38,8 @@ export function TaskForm({
   onCancel,
   onSubmit,
 }: TaskFormProps) {
+  const [activeSection, setActiveSection] =
+    useState<TaskDetailSection>('details')
   const {
     control,
     register,
@@ -61,6 +68,7 @@ export function TaskForm({
 
   function submitForm(values: TaskFormValues) {
     if (draftKey) clearTaskFormDraft(draftKey)
+    if (task) recordTaskUpdateActivity(task, values)
     onSubmit(values)
   }
 
@@ -86,56 +94,105 @@ export function TaskForm({
         </Button>
       </div>
 
-      <Field label="Title" error={errors.title?.message}>
-        <input autoFocus {...register('title')} />
-      </Field>
+      {task ? (
+        <div className="task-detail-tabs" role="tablist" aria-label="Task details">
+          <button
+            id={`task-details-tab-${task.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === 'details'}
+            aria-controls={`task-details-panel-${task.id}`}
+            onClick={() => setActiveSection('details')}
+          >
+            Details
+          </button>
+          <button
+            id={`task-activity-tab-${task.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === 'activity'}
+            aria-controls={`task-activity-panel-${task.id}`}
+            onClick={() => setActiveSection('activity')}
+          >
+            Activity
+          </button>
+        </div>
+      ) : null}
 
-      <Field label="Description" error={errors.description?.message}>
-        <textarea rows={4} {...register('description')} />
-      </Field>
+      {!task || activeSection === 'details' ? (
+        <div
+          className="task-detail-panel"
+          {...(task
+            ? {
+                id: `task-details-panel-${task.id}`,
+                role: 'tabpanel',
+                'aria-labelledby': `task-details-tab-${task.id}`,
+              }
+            : {})}
+        >
+          <Field label="Title" error={errors.title?.message}>
+            <input autoFocus {...register('title')} />
+          </Field>
 
-      <div className="task-form-grid">
-        <Field label="Status">
-          <select {...register('status')}>
-            {taskStatuses.map((status) => (
-              <option key={status} value={status}>
-                {taskStatusLabels[status]}
-              </option>
-            ))}
-          </select>
-        </Field>
+          <Field label="Description" error={errors.description?.message}>
+            <textarea rows={4} {...register('description')} />
+          </Field>
 
-        <Field label="Priority">
-          <select {...register('priority')}>
-            {taskPriorities.map((priority) => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
+          <div className="task-form-grid">
+            <Field label="Status">
+              <select {...register('status')}>
+                {taskStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {taskStatusLabels[status]}
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-      <div className="task-form-grid">
-        <Field label="Assignee">
-          <select {...register('assigneeId')}>
-            <option value="">Unassigned</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <Field label="Priority">
+              <select {...register('priority')}>
+                {taskPriorities.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
 
-        <Field label="Due date">
-          <input type="date" {...register('dueDate')} />
-        </Field>
-      </div>
+          <div className="task-form-grid">
+            <Field label="Assignee">
+              <select {...register('assigneeId')}>
+                <option value="">Unassigned</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-      <Button variant="primary" type="submit" disabled={isSubmitting}>
-        {task ? 'Save changes' : 'Create task'}
-      </Button>
+            <Field label="Due date">
+              <input type="date" {...register('dueDate')} />
+            </Field>
+          </div>
+
+          <Button variant="primary" type="submit" disabled={isSubmitting}>
+            {task ? 'Save changes' : 'Create task'}
+          </Button>
+        </div>
+      ) : null}
+
+      {task && activeSection === 'activity' ? (
+        <div
+          id={`task-activity-panel-${task.id}`}
+          className="task-detail-panel"
+          role="tabpanel"
+          aria-labelledby={`task-activity-tab-${task.id}`}
+        >
+          <TaskActivityPanel projectId={task.projectId} taskId={task.id} />
+        </div>
+      ) : null}
     </form>
   )
 }
@@ -157,4 +214,39 @@ function toFormValues(task?: Task): TaskFormValues {
     assigneeId: task?.assigneeId ?? '',
     dueDate: task?.dueDate ?? '',
   }
+}
+
+function recordTaskUpdateActivity(task: Task, values: TaskFormValues) {
+  const body = describeTaskChanges(task, values)
+  if (!body) return
+
+  const entry = createTaskActivityEntry({
+    projectId: task.projectId,
+    taskId: task.id,
+    kind: 'event',
+    body,
+    authorLabel: 'You',
+  })
+
+  void appendTaskActivityToIndexedDb(task.projectId, task.id, entry).catch(
+    () => undefined,
+  )
+}
+
+function describeTaskChanges(task: Task, values: TaskFormValues) {
+  const changes: string[] = []
+
+  if (task.title !== values.title) changes.push('title')
+  if ((task.description ?? '') !== values.description) changes.push('description')
+  if (task.status !== values.status) {
+    changes.push(
+      `status (${taskStatusLabels[task.status]} → ${taskStatusLabels[values.status]})`,
+    )
+  }
+  if (task.priority !== values.priority) changes.push('priority')
+  if ((task.assigneeId ?? '') !== values.assigneeId) changes.push('assignee')
+  if ((task.dueDate ?? '') !== values.dueDate) changes.push('due date')
+
+  if (changes.length === 0) return null
+  return `Updated ${changes.join(', ')}.`
 }
