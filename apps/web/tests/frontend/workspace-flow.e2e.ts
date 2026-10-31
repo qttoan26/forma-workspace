@@ -104,6 +104,36 @@ test('edits one live task through the shared drawer across project views', async
   ).toBeVisible()
 })
 
+test('persists task comments in the shared drawer activity tab', async ({
+  page,
+}) => {
+  await page.goto('/workspaces/forma/projects/project-1?view=list')
+
+  await page
+    .getByRole('button', { name: 'Open Create board interaction model' })
+    .click()
+
+  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  await drawer.getByRole('tab', { name: 'Activity' }).click()
+  await expect(drawer.getByText('No activity yet')).toBeVisible()
+
+  await drawer.getByLabel('Add comment').fill('Ready for customer review')
+  await drawer.getByRole('button', { name: 'Comment' }).click()
+
+  await expect(drawer.getByText('Ready for customer review')).toBeVisible()
+  await expect(drawer.getByRole('status')).toHaveText('Comment saved locally.')
+
+  await drawer.getByRole('button', { name: 'Cancel' }).click()
+  await expect(drawer).toBeHidden()
+
+  await page
+    .getByRole('button', { name: 'Open Create board interaction model' })
+    .click()
+  await drawer.getByRole('tab', { name: 'Activity' }).click()
+
+  await expect(drawer.getByText('Ready for customer review')).toBeVisible()
+})
+
 test('opens the same task drawer from the board editor action', async ({
   page,
 }) => {
