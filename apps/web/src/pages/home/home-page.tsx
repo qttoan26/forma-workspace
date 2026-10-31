@@ -63,14 +63,14 @@ export function HomePage() {
         <div className="dashboard-intro">
           <div>
             <p className="eyebrow">Workspace overview</p>
-            <h1 id="dashboard-title">Run the work from one workspace.</h1>
+            <h1 id="dashboard-title">Keep the work moving.</h1>
             <p className="dashboard-lead">
-              Move between execution, production, documents, automation, vendors,
-              customers, and governance without losing operational context.
+              Run work from one workspace across execution, production,
+              documents, automation, vendors, customers, and governance.
             </p>
           </div>
           <a className="dashboard-primary-action" href={projectHref}>
-            Open active project
+            Open project board
           </a>
         </div>
 
@@ -92,7 +92,9 @@ export function HomePage() {
               >
                 <span className="workspace-module-card-topline">
                   <span className="workspace-module-eyebrow">{module.eyebrow}</span>
-                  <span className={`workspace-module-status workspace-module-status-${module.status}`}>
+                  <span
+                    className={`workspace-module-status workspace-module-status-${module.status}`}
+                  >
                     {module.status === 'available' ? 'Available' : 'Implementing'}
                   </span>
                 </span>
