@@ -1,3 +1,9 @@
+import {
+  CalendarIcon,
+  CheckSquareIcon,
+  FolderIcon,
+  UserIcon,
+} from '@/shared/ui/workspace-icons'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
 import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
@@ -5,6 +11,37 @@ import './module-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
 const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
+
+const workSections = [
+  {
+    id: 'projects',
+    label: 'Projects',
+    description: 'Boards, delivery and project execution',
+    status: 'available',
+    icon: FolderIcon,
+  },
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    description: 'Cross-project task management',
+    status: 'implementation',
+    icon: CheckSquareIcon,
+  },
+  {
+    id: 'my-work',
+    label: 'My Work',
+    description: 'Personal priorities and assignments',
+    status: 'implementation',
+    icon: UserIcon,
+  },
+  {
+    id: 'calendar',
+    label: 'Calendar & Activity',
+    description: 'Deadlines, events and activity stream',
+    status: 'implementation',
+    icon: CalendarIcon,
+  },
+] as const
 
 export function ModulePage({ moduleId }: { moduleId: string }) {
   const module = getWorkspaceModule(moduleId)
@@ -45,18 +82,105 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
         </header>
 
         {isWorkModule ? (
-          <section className="module-state-card">
-            <p className="eyebrow">Current foundation</p>
-            <h2>Project execution is already connected.</h2>
-            <p>
-              The existing project board remains the first working feature
-              inside the Work module while the broader work-management
-              experience is being completed.
-            </p>
-            <a className="module-primary-action" href={projectHref}>
-              Open project board
-            </a>
-          </section>
+          <div className="work-module-layout">
+            <aside className="work-subnav" aria-label="Work sections">
+              <div className="work-subnav-heading">
+                <span>Work</span>
+                <small>Execution</small>
+              </div>
+              <nav className="work-subnav-list">
+                {workSections.map((section) => {
+                  const SectionIcon = section.icon
+
+                  return section.status === 'available' ? (
+                    <a
+                      className="work-subnav-item is-active"
+                      href={projectHref}
+                      key={section.id}
+                    >
+                      <span className="work-subnav-icon" aria-hidden="true">
+                        <SectionIcon />
+                      </span>
+                      <span className="work-subnav-copy">
+                        <strong>{section.label}</strong>
+                        <small>{section.description}</small>
+                      </span>
+                      <span className="work-subnav-count">1</span>
+                    </a>
+                  ) : (
+                    <div
+                      className="work-subnav-item is-disabled"
+                      key={section.id}
+                      aria-label={`${section.label}, implementation in progress`}
+                    >
+                      <span className="work-subnav-icon" aria-hidden="true">
+                        <SectionIcon />
+                      </span>
+                      <span className="work-subnav-copy">
+                        <strong>{section.label}</strong>
+                        <small>{section.description}</small>
+                      </span>
+                      <span className="work-subnav-state">Soon</span>
+                    </div>
+                  )
+                })}
+              </nav>
+            </aside>
+
+            <div className="work-module-main">
+              <section className="module-state-card work-project-card">
+                <div className="work-project-card-header">
+                  <div>
+                    <p className="eyebrow">Projects</p>
+                    <h2>Project execution is connected.</h2>
+                    <p>
+                      The existing project board is the first production-ready
+                      Work experience. The remaining Work sections are being
+                      implemented incrementally around the same execution model.
+                    </p>
+                  </div>
+                  <span className="work-project-key">FOR</span>
+                </div>
+
+                <div
+                  className="work-project-summary"
+                  aria-label="Project summary"
+                >
+                  <span>
+                    <strong>1</strong>
+                    <small>Active project</small>
+                  </span>
+                  <span>
+                    <strong>4</strong>
+                    <small>Tasks</small>
+                  </span>
+                  <span>
+                    <strong>3</strong>
+                    <small>Members</small>
+                  </span>
+                </div>
+
+                <a className="module-primary-action" href={projectHref}>
+                  Open project board
+                </a>
+              </section>
+
+              <section
+                className="work-roadmap"
+                aria-labelledby="work-roadmap-title"
+              >
+                <div>
+                  <p className="eyebrow">Next in Work</p>
+                  <h2 id="work-roadmap-title">Implementation in progress</h2>
+                </div>
+                <div className="work-roadmap-items">
+                  <span>Tasks</span>
+                  <span>My Work</span>
+                  <span>Calendar & Activity</span>
+                </div>
+              </section>
+            </div>
+          </div>
         ) : (
           <section
             className="module-state-card"
