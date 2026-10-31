@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   loadTaskChecklist,
@@ -28,12 +28,6 @@ export function TaskChecklistPanel({
   )
   const [title, setTitle] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
-
-  useEffect(() => {
-    setItems(loadTaskChecklist(projectId, taskId))
-    setTitle('')
-    setSaveError(null)
-  }, [projectId, taskId])
 
   const completedCount = useMemo(
     () => items.filter((item) => item.completed).length,
