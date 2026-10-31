@@ -93,7 +93,9 @@ function ProjectListView({ tasks, members }: TaskViewProps) {
                   </article>
                 ))
               ) : (
-                <p className="project-view-empty-row">No tasks in this status.</p>
+                <p className="project-view-empty-row">
+                  No tasks in this status.
+                </p>
               )}
             </section>
           )
