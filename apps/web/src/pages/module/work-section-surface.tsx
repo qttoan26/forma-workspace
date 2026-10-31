@@ -74,6 +74,13 @@ const members = [
   ['JD', 'Jordan Diaz', 'Platform', 'Away'],
 ] as const
 
+const teams = [
+  ['Software', '4 members', 'Frontend, Backend, DevOps'],
+  ['Production', '18 members', 'Scan, OCR, Data entry, QC'],
+  ['Operations', '6 members', 'Delivery, Vendor, Customer ops'],
+  ['Policy', '3 members', 'SOP, Legal, Compliance'],
+] as const
+
 const activities = [
   ['Sam Lee', 'moved FOR-101 to In progress', '8 min ago'],
   ['Mina Nguyen', 'updated project status to On track', '43 min ago'],
@@ -325,16 +332,11 @@ function TimelineSurface() {
   )
 }
 
-function MembersSurface({ teams = false }: { teams?: boolean }) {
-  if (teams) {
+function MembersSurface({ teams: showTeams = false }: { teams?: boolean }) {
+  if (showTeams) {
     return (
       <div className="work-team-grid">
-        {[
-          ['Software', '4 members', 'Frontend, Backend, DevOps'],
-          ['Production', '18 members', 'Scan, OCR, Data entry, QC'],
-          ['Operations', '6 members', 'Delivery, Vendor, Customer ops'],
-          ['Policy', '3 members', 'SOP, Legal, Compliance'],
-        ].map(([name, count, detail]) => (
+        {teams.map(([name, count, detail]) => (
           <article className="work-person-card" key={name}>
             <span className="work-team-mark">
               {name.slice(0, 2).toUpperCase()}
