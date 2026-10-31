@@ -108,7 +108,9 @@ export function TaskLinkedFilesPanel({
           placeholder="e.g. Approved drawing.pdf"
           onChange={(event) => setName(event.target.value)}
         />
-        <label htmlFor={`task-file-location-${taskId}`}>Reference location</label>
+        <label htmlFor={`task-file-location-${taskId}`}>
+          Reference location
+        </label>
         <input
           id={`task-file-location-${taskId}`}
           value={location}
