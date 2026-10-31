@@ -21,6 +21,7 @@ import {
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 import { TaskActivityPanel } from './task-activity-panel'
 import { TaskChecklistPanel } from './task-checklist-panel'
+import { TaskLinkedFilesPanel } from './task-linked-files-panel'
 
 interface TaskFormProps {
   members: Member[]
@@ -30,7 +31,7 @@ interface TaskFormProps {
   onSubmit: (values: TaskFormValues) => void
 }
 
-type TaskDetailSection = 'details' | 'checklist' | 'activity'
+type TaskDetailSection = 'details' | 'checklist' | 'files' | 'activity'
 
 export function TaskForm({
   members,
@@ -122,6 +123,16 @@ export function TaskForm({
             Checklist
           </button>
           <button
+            id={`task-files-tab-${task.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === 'files'}
+            aria-controls={`task-files-panel-${task.id}`}
+            onClick={() => setActiveSection('files')}
+          >
+            Files
+          </button>
+          <button
             id={`task-activity-tab-${task.id}`}
             type="button"
             role="tab"
@@ -202,6 +213,21 @@ export function TaskForm({
           aria-labelledby={`task-checklist-tab-${task.id}`}
         >
           <TaskChecklistPanel
+            key={`${task.projectId}:${task.id}`}
+            projectId={task.projectId}
+            taskId={task.id}
+          />
+        </div>
+      ) : null}
+
+      {task && activeSection === 'files' ? (
+        <div
+          id={`task-files-panel-${task.id}`}
+          className="task-detail-panel"
+          role="tabpanel"
+          aria-labelledby={`task-files-tab-${task.id}`}
+        >
+          <TaskLinkedFilesPanel
             key={`${task.projectId}:${task.id}`}
             projectId={task.projectId}
             taskId={task.id}
