@@ -6,6 +6,8 @@ import {
   type TaskBoardSort,
 } from '@/widgets/task-board/model/task-board-view'
 
+import { isProjectView, projectViews } from './project-view'
+
 const optionalSearchText = z.preprocess(
   normalizeOptionalText,
   z.string().optional(),
@@ -27,6 +29,11 @@ const optionalSort = z.preprocess(
   z.enum(taskBoardSorts).optional(),
 )
 
+const optionalView = z.preprocess(
+  (value) => (isProjectView(value) ? value : undefined),
+  z.enum(projectViews).optional(),
+)
+
 const optionalNewTask = z.preprocess(
   (value) => (value === '1' ? value : undefined),
   z.literal('1').optional(),
@@ -37,6 +44,7 @@ export const projectBoardSearchSchema = z.object({
   assignee: optionalSearchText,
   query: optionalSearchText,
   sort: optionalSort,
+  view: optionalView,
   task: optionalSearchText,
   newTask: optionalNewTask,
 })
