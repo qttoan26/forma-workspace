@@ -8,6 +8,7 @@ import {
 } from '@/shared/lib/browser-storage-health'
 
 const storagePrefix = 'forma-workspace:project-document-references:v1'
+export const documentReferenceChangeEvent = 'forma:document-references-change'
 
 export function loadProjectDocumentReferences(
   projectId: string,
@@ -51,10 +52,20 @@ export function saveProjectDocumentReferences(
       JSON.stringify(parsed),
     )
     reportBrowserStorageSuccess('local-storage')
+    dispatchDocumentReferenceChange(projectId)
   } catch (error) {
     reportBrowserStorageFailure('local-storage', error)
     throw error
   }
+}
+
+function dispatchDocumentReferenceChange(projectId: string) {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(
+    new CustomEvent(documentReferenceChangeEvent, {
+      detail: { projectId },
+    }),
+  )
 }
 
 function createStorageKey(projectId: string) {
