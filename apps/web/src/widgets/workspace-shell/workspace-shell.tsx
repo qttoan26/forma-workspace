@@ -10,6 +10,7 @@ import {
   BellIcon,
   BuildingIcon,
   ChevronDownIcon,
+  CheckSquareIcon,
   ClipboardIcon,
   FactoryIcon,
   FileStackIcon,
@@ -23,6 +24,7 @@ import {
   XIcon,
 } from '@/shared/ui/workspace-icons'
 import { workspaceModules } from '@/shared/workspace/module-registry'
+import { workSectionPath } from '@/shared/workspace/work-section-registry'
 
 import './workspace-shell.css'
 
@@ -45,14 +47,33 @@ const moduleIcons: Record<string, WorkspaceIcon> = {
   admin: SettingsIcon,
 }
 
+const personalLinks = [
+  {
+    id: 'inbox',
+    label: 'Inbox',
+    icon: BellIcon,
+    path: workSectionPath('inbox'),
+    counter: 3,
+  },
+  {
+    id: 'my-tasks',
+    label: 'My Tasks',
+    icon: CheckSquareIcon,
+    path: workSectionPath('my-tasks'),
+    counter: 2,
+  },
+] as const
+
 type WorkspaceShellProps = {
   activeModuleId?: string
+  activeSectionId?: string
   pageLabel: string
   children: ReactNode
 }
 
 export function WorkspaceShell({
   activeModuleId,
+  activeSectionId,
   pageLabel,
   children,
 }: WorkspaceShellProps) {
@@ -110,14 +131,36 @@ export function WorkspaceShell({
             <span>Overview</span>
           </a>
 
-          <p className="workspace-sidebar-section-label">Operations</p>
-          {workspaceModules.map((module) => {
-            const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
+          {personalLinks.map((item) => {
+            const PersonalIcon = item.icon
+            const active = activeModuleId === 'work' && activeSectionId === item.id
 
             return (
               <a
                 className="workspace-sidebar-link"
-                aria-current={activeModuleId === module.id ? 'page' : undefined}
+                aria-current={active ? 'page' : undefined}
+                href={hrefFor(item.path)}
+                key={item.id}
+                onClick={() => setMobileOpen(false)}
+              >
+                <span className="workspace-sidebar-icon" aria-hidden="true">
+                  <PersonalIcon />
+                </span>
+                <span>{item.label}</span>
+                <span className="workspace-sidebar-counter">{item.counter}</span>
+              </a>
+            )
+          })}
+
+          <p className="workspace-sidebar-section-label">Operations</p>
+          {workspaceModules.map((module) => {
+            const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
+            const active = activeModuleId === module.id && !activeSectionId
+
+            return (
+              <a
+                className="workspace-sidebar-link"
+                aria-current={active ? 'page' : undefined}
                 href={hrefFor(module.path)}
                 key={module.id}
                 onClick={() => setMobileOpen(false)}
@@ -134,9 +177,9 @@ export function WorkspaceShell({
                 {module.id === 'work' ? (
                   <span
                     className="workspace-sidebar-counter"
-                    aria-label="3 open tasks"
+                    aria-label="4 open tasks"
                   >
-                    3
+                    4
                   </span>
                 ) : null}
               </a>
