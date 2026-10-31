@@ -1,3 +1,9 @@
+import {
+  CalendarIcon,
+  CheckSquareIcon,
+  FolderIcon,
+  UserIcon,
+} from '@/shared/ui/workspace-icons'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
 import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
@@ -12,24 +18,28 @@ const workSections = [
     label: 'Projects',
     description: 'Boards, delivery and project execution',
     status: 'available',
+    icon: FolderIcon,
   },
   {
     id: 'tasks',
     label: 'Tasks',
     description: 'Cross-project task management',
     status: 'implementation',
+    icon: CheckSquareIcon,
   },
   {
     id: 'my-work',
     label: 'My Work',
     description: 'Personal priorities and assignments',
     status: 'implementation',
+    icon: UserIcon,
   },
   {
     id: 'calendar',
     label: 'Calendar & Activity',
     description: 'Deadlines, events and activity stream',
     status: 'implementation',
+    icon: CalendarIcon,
   },
 ] as const
 
@@ -79,14 +89,19 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
                 <small>Execution</small>
               </div>
               <nav className="work-subnav-list">
-                {workSections.map((section) =>
-                  section.status === 'available' ? (
+                {workSections.map((section) => {
+                  const SectionIcon = section.icon
+
+                  return section.status === 'available' ? (
                     <a
                       className="work-subnav-item is-active"
                       href={projectHref}
                       key={section.id}
                     >
-                      <span>
+                      <span className="work-subnav-icon" aria-hidden="true">
+                        <SectionIcon />
+                      </span>
+                      <span className="work-subnav-copy">
                         <strong>{section.label}</strong>
                         <small>{section.description}</small>
                       </span>
@@ -98,14 +113,17 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
                       key={section.id}
                       aria-label={`${section.label}, implementation in progress`}
                     >
-                      <span>
+                      <span className="work-subnav-icon" aria-hidden="true">
+                        <SectionIcon />
+                      </span>
+                      <span className="work-subnav-copy">
                         <strong>{section.label}</strong>
                         <small>{section.description}</small>
                       </span>
                       <span className="work-subnav-state">Soon</span>
                     </div>
-                  ),
-                )}
+                  )
+                })}
               </nav>
             </aside>
 
