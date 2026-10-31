@@ -150,3 +150,40 @@ export function ChevronDownIcon(props: IconProps) {
     </IconBase>
   )
 }
+
+export function FolderIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3.75 7.5h6l1.6 2h8.9v7.75A2.75 2.75 0 0 1 17.5 20h-11a2.75 2.75 0 0 1-2.75-2.75Z" {...strokeProps} />
+      <path d="M3.75 7.5V6.75A2.75 2.75 0 0 1 6.5 4h3.25l1.6 2H17.5A2.75 2.75 0 0 1 20.25 8.75v.75" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function CheckSquareIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="3" {...strokeProps} />
+      <path d="m8 12 2.5 2.5L16 9" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function UserIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="12" cy="8" r="3.25" {...strokeProps} />
+      <path d="M5.5 20c.6-4 3-6 6.5-6s5.9 2 6.5 6" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect x="4" y="5.5" width="16" height="14.5" rx="2.5" {...strokeProps} />
+      <path d="M8 3.75v3.5M16 3.75v3.5M4 9.5h16" {...strokeProps} />
+      <path d="M8 13h2M14 13h2M8 16.5h2" {...strokeProps} />
+    </IconBase>
+  )
+}
