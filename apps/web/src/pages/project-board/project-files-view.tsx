@@ -35,7 +35,8 @@ export function ProjectFilesView({
   useEffect(() => {
     function handleReferenceChange(event: Event) {
       if (!(event instanceof CustomEvent)) return
-      const detail = (event as CustomEvent<DocumentReferenceChangeDetail>).detail
+      const detail = (event as CustomEvent<DocumentReferenceChangeDetail>)
+        .detail
       if (detail.projectId !== projectId) return
       setReferences(loadProjectDocumentReferences(projectId))
     }
@@ -120,11 +121,7 @@ export function ProjectFilesView({
                     <span>Project-level reference</span>
                   )}
                   {isHttpLocation(reference.location) ? (
-                    <a
-                      href={reference.location}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href={reference.location} target="_blank" rel="noreferrer">
                       Open reference
                     </a>
                   ) : null}
