@@ -1,49 +1,55 @@
+import type { ComponentType, SVGProps } from 'react'
+
+import { WorkSectionSurface } from '@/pages/module/work-section-surface'
 import {
+  BellIcon,
   CalendarIcon,
   CheckSquareIcon,
+  ClipboardIcon,
   FolderIcon,
+  HomeIcon,
+  SparkIcon,
   UserIcon,
+  UsersIcon,
 } from '@/shared/ui/workspace-icons'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
+import {
+  getWorkSection,
+  workSectionPath,
+  workSections,
+} from '@/shared/workspace/work-section-registry'
 import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
 import './module-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
-const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
 
-const workSections = [
-  {
-    id: 'projects',
-    label: 'Projects',
-    description: 'Boards, delivery and project execution',
-    status: 'available',
-    icon: FolderIcon,
-  },
-  {
-    id: 'tasks',
-    label: 'Tasks',
-    description: 'Cross-project task management',
-    status: 'implementation',
-    icon: CheckSquareIcon,
-  },
-  {
-    id: 'my-work',
-    label: 'My Work',
-    description: 'Personal priorities and assignments',
-    status: 'implementation',
-    icon: UserIcon,
-  },
-  {
-    id: 'calendar',
-    label: 'Calendar & Activity',
-    description: 'Deadlines, events and activity stream',
-    status: 'implementation',
-    icon: CalendarIcon,
-  },
-] as const
+type WorkspaceIcon = ComponentType<SVGProps<SVGSVGElement>>
 
-export function ModulePage({ moduleId }: { moduleId: string }) {
+const workSectionIcons: Record<string, WorkspaceIcon> = {
+  overview: HomeIcon,
+  inbox: BellIcon,
+  'my-tasks': UserIcon,
+  projects: FolderIcon,
+  tasks: CheckSquareIcon,
+  calendar: CalendarIcon,
+  timeline: ClipboardIcon,
+  members: UsersIcon,
+  teams: UsersIcon,
+  activity: SparkIcon,
+}
+
+function hrefFor(path: string) {
+  return `${appBaseUrl}${path.replace(/^\//, '')}`
+}
+
+export function ModulePage({
+  moduleId,
+  sectionId,
+}: {
+  moduleId: string
+  sectionId?: string | undefined
+}) {
   const module = getWorkspaceModule(moduleId)
 
   if (!module) {
@@ -64,9 +70,16 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
   }
 
   const isWorkModule = module.id === 'work'
+  const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
 
   return (
-    <WorkspaceShell activeModuleId={module.id} pageLabel={module.label}>
+    <WorkspaceShell
+      activeModuleId={module.id}
+      activeSectionId={workSection?.id}
+      pageLabel={
+        workSection ? `${module.label} / ${workSection.label}` : module.label
+      }
+    >
       <section className="module-page-content" aria-labelledby="module-title">
         <header className="module-page-header">
           <div>
@@ -76,12 +89,12 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
           </div>
           <span className={`module-status module-status-${module.status}`}>
             {module.status === 'available'
-              ? 'Foundation available'
+              ? 'Frontend foundation available'
               : 'Implementation in progress'}
           </span>
         </header>
 
-        {isWorkModule ? (
+        {isWorkModule && workSection ? (
           <div className="work-module-layout">
             <aside className="work-subnav" aria-label="Work sections">
               <div className="work-subnav-heading">
@@ -90,13 +103,16 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
               </div>
               <nav className="work-subnav-list">
                 {workSections.map((section) => {
-                  const SectionIcon = section.icon
+                  const SectionIcon =
+                    workSectionIcons[section.id] ?? ClipboardIcon
+                  const active = section.id === workSection.id
 
-                  return section.status === 'available' ? (
+                  return (
                     <a
-                      className="work-subnav-item is-active"
-                      href={projectHref}
+                      className={`work-subnav-item${active ? ' is-active' : ''}`}
+                      href={hrefFor(workSectionPath(section.id))}
                       key={section.id}
+                      aria-current={active ? 'page' : undefined}
                     >
                       <span className="work-subnav-icon" aria-hidden="true">
                         <SectionIcon />
@@ -105,80 +121,19 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
                         <strong>{section.label}</strong>
                         <small>{section.description}</small>
                       </span>
-                      <span className="work-subnav-count">1</span>
+                      {section.counter ? (
+                        <span className="work-subnav-count">
+                          {section.counter}
+                        </span>
+                      ) : null}
                     </a>
-                  ) : (
-                    <div
-                      className="work-subnav-item is-disabled"
-                      key={section.id}
-                      aria-label={`${section.label}, implementation in progress`}
-                    >
-                      <span className="work-subnav-icon" aria-hidden="true">
-                        <SectionIcon />
-                      </span>
-                      <span className="work-subnav-copy">
-                        <strong>{section.label}</strong>
-                        <small>{section.description}</small>
-                      </span>
-                      <span className="work-subnav-state">Soon</span>
-                    </div>
                   )
                 })}
               </nav>
             </aside>
 
             <div className="work-module-main">
-              <section className="module-state-card work-project-card">
-                <div className="work-project-card-header">
-                  <div>
-                    <p className="eyebrow">Projects</p>
-                    <h2>Project execution is connected.</h2>
-                    <p>
-                      The existing project board is the first production-ready
-                      Work experience. The remaining Work sections are being
-                      implemented incrementally around the same execution model.
-                    </p>
-                  </div>
-                  <span className="work-project-key">FOR</span>
-                </div>
-
-                <div
-                  className="work-project-summary"
-                  aria-label="Project summary"
-                >
-                  <span>
-                    <strong>1</strong>
-                    <small>Active project</small>
-                  </span>
-                  <span>
-                    <strong>4</strong>
-                    <small>Tasks</small>
-                  </span>
-                  <span>
-                    <strong>3</strong>
-                    <small>Members</small>
-                  </span>
-                </div>
-
-                <a className="module-primary-action" href={projectHref}>
-                  Open project board
-                </a>
-              </section>
-
-              <section
-                className="work-roadmap"
-                aria-labelledby="work-roadmap-title"
-              >
-                <div>
-                  <p className="eyebrow">Next in Work</p>
-                  <h2 id="work-roadmap-title">Implementation in progress</h2>
-                </div>
-                <div className="work-roadmap-items">
-                  <span>Tasks</span>
-                  <span>My Work</span>
-                  <span>Calendar & Activity</span>
-                </div>
-              </section>
+              <WorkSectionSurface section={workSection} />
             </div>
           </div>
         ) : (

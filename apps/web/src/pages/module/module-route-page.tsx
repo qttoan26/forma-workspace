@@ -3,7 +3,9 @@ import { useParams } from '@tanstack/react-router'
 import { ModulePage } from '@/pages/module/module-page'
 
 export function ModuleRoutePage() {
-  const moduleId = useParams({ strict: false }).moduleId ?? ''
+  const params = useParams({ strict: false })
+  const moduleId = params.moduleId ?? ''
+  const sectionId = params.sectionId
 
-  return <ModulePage moduleId={moduleId} />
+  return <ModulePage moduleId={moduleId} sectionId={sectionId} />
 }

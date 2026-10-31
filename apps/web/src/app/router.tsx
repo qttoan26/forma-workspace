@@ -61,6 +61,13 @@ const moduleRoute = createRoute({
   component: ModuleRoutePage,
 })
 
+const moduleSectionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/modules/$moduleId/$sectionId',
+  beforeLoad: requireAuthSession,
+  component: ModuleRoutePage,
+})
+
 const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspaces/$workspaceSlug/projects/$projectId',
@@ -84,6 +91,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   authCallbackRoute,
   moduleRoute,
+  moduleSectionRoute,
   projectRoute,
 ])
 const basepath = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
