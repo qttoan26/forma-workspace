@@ -268,7 +268,10 @@ function TaskAssignee({ member }: { member?: Member | undefined }) {
   }
 
   return (
-    <span className="project-task-assignee" title={`${member.name} · ${member.role}`}>
+    <span
+      className="project-task-assignee"
+      title={`${member.name} · ${member.role}`}
+    >
       {member.initials}
     </span>
   )
