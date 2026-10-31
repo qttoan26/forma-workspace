@@ -19,10 +19,7 @@ interface TaskChecklistPanelProps {
   taskId: string
 }
 
-export function TaskChecklistPanel({
-  projectId,
-  taskId,
-}: TaskChecklistPanelProps) {
+export function TaskChecklistPanel({ projectId, taskId }: TaskChecklistPanelProps) {
   const [items, setItems] = useState<TaskChecklistItem[]>(() =>
     loadTaskChecklist(projectId, taskId),
   )
