@@ -9,10 +9,6 @@ export function useProjectLiveTasks(projectId: string, initialTasks: Task[]) {
     revision: -1,
   })
 
-  useEffect(() => {
-    setSnapshot({ tasks: initialTasks, revision: -1 })
-  }, [initialTasks, projectId])
-
   useEffect(
     () =>
       subscribeProjectTasks(projectId, (incoming) => {
