@@ -20,6 +20,7 @@ import {
 } from '../lib/task-form-draft'
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 import { TaskActivityPanel } from './task-activity-panel'
+import { TaskChecklistPanel } from './task-checklist-panel'
 
 interface TaskFormProps {
   members: Member[]
@@ -29,7 +30,7 @@ interface TaskFormProps {
   onSubmit: (values: TaskFormValues) => void
 }
 
-type TaskDetailSection = 'details' | 'activity'
+type TaskDetailSection = 'details' | 'checklist' | 'activity'
 
 export function TaskForm({
   members,
@@ -111,6 +112,16 @@ export function TaskForm({
             Details
           </button>
           <button
+            id={`task-checklist-tab-${task.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === 'checklist'}
+            aria-controls={`task-checklist-panel-${task.id}`}
+            onClick={() => setActiveSection('checklist')}
+          >
+            Checklist
+          </button>
+          <button
             id={`task-activity-tab-${task.id}`}
             type="button"
             role="tab"
@@ -180,6 +191,21 @@ export function TaskForm({
           <Button variant="primary" type="submit" disabled={isSubmitting}>
             {task ? 'Save changes' : 'Create task'}
           </Button>
+        </div>
+      ) : null}
+
+      {task && activeSection === 'checklist' ? (
+        <div
+          id={`task-checklist-panel-${task.id}`}
+          className="task-detail-panel"
+          role="tabpanel"
+          aria-labelledby={`task-checklist-tab-${task.id}`}
+        >
+          <TaskChecklistPanel
+            key={`${task.projectId}:${task.id}`}
+            projectId={task.projectId}
+            taskId={task.id}
+          />
         </div>
       ) : null}
 
