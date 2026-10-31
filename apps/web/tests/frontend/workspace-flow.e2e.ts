@@ -37,6 +37,45 @@ test('supports a direct deep link to the project board', async ({ page }) => {
   ).toBeVisible()
 })
 
+test('switches project detail views without leaving the project route', async ({
+  page,
+}) => {
+  await page.goto('/workspaces/forma/projects/project-1')
+
+  await page.getByRole('button', { name: 'List' }).click()
+  await expect(page).toHaveURL(/project-1\?view=list/)
+  await expect(
+    page.getByRole('heading', { name: 'Work grouped by status' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Table' }).click()
+  await expect(page).toHaveURL(/project-1\?view=table/)
+  await expect(
+    page.getByRole('heading', { name: 'Dense project inventory' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Calendar' }).click()
+  await expect(page).toHaveURL(/project-1\?view=calendar/)
+  await expect(
+    page.getByRole('heading', { name: 'Due-date schedule' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Timeline' }).click()
+  await expect(page).toHaveURL(/project-1\?view=timeline/)
+  await expect(
+    page.getByRole('heading', { name: 'Delivery sequence' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Files' }).click()
+  await expect(page).toHaveURL(/project-1\?view=files/)
+  await expect(
+    page.getByRole('heading', { name: 'Project documents' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Board' }).click()
+  await expect(page).toHaveURL(/\/workspaces\/forma\/projects\/project-1$/)
+})
+
 test('shows the project-specific not-found state', async ({ page }) => {
   await page.goto('/workspaces/forma/projects/missing-project')
 

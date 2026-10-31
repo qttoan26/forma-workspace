@@ -10,6 +10,7 @@ describe('parseProjectBoardSearch', () => {
         assignee: '  member-2  ',
         query: '  release notes  ',
         sort: 'priority',
+        view: 'calendar',
         task: '  FOR-18  ',
       }),
     ).toEqual({
@@ -17,6 +18,7 @@ describe('parseProjectBoardSearch', () => {
       assignee: 'member-2',
       query: 'release notes',
       sort: 'priority',
+      view: 'calendar',
       task: 'FOR-18',
       newTask: undefined,
     })
@@ -31,12 +33,14 @@ describe('parseProjectBoardSearch', () => {
       parseProjectBoardSearch({
         task: 'FOR-18',
         newTask: '1',
+        view: 'board',
       }),
     ).toEqual({
       priority: undefined,
       assignee: undefined,
       query: undefined,
       sort: undefined,
+      view: 'board',
       task: undefined,
       newTask: '1',
     })
@@ -49,6 +53,7 @@ describe('parseProjectBoardSearch', () => {
         assignee: '   ',
         query: 42,
         sort: 'newest',
+        view: 'unknown',
         task: null,
         newTask: 'true',
         debug: 'true',
@@ -58,6 +63,7 @@ describe('parseProjectBoardSearch', () => {
       assignee: undefined,
       query: undefined,
       sort: undefined,
+      view: undefined,
       task: undefined,
       newTask: undefined,
     })

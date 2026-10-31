@@ -6,6 +6,7 @@ import {
   retryConfiguredProjectTaskSync,
 } from '@/entities/task/lib/task-persistence'
 import { taskPriorities, type TaskPriority } from '@/entities/task/model/task'
+import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 import {
   type TaskBoardSort,
   taskBoardSorts,
@@ -16,11 +17,17 @@ import { ProjectBoardPersistenceAlert } from './project-board-persistence-alert'
 import { getProjectBoardShortcut } from './project-board-shortcuts'
 import { ProjectBoardStorageHealth } from './project-board-storage-health'
 import { ProjectBoardSyncStatus } from './project-board-sync-status'
-import { ProjectLiveTaskBoard } from './project-live-task-board'
+import { ProjectTaskViews } from './project-task-views'
+import {
+  projectViewLabels,
+  projectViews,
+  type ProjectView,
+} from './project-view'
 import './project-board-page.css'
 
 const projectRoutePath =
   '/workspaces/$workspaceSlug/projects/$projectId' as const
+const appBaseUrl = import.meta.env.BASE_URL
 
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
@@ -30,6 +37,7 @@ export function ProjectBoardPage() {
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
+  const activeView = search.view ?? 'board'
 
   useEffect(() => {
     function syncAndRefresh() {
@@ -67,6 +75,7 @@ export function ProjectBoardPage() {
             search.sort,
             undefined,
             '1',
+            'board',
           ),
       })
     }
@@ -90,6 +99,7 @@ export function ProjectBoardPage() {
           next.sort ?? search.sort,
           search.task,
           search.newTask,
+          activeView,
         ),
       replace: true,
     })
@@ -105,6 +115,7 @@ export function ProjectBoardPage() {
           search.sort,
           taskId ?? undefined,
           undefined,
+          activeView,
         ),
       replace: taskId === null,
     })
@@ -120,163 +131,209 @@ export function ProjectBoardPage() {
           search.sort,
           undefined,
           isCreating ? '1' : undefined,
+          'board',
         ),
       replace: !isCreating,
+    })
+  }
+
+  function switchProjectView(view: ProjectView) {
+    void navigate({
+      search: () =>
+        buildSearch(
+          search.priority,
+          search.assignee,
+          search.query,
+          search.sort,
+          undefined,
+          undefined,
+          view,
+        ),
+      replace: true,
     })
   }
 
   const hasActiveFilters = Boolean(
     search.query || search.priority || search.assignee,
   )
+  const filters = {
+    ...(search.priority ? { priority: search.priority } : {}),
+    ...(search.assignee ? { assigneeId: search.assignee } : {}),
+    ...(search.query ? { query: search.query } : {}),
+    ...(search.sort ? { sort: search.sort } : {}),
+  }
 
   return (
-    <main className="workspace-shell project-board-shell" id="main-content">
-      <nav className="project-board-nav" aria-label="Project navigation">
-        <a href={import.meta.env.BASE_URL}>← Workspace</a>
-        <span>{workspace.name}</span>
-        <span aria-hidden="true">/</span>
-        <strong>{project.key}</strong>
-      </nav>
+    <WorkspaceShell
+      activeModuleId="work"
+      activeSectionId="projects"
+      pageLabel={`Work / ${project.name}`}
+    >
+      <div className="project-board-shell project-detail-page">
+        <nav className="project-board-nav" aria-label="Project navigation">
+          <a href={`${appBaseUrl}modules/work/projects`}>← Projects</a>
+          <span>{workspace.name}</span>
+          <span aria-hidden="true">/</span>
+          <strong>{project.key}</strong>
+        </nav>
 
-      <header className="workspace-header project-board-header">
-        <div>
-          <p className="eyebrow">Active project</p>
-          <h1>{project.name}</h1>
-          <p className="project-description">{project.description}</p>
-        </div>
-        <div className="project-board-members">
-          <ProjectBoardSyncStatus projectId={project.id} />
-          <span className="project-member-label">Team</span>
-          <div
-            className="member-stack"
-            aria-label={`${members.length} project members`}
-          >
-            {members.map((member) => (
-              <span key={member.id} title={`${member.name} · ${member.role}`}>
-                {member.initials}
-              </span>
-            ))}
+        <header className="workspace-header project-board-header">
+          <div>
+            <p className="eyebrow">Active project</p>
+            <h1>{project.name}</h1>
+            <p className="project-description">{project.description}</p>
           </div>
-        </div>
-      </header>
+          <div className="project-board-members">
+            <ProjectBoardSyncStatus projectId={project.id} />
+            <span className="project-member-label">Team</span>
+            <div
+              className="member-stack"
+              aria-label={`${members.length} project members`}
+            >
+              {members.map((member) => (
+                <span key={member.id} title={`${member.name} · ${member.role}`}>
+                  {member.initials}
+                </span>
+              ))}
+            </div>
+          </div>
+        </header>
 
-      <ProjectBoardStorageHealth />
-      <ProjectBoardMemoryRecovery projectId={project.id} />
+        <nav className="project-view-nav" aria-label="Project views">
+          {projectViews.map((view) => (
+            <button
+              className={view === activeView ? 'is-active' : ''}
+              type="button"
+              key={view}
+              aria-current={view === activeView ? 'page' : undefined}
+              onClick={() => switchProjectView(view)}
+            >
+              {projectViewLabels[view]}
+            </button>
+          ))}
+        </nav>
 
-      {hasPersistenceFailure ? (
-        <ProjectBoardPersistenceAlert
-          onDismiss={() => setHasPersistenceFailure(false)}
-        />
-      ) : null}
+        <ProjectBoardStorageHealth />
+        <ProjectBoardMemoryRecovery projectId={project.id} />
 
-      <section className="board-filters" aria-label="Task filters">
-        <label className="board-filter-search">
-          <span>Search</span>
-          <input
-            ref={searchInputRef}
-            type="search"
-            placeholder="Search tasks"
-            value={search.query ?? ''}
-            aria-keyshortcuts="/"
-            title="Press / to focus search"
-            onChange={(event) => updateSearch({ query: event.target.value })}
+        {hasPersistenceFailure ? (
+          <ProjectBoardPersistenceAlert
+            onDismiss={() => setHasPersistenceFailure(false)}
           />
-        </label>
-
-        <label>
-          <span>Priority</span>
-          <select
-            value={search.priority ?? ''}
-            onChange={(event) =>
-              updateSearch({
-                priority: event.target.value as TaskPriority | '',
-              })
-            }
-          >
-            <option value="">All priorities</option>
-            {taskPriorities.map((priority) => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span>Assignee</span>
-          <select
-            value={search.assignee ?? ''}
-            onChange={(event) => updateSearch({ assignee: event.target.value })}
-          >
-            <option value="">All assignees</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span>Sort</span>
-          <select
-            value={search.sort ?? ''}
-            onChange={(event) =>
-              updateSearch({
-                sort: event.target.value as TaskBoardSort | '',
-              })
-            }
-          >
-            <option value="">Board order</option>
-            {taskBoardSorts.map((sort) => (
-              <option key={sort} value={sort}>
-                {sort === 'priority' ? 'Priority' : 'Due date'}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {hasActiveFilters ? (
-          <button
-            className="button-secondary board-filter-clear"
-            type="button"
-            onClick={() =>
-              void navigate({
-                search: buildSearch(
-                  undefined,
-                  undefined,
-                  undefined,
-                  search.sort,
-                  search.task,
-                  search.newTask,
-                ),
-                replace: true,
-              })
-            }
-          >
-            Clear filters
-          </button>
         ) : null}
-      </section>
 
-      <ProjectLiveTaskBoard
-        projectId={project.id}
-        taskIdPrefix={project.key}
-        initialTasks={initialTasks}
-        members={members}
-        selectedTaskId={search.task ?? null}
-        onSelectedTaskChange={selectTask}
-        isCreatingTask={search.newTask === '1'}
-        onCreatingTaskChange={setCreatingTask}
-        onPersistenceFailure={() => setHasPersistenceFailure(true)}
-        filters={{
-          ...(search.priority ? { priority: search.priority } : {}),
-          ...(search.assignee ? { assigneeId: search.assignee } : {}),
-          ...(search.query ? { query: search.query } : {}),
-          ...(search.sort ? { sort: search.sort } : {}),
-        }}
-      />
-    </main>
+        {activeView !== 'files' ? (
+          <section className="board-filters" aria-label="Task filters">
+            <label className="board-filter-search">
+              <span>Search</span>
+              <input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Search tasks"
+                value={search.query ?? ''}
+                aria-keyshortcuts="/"
+                title="Press / to focus search"
+                onChange={(event) =>
+                  updateSearch({ query: event.target.value })
+                }
+              />
+            </label>
+
+            <label>
+              <span>Priority</span>
+              <select
+                value={search.priority ?? ''}
+                onChange={(event) =>
+                  updateSearch({
+                    priority: event.target.value as TaskPriority | '',
+                  })
+                }
+              >
+                <option value="">All priorities</option>
+                {taskPriorities.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Assignee</span>
+              <select
+                value={search.assignee ?? ''}
+                onChange={(event) =>
+                  updateSearch({ assignee: event.target.value })
+                }
+              >
+                <option value="">All assignees</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Sort</span>
+              <select
+                value={search.sort ?? ''}
+                onChange={(event) =>
+                  updateSearch({
+                    sort: event.target.value as TaskBoardSort | '',
+                  })
+                }
+              >
+                <option value="">Board order</option>
+                {taskBoardSorts.map((sort) => (
+                  <option key={sort} value={sort}>
+                    {sort === 'priority' ? 'Priority' : 'Due date'}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {hasActiveFilters ? (
+              <button
+                className="button-secondary board-filter-clear"
+                type="button"
+                onClick={() =>
+                  void navigate({
+                    search: buildSearch(
+                      undefined,
+                      undefined,
+                      undefined,
+                      search.sort,
+                      search.task,
+                      search.newTask,
+                      activeView,
+                    ),
+                    replace: true,
+                  })
+                }
+              >
+                Clear filters
+              </button>
+            ) : null}
+          </section>
+        ) : null}
+
+        <ProjectTaskViews
+          view={activeView}
+          projectId={project.id}
+          taskIdPrefix={project.key}
+          initialTasks={initialTasks}
+          members={members}
+          selectedTaskId={search.task ?? null}
+          onSelectedTaskChange={selectTask}
+          isCreatingTask={search.newTask === '1'}
+          onCreatingTaskChange={setCreatingTask}
+          onPersistenceFailure={() => setHasPersistenceFailure(true)}
+          filters={filters}
+        />
+      </div>
+    </WorkspaceShell>
   )
 }
 
@@ -287,12 +344,14 @@ function buildSearch(
   sort?: TaskBoardSort | '',
   task?: string,
   newTask?: '1',
+  view?: ProjectView,
 ) {
   return {
     ...(priority ? { priority } : {}),
     ...(assignee ? { assignee } : {}),
     ...(query?.trim() ? { query: query.trim() } : {}),
     ...(sort ? { sort } : {}),
+    ...(view && view !== 'board' ? { view } : {}),
     ...(task?.trim() ? { task: task.trim() } : {}),
     ...(newTask === '1' ? { newTask } : {}),
   }

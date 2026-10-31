@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
-import { subscribeProjectTasks } from '@/entities/task/lib/task-broadcast'
 import { createConfiguredTaskMutationAdapter } from '@/entities/task/lib/task-persistence'
 import type { Task } from '@/entities/task/model/task'
 import type { TaskBoardFilters } from '@/widgets/task-board/model/task-board-view'
 import { TaskBoard } from '@/widgets/task-board/task-board'
 
-interface ProjectLiveTaskBoardProps {
+import { useProjectLiveTasks } from './use-project-live-tasks'
+
+export interface ProjectLiveTaskBoardProps {
   projectId: string
   taskIdPrefix: string
   initialTasks: Task[]
@@ -22,24 +23,7 @@ interface ProjectLiveTaskBoardProps {
 
 export function ProjectLiveTaskBoard(props: ProjectLiveTaskBoardProps) {
   const { projectId, initialTasks } = props
-  const [snapshot, setSnapshot] = useState({
-    tasks: initialTasks,
-    revision: -1,
-  })
-
-  useEffect(
-    () =>
-      subscribeProjectTasks(projectId, (incoming) => {
-        setSnapshot((current) => {
-          if (incoming.revision <= current.revision) return current
-          return {
-            tasks: incoming.tasks,
-            revision: incoming.revision,
-          }
-        })
-      }),
-    [projectId],
-  )
+  const snapshot = useProjectLiveTasks(projectId, initialTasks)
 
   return (
     <ProjectTaskBoardSnapshot
