@@ -1,3 +1,10 @@
+import { useEffect, useState } from 'react'
+
+import {
+  documentReferenceChangeEvent,
+  loadProjectDocumentReferences,
+} from '@/entities/document/lib/document-reference-storage'
+import type { DocumentReference } from '@/entities/document/model/document-reference'
 import type { Member } from '@/entities/member/model/member'
 import {
   taskStatuses,
@@ -79,7 +86,13 @@ function ProjectReadOnlyTaskView({
         />
       )
     case 'files':
-      return <ProjectFilesView taskCount={snapshot.tasks.length} />
+      return (
+        <ProjectFilesView
+          projectId={projectId}
+          tasks={snapshot.tasks}
+          onOpenTask={onOpenTask}
+        />
+      )
     default:
       return null
   }
@@ -256,25 +269,116 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
   )
 }
 
-function ProjectFilesView({ taskCount }: { taskCount: number }) {
+function ProjectFilesView({
+  projectId,
+  tasks,
+  onOpenTask,
+}: {
+  projectId: string
+  tasks: Task[]
+  onOpenTask: (taskId: string) => void
+}) {
+  const [references, setReferences] = useState<DocumentReference[]>(() =>
+    loadProjectDocumentReferences(projectId),
+  )
+  const taskById = new Map(tasks.map((task) => [task.id, task]))
+
+  useEffect(() => {
+    const reload = () => setReferences(loadProjectDocumentReferences(projectId))
+    const onReferenceChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectId?: string }>).detail
+      if (!detail?.projectId || detail.projectId === projectId) reload()
+    }
+    const onStorage = (event: StorageEvent) => {
+      if (event.key?.includes(`:${projectId}`)) reload()
+    }
+
+    reload()
+    window.addEventListener(documentReferenceChangeEvent, onReferenceChange)
+    window.addEventListener('storage', onStorage)
+
+    return () => {
+      window.removeEventListener(documentReferenceChangeEvent, onReferenceChange)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [projectId])
+
   return (
     <section className="project-view-surface project-files-surface">
       <ProjectViewHeading
         eyebrow="Files"
         title="Project documents"
-        meta={`${taskCount} linked tasks`}
+        meta={`${references.length} linked ${references.length === 1 ? 'document' : 'documents'}`}
       />
-      <div className="project-files-empty">
-        <span aria-hidden="true">F</span>
-        <div>
-          <strong>Files workspace is ready for integration.</strong>
-          <p>
-            The project view boundary is in place. Uploads, task attachments,
-            document versions, and provider storage will be connected without
-            changing the project navigation structure.
+
+      {references.length ? (
+        <div className="project-files-list">
+          {references.map((reference) => {
+            const linkedTask = reference.taskId
+              ? taskById.get(reference.taskId)
+              : undefined
+
+            return (
+              <article className="project-file-row" key={reference.id}>
+                <span className="project-file-icon" aria-hidden="true">
+                  F
+                </span>
+                <div className="project-file-copy">
+                  <strong>{reference.name}</strong>
+                  {isHttpLocation(reference.location) ? (
+                    <a
+                      href={reference.location}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {reference.location}
+                    </a>
+                  ) : (
+                    <span>{reference.location}</span>
+                  )}
+                </div>
+                <div className="project-file-task">
+                  {linkedTask ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenTask(linkedTask.id)}
+                    >
+                      <small>{linkedTask.id}</small>
+                      <strong>{linkedTask.title}</strong>
+                    </button>
+                  ) : reference.taskId ? (
+                    <span>
+                      <small>Linked task</small>
+                      <strong>{reference.taskId}</strong>
+                    </span>
+                  ) : (
+                    <span>
+                      <small>Scope</small>
+                      <strong>Project</strong>
+                    </span>
+                  )}
+                </div>
+              </article>
+            )
+          })}
+          <p className="project-files-provider-note">
+            Reference metadata is available here. Uploads, versions, OCR, and
+            document lifecycle remain in Documents &amp; Data and are still being
+            implemented.
           </p>
         </div>
-      </div>
+      ) : (
+        <div className="project-files-empty">
+          <span aria-hidden="true">F</span>
+          <div>
+            <strong>No linked documents yet.</strong>
+            <p>
+              Open a task and use its Files tab to link a document reference.
+              Project Files will aggregate those references here automatically.
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -348,4 +452,8 @@ function compareTaskDueDate(left: Task, right: Task) {
   if (!left.dueDate) return 1
   if (!right.dueDate) return -1
   return left.dueDate.localeCompare(right.dueDate)
+}
+
+function isHttpLocation(location: string) {
+  return /^https?:\/\//i.test(location)
 }
