@@ -9,7 +9,9 @@ export const documentReferenceSchema = z.object({
   createdAt: z.string().min(1),
 })
 
-export const documentReferenceCollectionSchema = z.array(documentReferenceSchema)
+export const documentReferenceCollectionSchema = z.array(
+  documentReferenceSchema,
+)
 
 export type DocumentReference = z.infer<typeof documentReferenceSchema>
 
