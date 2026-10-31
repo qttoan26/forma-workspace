@@ -76,6 +76,47 @@ test('switches project detail views without leaving the project route', async ({
   await expect(page).toHaveURL(/\/workspaces\/forma\/projects\/project-1$/)
 })
 
+test('edits one live task through the shared drawer across project views', async ({
+  page,
+}) => {
+  await page.goto('/workspaces/forma/projects/project-1?view=list')
+
+  await page
+    .getByRole('button', { name: 'Open Create board interaction model' })
+    .click()
+
+  await expect(page).toHaveURL(/view=list&task=FOR-18/)
+  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  await expect(drawer).toBeVisible()
+
+  await drawer.getByLabel('Title').fill('Create shared task drawer')
+  await drawer.getByRole('button', { name: 'Save changes' }).click()
+
+  await expect(drawer).toBeHidden()
+  await expect(page).toHaveURL(/project-1\?view=list$/)
+  await expect(
+    page.getByRole('button', { name: 'Open Create shared task drawer' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Table' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Open Create shared task drawer' }),
+  ).toBeVisible()
+})
+
+test('opens the same task drawer from the board editor action', async ({
+  page,
+}) => {
+  await page.goto('/workspaces/forma/projects/project-1')
+
+  await page
+    .getByRole('button', { name: 'Edit Create board interaction model' })
+    .click()
+
+  await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
+  await expect(page).toHaveURL(/task=FOR-18/)
+})
+
 test('shows the project-specific not-found state', async ({ page }) => {
   await page.goto('/workspaces/forma/projects/missing-project')
 

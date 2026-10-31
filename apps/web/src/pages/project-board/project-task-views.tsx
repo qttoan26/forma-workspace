@@ -19,11 +19,18 @@ interface ProjectTaskViewsProps extends ProjectLiveTaskBoardProps {
 }
 
 export function ProjectTaskViews(props: ProjectTaskViewsProps) {
-  if (props.view === 'board') {
-    return <ProjectLiveTaskBoard {...props} />
-  }
+  const isBoardView = props.view === 'board'
 
-  return <ProjectReadOnlyTaskView {...props} />
+  return (
+    <>
+      {isBoardView ? (
+        <ProjectLiveTaskBoard {...props} />
+      ) : (
+        <ProjectReadOnlyTaskView {...props} />
+      )}
+      {isBoardView ? null : <ProjectLiveTaskBoard {...props} editorOnly />}
+    </>
+  )
 }
 
 function ProjectReadOnlyTaskView({
@@ -32,19 +39,45 @@ function ProjectReadOnlyTaskView({
   initialTasks,
   members,
   filters,
+  onSelectedTaskChange,
 }: ProjectTaskViewsProps) {
   const snapshot = useProjectLiveTasks(projectId, initialTasks)
   const tasks = filterTasks(snapshot.tasks, filters)
+  const onOpenTask = (taskId: string) => onSelectedTaskChange(taskId)
 
   switch (view) {
     case 'list':
-      return <ProjectListView tasks={tasks} members={members} />
+      return (
+        <ProjectListView
+          tasks={tasks}
+          members={members}
+          onOpenTask={onOpenTask}
+        />
+      )
     case 'table':
-      return <ProjectTableView tasks={tasks} members={members} />
+      return (
+        <ProjectTableView
+          tasks={tasks}
+          members={members}
+          onOpenTask={onOpenTask}
+        />
+      )
     case 'calendar':
-      return <ProjectCalendarView tasks={tasks} members={members} />
+      return (
+        <ProjectCalendarView
+          tasks={tasks}
+          members={members}
+          onOpenTask={onOpenTask}
+        />
+      )
     case 'timeline':
-      return <ProjectTimelineView tasks={tasks} members={members} />
+      return (
+        <ProjectTimelineView
+          tasks={tasks}
+          members={members}
+          onOpenTask={onOpenTask}
+        />
+      )
     case 'files':
       return <ProjectFilesView taskCount={snapshot.tasks.length} />
     default:
@@ -52,7 +85,7 @@ function ProjectReadOnlyTaskView({
   }
 }
 
-function ProjectListView({ tasks, members }: TaskViewProps) {
+function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
 
   return (
@@ -77,7 +110,7 @@ function ProjectListView({ tasks, members }: TaskViewProps) {
                   <article className="project-list-task" key={task.id}>
                     <span className="project-task-key">{task.id}</span>
                     <div>
-                      <strong>{task.title}</strong>
+                      <TaskOpenButton task={task} onOpenTask={onOpenTask} />
                       <small>
                         {task.priority} priority
                         {task.dueDate ? ` · Due ${task.dueDate}` : ''}
@@ -105,7 +138,7 @@ function ProjectListView({ tasks, members }: TaskViewProps) {
   )
 }
 
-function ProjectTableView({ tasks, members }: TaskViewProps) {
+function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
 
   return (
@@ -130,7 +163,9 @@ function ProjectTableView({ tasks, members }: TaskViewProps) {
               <span className="project-task-key" role="cell">
                 {task.id}
               </span>
-              <strong role="cell">{task.title}</strong>
+              <span role="cell">
+                <TaskOpenButton task={task} onOpenTask={onOpenTask} />
+              </span>
               <span role="cell">{taskStatusLabels[task.status]}</span>
               <span role="cell">{task.priority}</span>
               <span role="cell">
@@ -147,7 +182,7 @@ function ProjectTableView({ tasks, members }: TaskViewProps) {
   )
 }
 
-function ProjectCalendarView({ tasks, members }: TaskViewProps) {
+function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
   const orderedTasks = [...tasks].sort(compareTaskDueDate)
 
@@ -167,7 +202,7 @@ function ProjectCalendarView({ tasks, members }: TaskViewProps) {
             </div>
             <div className="project-calendar-task">
               <span className="project-task-key">{task.id}</span>
-              <strong>{task.title}</strong>
+              <TaskOpenButton task={task} onOpenTask={onOpenTask} />
               <small>{task.priority} priority</small>
             </div>
             <TaskAssignee
@@ -182,7 +217,7 @@ function ProjectCalendarView({ tasks, members }: TaskViewProps) {
   )
 }
 
-function ProjectTimelineView({ tasks, members }: TaskViewProps) {
+function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
   const orderedTasks = [...tasks].sort(compareTaskDueDate)
 
@@ -201,7 +236,7 @@ function ProjectTimelineView({ tasks, members }: TaskViewProps) {
             </span>
             <div className="project-timeline-copy">
               <span className="project-task-key">{task.id}</span>
-              <strong>{task.title}</strong>
+              <TaskOpenButton task={task} onOpenTask={onOpenTask} />
               <small>
                 {taskStatusLabels[task.status]} · {task.priority} priority
               </small>
@@ -264,6 +299,25 @@ function ProjectViewHeading({
   )
 }
 
+function TaskOpenButton({
+  task,
+  onOpenTask,
+}: {
+  task: Task
+  onOpenTask: (taskId: string) => void
+}) {
+  return (
+    <button
+      className="project-task-open"
+      type="button"
+      aria-label={`Open ${task.title}`}
+      onClick={() => onOpenTask(task.id)}
+    >
+      {task.title}
+    </button>
+  )
+}
+
 function TaskAssignee({ member }: { member?: Member | undefined }) {
   if (!member) {
     return <span className="project-task-unassigned">—</span>
@@ -282,6 +336,7 @@ function TaskAssignee({ member }: { member?: Member | undefined }) {
 interface TaskViewProps {
   tasks: Task[]
   members: Member[]
+  onOpenTask: (taskId: string) => void
 }
 
 function createMemberMap(members: Member[]) {

@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
+import { notifyProjectTasks } from '@/entities/task/lib/task-broadcast'
+import type { TaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
 import { createConfiguredTaskMutationAdapter } from '@/entities/task/lib/task-persistence'
 import type { Task } from '@/entities/task/model/task'
 import type { TaskBoardFilters } from '@/widgets/task-board/model/task-board-view'
@@ -19,6 +21,7 @@ export interface ProjectLiveTaskBoardProps {
   onCreatingTaskChange: (isCreating: boolean) => void
   filters: TaskBoardFilters
   onPersistenceFailure: () => void
+  editorOnly?: boolean
 }
 
 export function ProjectLiveTaskBoard(props: ProjectLiveTaskBoardProps) {
@@ -45,11 +48,14 @@ function ProjectTaskBoardSnapshot({
   onCreatingTaskChange,
   filters,
   onPersistenceFailure,
+  editorOnly = false,
 }: ProjectLiveTaskBoardProps) {
-  const mutationAdapter = useMemo(
-    () => createConfiguredTaskMutationAdapter(onPersistenceFailure),
-    [onPersistenceFailure],
-  )
+  const mutationAdapter = useMemo(() => {
+    const adapter = createConfiguredTaskMutationAdapter(onPersistenceFailure)
+    if (!editorOnly) return adapter
+
+    return createLocalNotifyingMutationAdapter(adapter)
+  }, [editorOnly, onPersistenceFailure])
 
   return (
     <TaskBoard
@@ -63,6 +69,18 @@ function ProjectTaskBoardSnapshot({
       onCreatingTaskChange={onCreatingTaskChange}
       mutationAdapter={mutationAdapter}
       filters={filters}
+      editorOnly={editorOnly}
     />
   )
+}
+
+function createLocalNotifyingMutationAdapter(
+  adapter: TaskMutationAdapter,
+): TaskMutationAdapter {
+  return {
+    async persist(projectId, tasks) {
+      await adapter.persist(projectId, tasks)
+      notifyProjectTasks(projectId, tasks, null)
+    },
+  }
 }
