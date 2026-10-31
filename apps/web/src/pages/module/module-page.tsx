@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from 'react'
 
+import { DocumentsDataSurface } from '@/pages/module/documents-data-surface'
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
 import {
   BellIcon,
@@ -70,6 +71,7 @@ export function ModulePage({
   }
 
   const isWorkModule = module.id === 'work'
+  const isDocumentsModule = module.id === 'documents'
   const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
 
   return (
@@ -136,6 +138,8 @@ export function ModulePage({
               <WorkSectionSurface section={workSection} />
             </div>
           </div>
+        ) : isDocumentsModule ? (
+          <DocumentsDataSurface />
         ) : (
           <section
             className="module-state-card"
