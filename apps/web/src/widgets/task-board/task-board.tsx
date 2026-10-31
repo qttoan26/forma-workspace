@@ -229,7 +229,7 @@ export function TaskBoard({
           </div>
           <p>Task {missingSelectedTaskId} could not be found.</p>
           <Button type="button" onClick={() => setEditingTask(null)}>
-            Close
+            Return to board
           </Button>
         </div>
       ) : null}
