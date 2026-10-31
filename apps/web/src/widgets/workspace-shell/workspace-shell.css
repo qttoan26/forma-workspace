@@ -1,0 +1,432 @@
+.workspace-shell {
+  min-height: 100vh;
+  background: #f4f6f8;
+  color: var(--forma-color-text);
+}
+
+.workspace-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: flex;
+  width: 248px;
+  flex-direction: column;
+  border-right: 1px solid #d8dde3;
+  background: #1f2a37;
+  color: #eef2f6;
+}
+
+.workspace-sidebar-brand-row {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.workspace-sidebar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.workspace-sidebar-brand-mark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  background: #3bc0a3;
+  color: #10251f;
+  font-weight: 800;
+}
+
+.workspace-sidebar-brand > span:last-child,
+.workspace-sidebar-link-copy,
+.workspace-sidebar-footer > span:last-child,
+.workspace-topbar-context > div,
+.workspace-account-copy {
+  display: grid;
+}
+
+.workspace-sidebar-brand strong {
+  font-size: 0.95rem;
+}
+
+.workspace-sidebar-brand small,
+.workspace-sidebar-footer small,
+.workspace-sidebar-link-copy small {
+  color: #9ca8b5;
+  font-size: 0.68rem;
+}
+
+.workspace-sidebar-close {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: #c6ced8;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.workspace-sidebar-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem 0.75rem 1.5rem;
+}
+
+.workspace-sidebar-section-label {
+  margin: 1rem 0.55rem 0.4rem;
+  color: #778493;
+  font-size: 0.65rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspace-sidebar-link {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 42px;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  color: #cbd4dd;
+  font-size: 0.84rem;
+  font-weight: 610;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.workspace-sidebar-link:hover {
+  background: rgb(255 255 255 / 6%);
+  color: #fff;
+}
+
+.workspace-sidebar-link[aria-current='page'] {
+  background: #2f6f63;
+  color: #fff;
+}
+
+.workspace-sidebar-glyph {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.45rem;
+  background: rgb(255 255 255 / 4%);
+  color: #dce4eb;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.workspace-sidebar-link[aria-current='page'] .workspace-sidebar-glyph {
+  border-color: rgb(255 255 255 / 20%);
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+
+.workspace-sidebar-counter {
+  min-width: 1.35rem;
+  padding: 0.12rem 0.35rem;
+  border-radius: 999px;
+  background: #f35f67;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 780;
+  text-align: center;
+}
+
+.workspace-sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 64px;
+  padding: 0 1rem;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.workspace-sidebar-footer strong {
+  color: #dbe3eb;
+  font-size: 0.76rem;
+}
+
+.workspace-sidebar-footer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3bc0a3;
+  box-shadow: 0 0 0 3px rgb(59 192 163 / 12%);
+}
+
+.workspace-shell-main {
+  min-width: 0;
+  margin-left: 248px;
+}
+
+.workspace-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #d8dde3;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(12px);
+}
+
+.workspace-topbar-context,
+.workspace-topbar-actions,
+.workspace-account {
+  display: flex;
+  align-items: center;
+}
+
+.workspace-topbar-context {
+  gap: 0.8rem;
+}
+
+.workspace-topbar-context small {
+  color: #7a8490;
+  font-size: 0.7rem;
+}
+
+.workspace-topbar-context strong {
+  color: #222b35;
+  font-size: 0.92rem;
+}
+
+.workspace-topbar-actions {
+  gap: 0.6rem;
+}
+
+.workspace-menu-button,
+.workspace-notification-button,
+.workspace-search-button,
+.workspace-sign-out {
+  border: 1px solid #d8dde3;
+  background: #fff;
+  color: #53606d;
+}
+
+.workspace-menu-button {
+  display: none;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  cursor: pointer;
+}
+
+.workspace-search-button {
+  display: inline-flex;
+  min-width: 260px;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.58rem 0.72rem;
+  border-radius: 0.55rem;
+  color: #77818c;
+  cursor: pointer;
+}
+
+.workspace-search-button kbd {
+  margin-left: auto;
+  padding: 0.08rem 0.35rem;
+  border: 1px solid #d8dde3;
+  border-radius: 0.35rem;
+  background: #f6f7f8;
+  color: #7d8791;
+  font-family: inherit;
+  font-size: 0.67rem;
+}
+
+.workspace-notification-button {
+  position: relative;
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  cursor: pointer;
+}
+
+.workspace-notification-count {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  display: grid;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #f35f67;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 780;
+}
+
+.workspace-account {
+  gap: 0.55rem;
+  padding-left: 0.45rem;
+}
+
+.workspace-account-copy {
+  text-align: right;
+}
+
+.workspace-account-copy strong {
+  color: #2b3540;
+  font-size: 0.8rem;
+}
+
+.workspace-account-copy small {
+  color: #808a95;
+  font-size: 0.68rem;
+}
+
+.workspace-avatar {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #263644;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 760;
+}
+
+.workspace-demo-badge,
+.workspace-sign-out {
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.workspace-demo-badge {
+  background: #ecf8f5;
+  color: #267361;
+}
+
+.workspace-sign-out {
+  cursor: pointer;
+}
+
+.workspace-shell-content {
+  min-height: calc(100vh - 72px);
+}
+
+.workspace-shell-backdrop {
+  display: none;
+}
+
+.workspace-sidebar-link:focus-visible,
+.workspace-sidebar-brand:focus-visible,
+.workspace-search-button:focus-visible,
+.workspace-notification-button:focus-visible,
+.workspace-menu-button:focus-visible,
+.workspace-sign-out:focus-visible {
+  outline: 2px solid #3bc0a3;
+  outline-offset: 2px;
+}
+
+@media (max-width: 980px) {
+  .workspace-search-button {
+    min-width: 0;
+  }
+
+  .workspace-search-button span:nth-child(2),
+  .workspace-search-button kbd,
+  .workspace-account-copy {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .workspace-sidebar {
+    width: min(84vw, 280px);
+    transform: translateX(-100%);
+    transition: transform 160ms ease;
+  }
+
+  .workspace-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .workspace-sidebar-close {
+    display: block;
+  }
+
+  .workspace-shell-main {
+    margin-left: 0;
+  }
+
+  .workspace-menu-button {
+    display: grid;
+  }
+
+  .workspace-topbar {
+    min-height: 62px;
+    padding: 0 0.8rem;
+  }
+
+  .workspace-topbar-context small {
+    display: none;
+  }
+
+  .workspace-topbar-actions {
+    gap: 0.4rem;
+  }
+
+  .workspace-shell-content {
+    min-height: calc(100vh - 62px);
+  }
+
+  .workspace-shell-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: block;
+    visibility: hidden;
+    border: 0;
+    background: rgb(15 23 42 / 42%);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 160ms ease,
+      visibility 160ms ease;
+  }
+
+  .workspace-shell-backdrop.is-visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .workspace-demo-badge {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-sidebar,
+  .workspace-shell-backdrop,
+  .workspace-sidebar-link {
+    transition: none;
+  }
+}

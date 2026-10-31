@@ -1,5 +1,5 @@
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
-import { WorkspaceNavbar } from '@/widgets/workspace-navbar/workspace-navbar'
+import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
 import './module-page.css'
 
@@ -11,23 +11,25 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
 
   if (!module) {
     return (
-      <main className="module-page" id="main-content">
-        <WorkspaceNavbar />
-        <section className="module-state-card">
-          <p className="eyebrow">Forma Workspace</p>
-          <h1>Module not found</h1>
-          <a href={appBaseUrl}>Back to workspace overview</a>
+      <WorkspaceShell pageLabel="Module not found">
+        <section className="module-page-content">
+          <section className="module-state-card">
+            <p className="eyebrow">Forma Workspace</p>
+            <h1>Module not found</h1>
+            <p>The requested workspace module is not available.</p>
+            <a className="module-primary-action" href={appBaseUrl}>
+              Back to workspace overview
+            </a>
+          </section>
         </section>
-      </main>
+      </WorkspaceShell>
     )
   }
 
   const isWorkModule = module.id === 'work'
 
   return (
-    <main className="module-page" id="main-content">
-      <WorkspaceNavbar activeModuleId={module.id} />
-
+    <WorkspaceShell activeModuleId={module.id} pageLabel={module.label}>
       <section className="module-page-content" aria-labelledby="module-title">
         <header className="module-page-header">
           <div>
@@ -71,6 +73,6 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
           </section>
         )}
       </section>
-    </main>
+    </WorkspaceShell>
   )
 }
