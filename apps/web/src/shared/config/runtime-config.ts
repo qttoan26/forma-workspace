@@ -32,14 +32,10 @@ function validateHttpsUrl(value: string, name: string): void {
 export function validateWebRuntimeConfiguration(
   environment: WebRuntimeEnvironment = import.meta.env,
 ): void {
-  const isProductionDeployment =
-    environment.VITE_DEPLOYMENT_MODE?.trim() === 'production'
+  const deploymentMode = environment.VITE_DEPLOYMENT_MODE?.trim()
 
-  if (
-    !isProductionDeployment ||
-    environment.VITE_DEMO_MODE === 'true'
-  )
-    return
+  if (deploymentMode !== 'production') return
+  if (environment.VITE_DEMO_MODE === 'true') return
 
   const apiBaseUrl = required(
     environment.VITE_API_BASE_URL,
