@@ -15,6 +15,10 @@ interface ProjectFilesViewProps {
   onOpenTask: (taskId: string) => void
 }
 
+interface DocumentReferenceChangeDetail {
+  projectId?: string
+}
+
 export function ProjectFilesView({
   projectId,
   tasks,
@@ -31,7 +35,8 @@ export function ProjectFilesView({
   useEffect(() => {
     function handleReferenceChange(event: Event) {
       if (!(event instanceof CustomEvent)) return
-      if (event.detail?.projectId !== projectId) return
+      const detail = (event as CustomEvent<DocumentReferenceChangeDetail>).detail
+      if (detail.projectId !== projectId) return
       setReferences(loadProjectDocumentReferences(projectId))
     }
 
