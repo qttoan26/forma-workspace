@@ -201,7 +201,11 @@ export function TaskForm({
           role="tabpanel"
           aria-labelledby={`task-checklist-tab-${task.id}`}
         >
-          <TaskChecklistPanel projectId={task.projectId} taskId={task.id} />
+          <TaskChecklistPanel
+            key={`${task.projectId}:${task.id}`}
+            projectId={task.projectId}
+            taskId={task.id}
+          />
         </div>
       ) : null}
 
