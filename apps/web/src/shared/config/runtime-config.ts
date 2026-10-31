@@ -33,27 +33,27 @@ export function validateWebRuntimeConfiguration(
   environment: WebRuntimeEnvironment = import.meta.env,
 ): void {
   const deploymentMode = environment.VITE_DEPLOYMENT_MODE?.trim()
+  if (deploymentMode !== 'production') {
+    return
+  }
+  if (environment.VITE_DEMO_MODE === 'true') {
+    return
+  }
 
-  if (deploymentMode !== 'production') return
-  if (environment.VITE_DEMO_MODE === 'true') return
+  const apiValue = environment.VITE_API_BASE_URL
+  const authorizationValue = environment.VITE_OIDC_AUTHORIZATION_ENDPOINT
+  const tokenValue = environment.VITE_OIDC_TOKEN_ENDPOINT
+  const clientIdValue = environment.VITE_OIDC_CLIENT_ID
+  const redirectValue = environment.VITE_OIDC_REDIRECT_URI
 
-  const apiBaseUrl = required(
-    environment.VITE_API_BASE_URL,
-    'VITE_API_BASE_URL',
-  )
+  const apiBaseUrl = required(apiValue, 'VITE_API_BASE_URL')
   const authorizationEndpoint = required(
-    environment.VITE_OIDC_AUTHORIZATION_ENDPOINT,
+    authorizationValue,
     'VITE_OIDC_AUTHORIZATION_ENDPOINT',
   )
-  const tokenEndpoint = required(
-    environment.VITE_OIDC_TOKEN_ENDPOINT,
-    'VITE_OIDC_TOKEN_ENDPOINT',
-  )
-  required(environment.VITE_OIDC_CLIENT_ID, 'VITE_OIDC_CLIENT_ID')
-  const redirectUri = required(
-    environment.VITE_OIDC_REDIRECT_URI,
-    'VITE_OIDC_REDIRECT_URI',
-  )
+  const tokenEndpoint = required(tokenValue, 'VITE_OIDC_TOKEN_ENDPOINT')
+  required(clientIdValue, 'VITE_OIDC_CLIENT_ID')
+  const redirectUri = required(redirectValue, 'VITE_OIDC_REDIRECT_URI')
 
   validateHttpsUrl(apiBaseUrl, 'VITE_API_BASE_URL')
   validateHttpsUrl(
