@@ -5,15 +5,12 @@ import type { TaskActivityEntry } from '@/entities/task/model/task-activity'
 
 import { TaskActivityPanel } from './task-activity-panel'
 
-const loadTaskActivityFromIndexedDb = vi.fn()
-const appendTaskActivityToIndexedDb = vi.fn()
-
-vi.mock('@/entities/task/lib/task-indexed-db', () => ({
-  loadTaskActivityFromIndexedDb: (...args: unknown[]) =>
-    loadTaskActivityFromIndexedDb(...args),
-  appendTaskActivityToIndexedDb: (...args: unknown[]) =>
-    appendTaskActivityToIndexedDb(...args),
+const mocks = vi.hoisted(() => ({
+  loadTaskActivityFromIndexedDb: vi.fn(),
+  appendTaskActivityToIndexedDb: vi.fn(),
 }))
+
+vi.mock('@/entities/task/lib/task-indexed-db', () => mocks)
 
 describe('TaskActivityPanel', () => {
   it('loads existing activity and persists a new comment', async () => {
@@ -26,9 +23,10 @@ describe('TaskActivityPanel', () => {
       createdAt: '2026-10-31T05:00:00.000Z',
       authorLabel: 'You',
     }
-    loadTaskActivityFromIndexedDb.mockResolvedValue([existing])
-    appendTaskActivityToIndexedDb.mockImplementation(
-      async (_projectId, _taskId, entry: TaskActivityEntry) => [existing, entry],
+    mocks.loadTaskActivityFromIndexedDb.mockResolvedValue([existing])
+    mocks.appendTaskActivityToIndexedDb.mockImplementation(
+      (_projectId, _taskId, entry: TaskActivityEntry) =>
+        Promise.resolve([existing, entry]),
     )
 
     render(<TaskActivityPanel projectId="project-1" taskId="FOR-18" />)
@@ -42,7 +40,7 @@ describe('TaskActivityPanel', () => {
 
     expect(screen.getByText('Ready for review')).toBeVisible()
     await waitFor(() =>
-      expect(appendTaskActivityToIndexedDb).toHaveBeenCalledWith(
+      expect(mocks.appendTaskActivityToIndexedDb).toHaveBeenCalledWith(
         'project-1',
         'FOR-18',
         expect.objectContaining({
