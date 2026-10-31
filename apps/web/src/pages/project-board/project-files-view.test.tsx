@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
 import { ProjectFilesView } from './project-files-view'
@@ -62,11 +62,13 @@ describe('ProjectFilesView', () => {
       />,
     )
 
-    window.dispatchEvent(
-      new CustomEvent('forma:document-references-change', {
-        detail: { projectId: 'project-1' },
-      }),
-    )
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('forma:document-references-change', {
+          detail: { projectId: 'project-1' },
+        }),
+      )
+    })
 
     expect(screen.getByText('Approved drawing.pdf')).toBeVisible()
   })
