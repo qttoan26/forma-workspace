@@ -8,7 +8,11 @@ function hrefFor(path: string) {
   return `${appBaseUrl}${path.replace(/^\//, '')}`
 }
 
-export function WorkspaceNavbar({ activeModuleId }: { activeModuleId?: string }) {
+export function WorkspaceNavbar({
+  activeModuleId,
+}: {
+  activeModuleId?: string
+}) {
   return (
     <nav className="workspace-navbar" aria-label="Workspace modules">
       <div className="workspace-navbar-context">
