@@ -1,3 +1,5 @@
+@import './project-detail-shell.css';
+
 .project-view-surface {
   overflow: hidden;
   border: 1px solid var(--forma-color-border);
