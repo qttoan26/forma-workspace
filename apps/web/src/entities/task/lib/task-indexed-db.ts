@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+import {
+  taskActivityCollectionSchema,
+  taskActivityEntrySchema,
+  type TaskActivityEntry,
+} from '@/entities/task/model/task-activity'
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 import {
   reportBrowserStorageFailure,
@@ -7,9 +12,10 @@ import {
 } from '@/shared/lib/browser-storage-health'
 
 const databaseName = 'forma-workspace'
-const databaseVersion = 2
+const databaseVersion = 3
 const taskStoreName = 'project-tasks'
 const taskSyncQueueStoreName = 'task-sync-queue'
+const taskActivityStoreName = 'task-activity'
 
 const projectTaskRecordSchema = z.object({
   projectId: z.string().min(1),
@@ -24,6 +30,14 @@ const queuedProjectTaskSyncSchema = z.object({
   mutationId: z.string().min(1),
   queuedAt: z.string(),
   expectedRevision: z.number().int().nonnegative().optional(),
+})
+
+const taskActivityRecordSchema = z.object({
+  scopeKey: z.string().min(1),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1),
+  entries: taskActivityCollectionSchema,
+  updatedAt: z.string(),
 })
 
 export interface ProjectTaskSnapshot {
@@ -158,6 +172,76 @@ export async function completeProjectTaskSync(
   }
 }
 
+export async function loadTaskActivityFromIndexedDb(
+  projectId: string,
+  taskId: string,
+): Promise<TaskActivityEntry[]> {
+  if (!hasIndexedDb()) return []
+
+  const database = await openDatabase()
+  try {
+    const objectStore = database
+      .transaction(taskActivityStoreName, 'readonly')
+      .objectStore(taskActivityStoreName)
+    const request = objectStore.get(
+      createTaskActivityScopeKey(projectId, taskId),
+    ) as IDBRequest<unknown>
+    const rawRecord = await requestToPromise(request)
+    const result = taskActivityRecordSchema.safeParse(rawRecord)
+
+    if (!result.success) return []
+    if (
+      result.data.projectId !== projectId ||
+      result.data.taskId !== taskId
+    ) {
+      return []
+    }
+
+    return result.data.entries
+  } finally {
+    database.close()
+  }
+}
+
+export async function appendTaskActivityToIndexedDb(
+  projectId: string,
+  taskId: string,
+  entry: TaskActivityEntry,
+): Promise<TaskActivityEntry[]> {
+  if (!hasIndexedDb()) {
+    throw new Error('IndexedDB is unavailable')
+  }
+
+  const parsedEntry = taskActivityEntrySchema.parse(entry)
+  if (
+    parsedEntry.projectId !== projectId ||
+    parsedEntry.taskId !== taskId
+  ) {
+    throw new Error('Task activity entry does not match task scope')
+  }
+
+  const currentEntries = await loadTaskActivityFromIndexedDb(projectId, taskId)
+  const entries = taskActivityCollectionSchema.parse([
+    ...currentEntries,
+    parsedEntry,
+  ])
+  const database = await openDatabase()
+  try {
+    const transaction = database.transaction(taskActivityStoreName, 'readwrite')
+    transaction.objectStore(taskActivityStoreName).put({
+      scopeKey: createTaskActivityScopeKey(projectId, taskId),
+      projectId,
+      taskId,
+      entries,
+      updatedAt: new Date().toISOString(),
+    })
+    await transactionToPromise(transaction)
+    return entries
+  } finally {
+    database.close()
+  }
+}
+
 function parseProjectTasks(projectId: string, tasks: Task[]) {
   const parsed = taskCollectionSchema.parse(tasks)
   if (!parsed.every((task) => task.projectId === projectId)) {
@@ -264,6 +348,10 @@ function completeQueuedSync(
   })
 }
 
+function createTaskActivityScopeKey(projectId: string, taskId: string) {
+  return `${projectId}:${taskId}`
+}
+
 function createMutationId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
 }
@@ -297,6 +385,11 @@ function openDatabase(): Promise<IDBDatabase> {
         if (!database.objectStoreNames.contains(taskSyncQueueStoreName)) {
           database.createObjectStore(taskSyncQueueStoreName, {
             keyPath: 'projectId',
+          })
+        }
+        if (!database.objectStoreNames.contains(taskActivityStoreName)) {
+          database.createObjectStore(taskActivityStoreName, {
+            keyPath: 'scopeKey',
           })
         }
       }
