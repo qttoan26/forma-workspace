@@ -121,14 +121,10 @@ export function TaskForm({
 
       {!task || activeSection === 'details' ? (
         <div
+          id={task ? `task-details-panel-${task.id}` : undefined}
           className="task-detail-panel"
-          {...(task
-            ? {
-                id: `task-details-panel-${task.id}`,
-                role: 'tabpanel',
-                'aria-labelledby': `task-details-tab-${task.id}`,
-              }
-            : {})}
+          role={task ? 'tabpanel' : undefined}
+          aria-labelledby={task ? `task-details-tab-${task.id}` : undefined}
         >
           <Field label="Title" error={errors.title?.message}>
             <input autoFocus {...register('title')} />
