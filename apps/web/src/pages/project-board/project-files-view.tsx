@@ -84,8 +84,8 @@ export function ProjectFilesView({
           <div>
             <strong>No project documents linked yet.</strong>
             <p>
-              Link a document from a task Files tab. It will appear here
-              without copying file content into Work.
+              Link a document from a task Files tab. It will appear here without
+              copying file content into Work.
             </p>
           </div>
         </div>
@@ -121,7 +121,11 @@ export function ProjectFilesView({
                     <span>Project-level reference</span>
                   )}
                   {isHttpLocation(reference.location) ? (
-                    <a href={reference.location} target="_blank" rel="noreferrer">
+                    <a
+                      href={reference.location}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Open reference
                     </a>
                   ) : null}
