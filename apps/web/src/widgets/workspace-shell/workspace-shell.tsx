@@ -106,7 +106,10 @@ export function WorkspaceShell({
                 ) : null}
               </span>
               {module.id === 'work' ? (
-                <span className="workspace-sidebar-counter" aria-label="3 open tasks">
+                <span
+                  className="workspace-sidebar-counter"
+                  aria-label="3 open tasks"
+                >
                   3
                 </span>
               ) : null}
