@@ -10,7 +10,7 @@ import { AuthCallbackPage } from '@/pages/auth-callback/auth-callback-page'
 import { HomePage } from '@/pages/home/home-page'
 import { LandingPage } from '@/pages/landing/landing-page'
 import { LoginPage } from '@/pages/login/login-page'
-import { ModulePage } from '@/pages/module/module-page'
+import { ModuleRoutePage } from '@/pages/module/module-route-page'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
 import { ProjectBoardLoading } from '@/pages/project-board/project-board-loading'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
@@ -60,11 +60,6 @@ const moduleRoute = createRoute({
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })
-
-function ModuleRoutePage() {
-  const { moduleId } = moduleRoute.useParams()
-  return <ModulePage moduleId={moduleId} />
-}
 
 const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
