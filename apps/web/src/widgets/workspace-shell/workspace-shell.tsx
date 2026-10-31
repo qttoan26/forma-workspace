@@ -1,4 +1,9 @@
-import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
+import {
+  useState,
+  type ComponentType,
+  type ReactNode,
+  type SVGProps,
+} from 'react'
 
 import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
 import {
@@ -180,7 +185,11 @@ export function WorkspaceShell({
               <BellIcon />
               <span className="workspace-notification-count">2</span>
             </button>
-            <button className="workspace-account" type="button" aria-label="Open account menu">
+            <button
+              className="workspace-account"
+              type="button"
+              aria-label="Open account menu"
+            >
               <span className="workspace-account-copy">
                 <strong>Sam Lee</strong>
                 <small>Frontend</small>
