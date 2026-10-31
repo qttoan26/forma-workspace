@@ -1,0 +1,85 @@
+.task-linked-files-panel {
+  display: grid;
+  gap: var(--forma-space-4);
+}
+
+.task-linked-files-heading,
+.task-linked-files-composer > div,
+.task-linked-files-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--forma-space-3);
+}
+
+.task-linked-files-heading h3 {
+  margin: 0.2rem 0 0;
+}
+
+.task-linked-files-heading > span {
+  color: var(--forma-color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.task-linked-files-note,
+.task-linked-files-composer > div > span,
+.task-linked-files-empty span,
+.task-linked-files-list span,
+.task-linked-files-list a {
+  color: var(--forma-color-text-muted);
+  font-size: 0.82rem;
+}
+
+.task-linked-files-composer {
+  display: grid;
+  gap: 0.5rem;
+  padding: var(--forma-space-4);
+  border: 1px solid var(--forma-color-border);
+  background: var(--forma-color-surface-subtle);
+}
+
+.task-linked-files-composer label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.task-linked-files-empty {
+  display: grid;
+  gap: 0.3rem;
+  padding: var(--forma-space-4);
+  border: 1px dashed var(--forma-color-border-strong);
+}
+
+.task-linked-files-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--forma-color-border);
+}
+
+.task-linked-files-list li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--forma-color-border);
+}
+
+.task-linked-files-list li > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.task-linked-files-list li > div > * {
+  overflow-wrap: anywhere;
+}
+
+.task-linked-files-list button {
+  border: 0;
+  background: transparent;
+  color: var(--forma-color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
