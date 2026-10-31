@@ -21,6 +21,7 @@ import {
 } from '@/entities/task/model/task-mutations'
 import { createTaskFormDraftKey } from '@/features/task-form/lib/task-form-draft'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
+import { TaskEditorDrawer } from '@/features/task-form/ui/task-editor-drawer'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
 
@@ -46,6 +47,7 @@ interface TaskBoardProps {
   isCreatingTask?: boolean
   onCreatingTaskChange?: (isCreating: boolean) => void
   mutationAdapter?: TaskMutationAdapter | null
+  editorOnly?: boolean
 }
 
 export function TaskBoard({
@@ -59,6 +61,7 @@ export function TaskBoard({
   isCreatingTask,
   onCreatingTaskChange,
   mutationAdapter = null,
+  editorOnly = false,
 }: TaskBoardProps) {
   const projectId = explicitProjectId ?? initialTasks[0]?.projectId
   if (!projectId) {
@@ -104,7 +107,8 @@ export function TaskBoard({
     : undefined
   const missingSelectedTaskId =
     selectedTaskId && !editingTask ? selectedTaskId : null
-  const isEditorOpen = isCreating || Boolean(editingTask)
+  const isEditorOpen =
+    isCreating || Boolean(editingTask) || Boolean(missingSelectedTaskId)
 
   useEffect(() => {
     if (wasEditorOpenRef.current && !isEditorOpen) {
@@ -124,6 +128,11 @@ export function TaskBoard({
   function setCreatingTask(isCreatingValue: boolean) {
     if (isCreatingTask === undefined) setInternalIsCreating(isCreatingValue)
     onCreatingTaskChange?.(isCreatingValue)
+  }
+
+  function closeEditor() {
+    if (isCreating) setCreatingTask(false)
+    if (editingTaskId) setEditingTask(null)
   }
 
   function rememberEditorTrigger() {
@@ -185,24 +194,12 @@ export function TaskBoard({
     setDeletedTask(null)
   }
 
-  return (
-    <section aria-label="Project task board">
-      <div className="board-toolbar">
-        <Button
-          variant="primary"
-          type="button"
-          aria-keyshortcuts="N"
-          title="Press N to create a task"
-          onClick={() => {
-            rememberEditorTrigger()
-            setEditingTask(null)
-            setCreatingTask(true)
-          }}
-        >
-          New task
-        </Button>
-      </div>
-
+  const editor = (
+    <TaskEditorDrawer
+      open={isEditorOpen}
+      label={isCreating ? 'Create task' : 'Edit task'}
+      onClose={closeEditor}
+    >
       {isCreating ? (
         <TaskForm
           members={members}
@@ -223,45 +220,76 @@ export function TaskBoard({
       ) : null}
 
       {missingSelectedTaskId ? (
-        <div role="alert">
+        <div className="task-form" role="alert">
+          <div className="task-form-heading">
+            <div>
+              <p className="eyebrow">Task unavailable</p>
+              <h2>{missingSelectedTaskId}</h2>
+            </div>
+          </div>
           <p>Task {missingSelectedTaskId} could not be found.</p>
           <Button type="button" onClick={() => setEditingTask(null)}>
-            Return to board
+            Close
           </Button>
         </div>
       ) : null}
+    </TaskEditorDrawer>
+  )
 
-      {deletedTask ? (
-        <div className="task-delete-undo" aria-live="polite">
-          <span>Deleted {deletedTask.task.title}.</span>
-          <Button type="button" autoFocus onClick={undoDelete}>
-            Undo
+  if (editorOnly) return editor
+
+  return (
+    <>
+      {editor}
+      <section aria-label="Project task board">
+        <div className="board-toolbar">
+          <Button
+            variant="primary"
+            type="button"
+            aria-keyshortcuts="N"
+            title="Press N to create a task"
+            onClick={() => {
+              rememberEditorTrigger()
+              setEditingTask(null)
+              setCreatingTask(true)
+            }}
+          >
+            New task
           </Button>
         </div>
-      ) : null}
 
-      <p aria-live="polite" role="status">
-        {visibleTasks.length} of {tasks.length} tasks shown
-      </p>
-      {visibleTasks.length === 0 && tasks.length > 0 ? (
-        <p role="note">
-          Try clearing filters or using a different search term.
+        {deletedTask ? (
+          <div className="task-delete-undo" aria-live="polite">
+            <span>Deleted {deletedTask.task.title}.</span>
+            <Button type="button" autoFocus onClick={undoDelete}>
+              Undo
+            </Button>
+          </div>
+        ) : null}
+
+        <p aria-live="polite" role="status">
+          {visibleTasks.length} of {tasks.length} tasks shown
         </p>
-      ) : null}
-      <div className="board">
-        {taskStatuses.map((status) => (
-          <TaskColumn
-            key={status}
-            status={status}
-            tasks={columns[status]}
-            membersById={membersById}
-            onMove={moveTask}
-            onEdit={editTask}
-            onDelete={deleteTask}
-          />
-        ))}
-      </div>
-    </section>
+        {visibleTasks.length === 0 && tasks.length > 0 ? (
+          <p role="note">
+            Try clearing filters or using a different search term.
+          </p>
+        ) : null}
+        <div className="board">
+          {taskStatuses.map((status) => (
+            <TaskColumn
+              key={status}
+              status={status}
+              tasks={columns[status]}
+              membersById={membersById}
+              onMove={moveTask}
+              onEdit={editTask}
+              onDelete={deleteTask}
+            />
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
 
