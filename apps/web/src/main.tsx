@@ -5,7 +5,9 @@ import '@/app/styles/tokens.css'
 import '@/app/styles/global.css'
 import { initializeAuthSessionLifecycle } from '@/shared/auth/auth-session'
 import { initializeOidcAccessTokenProvider } from '@/shared/auth/oidc-client'
+import { validateWebRuntimeConfiguration } from '@/shared/config/runtime-config'
 
+validateWebRuntimeConfiguration()
 initializeOidcAccessTokenProvider()
 initializeAuthSessionLifecycle()
 
