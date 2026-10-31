@@ -65,8 +65,8 @@ const personalLinks = [
 ] as const
 
 type WorkspaceShellProps = {
-  activeModuleId?: string
-  activeSectionId?: string
+  activeModuleId?: string | undefined
+  activeSectionId?: string | undefined
   pageLabel: string
   children: ReactNode
 }
