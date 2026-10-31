@@ -4,10 +4,7 @@ import {
   taskStatusLabels,
   type Task,
 } from '@/entities/task/model/task'
-import {
-  filterTasks,
-  type TaskBoardFilters,
-} from '@/widgets/task-board/model/task-board-view'
+import { filterTasks } from '@/widgets/task-board/model/task-board-view'
 
 import {
   ProjectLiveTaskBoard,
@@ -291,11 +288,4 @@ function compareTaskDueDate(left: Task, right: Task) {
   if (!left.dueDate) return 1
   if (!right.dueDate) return -1
   return left.dueDate.localeCompare(right.dueDate)
-}
-
-export function getProjectViewTaskCount(
-  tasks: Task[],
-  filters: TaskBoardFilters,
-) {
-  return filterTasks(tasks, filters).length
 }
