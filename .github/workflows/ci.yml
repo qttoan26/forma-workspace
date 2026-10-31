@@ -42,12 +42,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Format diagnostic
-        run: |
-          pnpm exec prettier --write apps/web/src/shared/config/runtime-config.ts
-          git diff -- apps/web/src/shared/config/runtime-config.ts
-          git diff --quiet -- apps/web/src/shared/config/runtime-config.ts
-
       - name: Format check
         run: pnpm format:check
 
