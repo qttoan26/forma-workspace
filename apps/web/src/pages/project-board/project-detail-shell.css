@@ -1,0 +1,72 @@
+.project-detail-page {
+  width: min(1440px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.25rem 0 3rem;
+}
+
+.project-detail-page .project-board-nav {
+  margin-bottom: 1rem;
+}
+
+.project-detail-page .project-board-header {
+  margin-bottom: 0.75rem;
+  border-radius: 0.7rem;
+  box-shadow: 0 1px 2px rgb(26 33 38 / 3%);
+}
+
+.project-view-nav {
+  display: flex;
+  gap: 0.2rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  padding: 0.3rem;
+  border: 1px solid #e0e4e6;
+  border-radius: 0.65rem;
+  background: #fff;
+  overscroll-behavior-inline: contain;
+}
+
+.project-view-nav button {
+  min-height: 2.35rem;
+  flex: 0 0 auto;
+  padding: 0 0.72rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #697278;
+  font: inherit;
+  font-size: 0.71rem;
+  font-weight: 690;
+  cursor: pointer;
+}
+
+.project-view-nav button:hover {
+  background: #f5f7f7;
+  color: #30373c;
+}
+
+.project-view-nav button.is-active {
+  background: #eaf7f3;
+  color: #1b7c67;
+  box-shadow: inset 0 0 0 1px #d3eae3;
+}
+
+.project-view-nav button:focus-visible {
+  outline: 2px solid #28b99a;
+  outline-offset: 1px;
+}
+
+@media (max-width: 700px) {
+  .project-detail-page {
+    width: min(100% - 1rem, 1440px);
+    padding-top: 0.75rem;
+  }
+
+  .project-detail-page.project-board-shell {
+    padding-inline: 0;
+  }
+
+  .project-view-nav {
+    margin-inline: 0;
+  }
+}
