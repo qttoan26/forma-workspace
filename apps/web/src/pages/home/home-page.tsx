@@ -1,8 +1,6 @@
-import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
 import { workspaceModules } from '@/shared/workspace/module-registry'
-import { WorkspaceNavbar } from '@/widgets/workspace-navbar/workspace-navbar'
+import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
-import './home-auth.css'
 import './home-page.css'
 import './home-modules.css'
 
@@ -20,45 +18,8 @@ const metrics = [
 ]
 
 export function HomePage() {
-  const demoMode = isDemoMode()
-
   return (
-    <main className="dashboard-shell" id="main-content">
-      <header className="dashboard-topbar">
-        <a
-          className="dashboard-brand"
-          href={appBaseUrl}
-          aria-label="Forma Workspace home"
-        >
-          <span className="dashboard-brand-mark" aria-hidden="true">
-            F
-          </span>
-          <span>Forma</span>
-        </a>
-        <div className="dashboard-account" aria-label="Signed in user">
-          <span className="dashboard-account-copy">
-            <strong>Sam Lee</strong>
-            <small>Frontend</small>
-          </span>
-          <span className="dashboard-avatar" aria-hidden="true">
-            SL
-          </span>
-          {demoMode ? (
-            <span className="dashboard-demo-badge">Demo mode</span>
-          ) : (
-            <button
-              className="dashboard-sign-out"
-              type="button"
-              onClick={startLogout}
-            >
-              Sign out
-            </button>
-          )}
-        </div>
-      </header>
-
-      <WorkspaceNavbar />
-
+    <WorkspaceShell pageLabel="Overview">
       <section className="dashboard-content" aria-labelledby="dashboard-title">
         <div className="dashboard-intro">
           <div>
@@ -83,7 +44,7 @@ export function HomePage() {
               <p className="eyebrow">Workspace modules</p>
               <h2 id="modules-title">Operational areas</h2>
             </div>
-            <span className="panel-count">Structure first</span>
+            <span className="panel-count">8 modules</span>
           </div>
 
           <div className="workspace-module-grid">
@@ -193,6 +154,6 @@ export function HomePage() {
           </aside>
         </div>
       </section>
-    </main>
+    </WorkspaceShell>
   )
 }
