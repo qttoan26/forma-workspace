@@ -13,7 +13,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'work',
     label: 'Work',
-    description: 'Projects, tasks, priorities, ownership, and cross-team execution.',
+    description:
+      'Projects, tasks, priorities, ownership, and cross-team execution.',
     path: '/modules/work',
     status: 'available',
     eyebrow: 'Execution',
@@ -21,7 +22,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'production',
     label: 'Production',
-    description: 'Operational queues, production stages, workload, and delivery visibility.',
+    description:
+      'Operational queues, production stages, workload, and delivery visibility.',
     path: '/modules/production',
     status: 'implementation',
     eyebrow: 'Operations',
@@ -29,7 +31,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'documents',
     label: 'Documents & Data',
-    description: 'Document intake, OCR, structured data, review, and traceable handoffs.',
+    description:
+      'Document intake, OCR, structured data, review, and traceable handoffs.',
     path: '/modules/documents',
     status: 'implementation',
     eyebrow: 'Digitization',
@@ -37,7 +40,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'automation',
     label: 'Automation',
-    description: 'Reusable workflows, triggers, approvals, and automation monitoring.',
+    description:
+      'Reusable workflows, triggers, approvals, and automation monitoring.',
     path: '/modules/automation',
     status: 'implementation',
     eyebrow: 'Automation',
@@ -45,7 +49,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'vendors',
     label: 'Vendors',
-    description: 'Vendor collaboration, outsourced work, assignments, and delivery tracking.',
+    description:
+      'Vendor collaboration, outsourced work, assignments, and delivery tracking.',
     path: '/modules/vendors',
     status: 'implementation',
     eyebrow: 'External work',
@@ -53,7 +58,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'customers',
     label: 'Customers',
-    description: 'Customer workspaces, requests, delivery context, and service visibility.',
+    description:
+      'Customer workspaces, requests, delivery context, and service visibility.',
     path: '/modules/customers',
     status: 'implementation',
     eyebrow: 'Customer operations',
@@ -61,7 +67,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'governance',
     label: 'Policy & Compliance',
-    description: 'SOPs, policies, approvals, audit context, and compliance controls.',
+    description:
+      'SOPs, policies, approvals, audit context, and compliance controls.',
     path: '/modules/governance',
     status: 'implementation',
     eyebrow: 'Governance',
@@ -69,7 +76,8 @@ export const workspaceModules: WorkspaceModule[] = [
   {
     id: 'admin',
     label: 'Admin',
-    description: 'Organization, access, teams, workspace configuration, and integrations.',
+    description:
+      'Organization, access, teams, workspace configuration, and integrations.',
     path: '/modules/admin',
     status: 'implementation',
     eyebrow: 'Platform',
