@@ -1,10 +1,17 @@
 import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
+import { workspaceModules } from '@/shared/workspace/module-registry'
+import { WorkspaceNavbar } from '@/widgets/workspace-navbar/workspace-navbar'
 
 import './home-auth.css'
 import './home-page.css'
+import './home-modules.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
 const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
+
+function hrefFor(path: string) {
+  return `${appBaseUrl}${path.replace(/^\//, '')}`
+}
 
 const metrics = [
   { label: 'Open tasks', value: '3', detail: '1 urgent' },
@@ -50,20 +57,52 @@ export function HomePage() {
         </div>
       </header>
 
+      <WorkspaceNavbar />
+
       <section className="dashboard-content" aria-labelledby="dashboard-title">
         <div className="dashboard-intro">
           <div>
             <p className="eyebrow">Workspace overview</p>
-            <h1 id="dashboard-title">Keep the work moving.</h1>
+            <h1 id="dashboard-title">Run the work from one workspace.</h1>
             <p className="dashboard-lead">
-              Focus on what needs attention, open your active project, and keep
-              the team aligned without losing context.
+              Move between execution, production, documents, automation, vendors,
+              customers, and governance without losing operational context.
             </p>
           </div>
           <a className="dashboard-primary-action" href={projectHref}>
-            Open project board
+            Open active project
           </a>
         </div>
+
+        <section className="workspace-module-section" aria-labelledby="modules-title">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Workspace modules</p>
+              <h2 id="modules-title">Operational areas</h2>
+            </div>
+            <span className="panel-count">Structure first</span>
+          </div>
+
+          <div className="workspace-module-grid">
+            {workspaceModules.map((module) => (
+              <a
+                className="workspace-module-card"
+                href={hrefFor(module.path)}
+                key={module.id}
+              >
+                <span className="workspace-module-card-topline">
+                  <span className="workspace-module-eyebrow">{module.eyebrow}</span>
+                  <span className={`workspace-module-status workspace-module-status-${module.status}`}>
+                    {module.status === 'available' ? 'Available' : 'Implementing'}
+                  </span>
+                </span>
+                <strong>{module.label}</strong>
+                <p>{module.description}</p>
+                <span className="workspace-module-open">Open module →</span>
+              </a>
+            ))}
+          </div>
+        </section>
 
         <section className="metric-grid" aria-label="Workspace summary">
           {metrics.map((metric) => (
