@@ -4,16 +4,14 @@ Forma Workspace is a workspace-first operating platform. The frontend navigation
 
 ## Module boundaries
 
-| Module              | Purpose                                                               | Current state                                           |
-| ------------------- | --------------------------------------------------------------------- | ------------------------------------------------------- |
-| Work                | Projects, tasks, priorities, ownership, and cross-team execution      | Foundation available through the existing project board |
-| Production          | Production queues, processing stages, workload, delivery visibility   | Implementation in progress                              |
-| Documents & Data    | Intake, scan/OCR, structured data, review, handoff                    | Implementation in progress                              |
-| Automation          | Triggers, workflows, approvals, reusable automations, monitoring      | Implementation in progress                              |
-| Vendors             | Vendor/BPO collaboration, assignment, delivery tracking               | Implementation in progress                              |
-| Customers           | Customer workspaces, requests, service delivery visibility            | Implementation in progress                              |
-| Policy & Compliance | SOP, policy, approval, audit, compliance controls                     | Implementation in progress                              |
-| Admin               | Organization, teams, roles/access, integrations, workspace settings   | Implementation in progress                              |
+- **Work** — Projects, tasks, priorities, ownership, and cross-team execution. Foundation available through the existing project board.
+- **Production** — Production queues, processing stages, workload, and delivery visibility. Implementation in progress.
+- **Documents & Data** — Intake, scan/OCR, structured data, review, and handoff. Implementation in progress.
+- **Automation** — Triggers, workflows, approvals, reusable automations, and monitoring. Implementation in progress.
+- **Vendors** — Vendor/BPO collaboration, assignment, and delivery tracking. Implementation in progress.
+- **Customers** — Customer workspaces, requests, and service delivery visibility. Implementation in progress.
+- **Policy & Compliance** — SOP, policy, approval, audit, and compliance controls. Implementation in progress.
+- **Admin** — Organization, teams, roles/access, integrations, and workspace settings. Implementation in progress.
 
 ## Frontend layering
 
