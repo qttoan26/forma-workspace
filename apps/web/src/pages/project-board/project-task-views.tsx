@@ -6,6 +6,7 @@ import {
 } from '@/entities/task/model/task'
 import { filterTasks } from '@/widgets/task-board/model/task-board-view'
 
+import { ProjectFilesView } from './project-files-view'
 import {
   ProjectLiveTaskBoard,
   type ProjectLiveTaskBoardProps,
@@ -79,7 +80,13 @@ function ProjectReadOnlyTaskView({
         />
       )
     case 'files':
-      return <ProjectFilesView taskCount={snapshot.tasks.length} />
+      return (
+        <ProjectFilesView
+          projectId={projectId}
+          tasks={snapshot.tasks}
+          onOpenTask={onOpenTask}
+        />
+      )
     default:
       return null
   }
@@ -251,29 +258,6 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
             </div>
           </article>
         ))}
-      </div>
-    </section>
-  )
-}
-
-function ProjectFilesView({ taskCount }: { taskCount: number }) {
-  return (
-    <section className="project-view-surface project-files-surface">
-      <ProjectViewHeading
-        eyebrow="Files"
-        title="Project documents"
-        meta={`${taskCount} linked tasks`}
-      />
-      <div className="project-files-empty">
-        <span aria-hidden="true">F</span>
-        <div>
-          <strong>Files workspace is ready for integration.</strong>
-          <p>
-            The project view boundary is in place. Uploads, task attachments,
-            document versions, and provider storage will be connected without
-            changing the project navigation structure.
-          </p>
-        </div>
       </div>
     </section>
   )
