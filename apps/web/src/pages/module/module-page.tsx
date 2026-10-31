@@ -1,5 +1,5 @@
-import { WorkspaceNavbar } from '@/widgets/workspace-navbar/workspace-navbar'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
+import { WorkspaceNavbar } from '@/widgets/workspace-navbar/workspace-navbar'
 
 import './module-page.css'
 
@@ -36,7 +36,9 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
             <p>{module.description}</p>
           </div>
           <span className={`module-status module-status-${module.status}`}>
-            {module.status === 'available' ? 'Foundation available' : 'Implementation in progress'}
+            {module.status === 'available'
+              ? 'Foundation available'
+              : 'Implementation in progress'}
           </span>
         </header>
 
@@ -45,18 +47,26 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
             <p className="eyebrow">Current foundation</p>
             <h2>Project execution is already connected.</h2>
             <p>
-              The existing project board remains the first working feature inside the Work module while the broader work-management experience is being completed.
+              The existing project board remains the first working feature
+              inside the Work module while the broader work-management
+              experience is being completed.
             </p>
             <a className="module-primary-action" href={projectHref}>
               Open project board
             </a>
           </section>
         ) : (
-          <section className="module-state-card" aria-label={`${module.label} implementation status`}>
+          <section
+            className="module-state-card"
+            aria-label={`${module.label} implementation status`}
+          >
             <p className="eyebrow">Implementation status</p>
             <h2>This module is being completed.</h2>
             <p>
-              Navigation and module boundaries are in place first. Detailed workflows, screens, permissions, and backend integration will be implemented incrementally without changing the workspace structure.
+              Navigation and module boundaries are in place first. Detailed
+              workflows, screens, permissions, and backend integration will be
+              implemented incrementally without changing the workspace
+              structure.
             </p>
           </section>
         )}

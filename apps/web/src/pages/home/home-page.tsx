@@ -74,7 +74,10 @@ export function HomePage() {
           </a>
         </div>
 
-        <section className="workspace-module-section" aria-labelledby="modules-title">
+        <section
+          className="workspace-module-section"
+          aria-labelledby="modules-title"
+        >
           <div className="panel-heading">
             <div>
               <p className="eyebrow">Workspace modules</p>
@@ -91,11 +94,15 @@ export function HomePage() {
                 key={module.id}
               >
                 <span className="workspace-module-card-topline">
-                  <span className="workspace-module-eyebrow">{module.eyebrow}</span>
+                  <span className="workspace-module-eyebrow">
+                    {module.eyebrow}
+                  </span>
                   <span
                     className={`workspace-module-status workspace-module-status-${module.status}`}
                   >
-                    {module.status === 'available' ? 'Available' : 'Implementing'}
+                    {module.status === 'available'
+                      ? 'Available'
+                      : 'Implementing'}
                   </span>
                 </span>
                 <strong>{module.label}</strong>
