@@ -37,14 +37,7 @@ export function HomeIcon(props: IconProps) {
 export function ClipboardIcon(props: IconProps) {
   return (
     <IconBase {...props}>
-      <rect
-        x="5"
-        y="4.5"
-        width="14"
-        height="16"
-        rx="2.5"
-        {...strokeProps}
-      />
+      <rect x="5" y="4.5" width="14" height="16" rx="2.5" {...strokeProps} />
       <path d="M9 4.5v-1h6v1" {...strokeProps} />
       <path d="M8.5 10h7M8.5 14h7M8.5 18h4.5" {...strokeProps} />
     </IconBase>
@@ -98,10 +91,7 @@ export function UsersIcon(props: IconProps) {
         d="M8.75 11a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z"
         {...strokeProps}
       />
-      <path
-        d="M3.75 19.5c0-3.2 2.15-5.5 5-5.5s5 2.3 5 5.5"
-        {...strokeProps}
-      />
+      <path d="M3.75 19.5c0-3.2 2.15-5.5 5-5.5s5 2.3 5 5.5" {...strokeProps} />
       <path
         d="M15 5.25a3 3 0 0 1 0 5.5M16.25 14.25c2.3.45 4 2.4 4 5.25"
         {...strokeProps}
@@ -234,14 +224,7 @@ export function UserIcon(props: IconProps) {
 export function CalendarIcon(props: IconProps) {
   return (
     <IconBase {...props}>
-      <rect
-        x="4"
-        y="5.5"
-        width="16"
-        height="14.5"
-        rx="2.5"
-        {...strokeProps}
-      />
+      <rect x="4" y="5.5" width="16" height="14.5" rx="2.5" {...strokeProps} />
       <path d="M8 3.75v3.5M16 3.75v3.5M4 9.5h16" {...strokeProps} />
       <path d="M8 13h2M14 13h2M8 16.5h2" {...strokeProps} />
     </IconBase>
