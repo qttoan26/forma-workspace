@@ -1,0 +1,114 @@
+.project-files-list {
+  display: grid;
+}
+
+.project-file-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) minmax(180px, 0.42fr);
+  gap: 0.8rem;
+  align-items: center;
+  min-height: 4.2rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.project-file-row + .project-file-row {
+  border-top: 1px solid #edf0f1;
+}
+
+.project-file-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid #d6e8e2;
+  border-radius: 0.55rem;
+  background: #f3faf7;
+  color: #23816a;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.project-file-copy,
+.project-file-task span,
+.project-file-task button {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.project-file-copy strong,
+.project-file-task strong {
+  overflow: hidden;
+  color: #30383d;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-file-copy span,
+.project-file-copy a,
+.project-file-task small {
+  overflow: hidden;
+  color: #858e94;
+  font-size: 0.63rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-file-copy a {
+  width: fit-content;
+  max-width: 100%;
+  color: #267963;
+  text-decoration: none;
+}
+
+.project-file-copy a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.16rem;
+}
+
+.project-file-task {
+  min-width: 0;
+}
+
+.project-file-task button {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #e3e7e8;
+  border-radius: 0.55rem;
+  background: #fafbfb;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.project-file-task button:hover {
+  border-color: #cfe3dc;
+  background: #f4faf8;
+}
+
+.project-file-task button:focus-visible,
+.project-file-copy a:focus-visible {
+  outline: 2px solid #45a58d;
+  outline-offset: 0.16rem;
+}
+
+.project-files-provider-note {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-top: 1px solid #edf0f1;
+  background: #fafbfb;
+  color: #8b9398;
+  font-size: 0.63rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 700px) {
+  .project-file-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .project-file-task {
+    grid-column: 2;
+  }
+}
