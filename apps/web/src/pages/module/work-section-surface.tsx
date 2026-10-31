@@ -1,4 +1,8 @@
+import type { ReactNode } from 'react'
+
 import type { WorkSection } from '@/shared/workspace/work-section-registry'
+
+import './work-section-surface.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
 const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
@@ -82,7 +86,7 @@ function SurfaceHeader({ section }: { section: WorkSection }) {
     <header className="work-surface-header">
       <div>
         <p className="eyebrow">Work · {section.label}</p>
-        <h2>{section.label}</h2>
+        <h2 id="work-surface-title">{section.label}</h2>
         <p>{section.description}</p>
       </div>
       <span className="work-surface-foundation">Frontend foundation</span>
@@ -115,7 +119,10 @@ function TaskTable({ onlyMine = false }: { onlyMine?: boolean }) {
           </span>
           <span role="cell">{task.due}</span>
           <span role="cell">
-            <span className="work-mini-avatar" aria-label={`Owner ${task.assignee}`}>
+            <span
+              className="work-mini-avatar"
+              aria-label={`Owner ${task.assignee}`}
+            >
               {task.assignee}
             </span>
           </span>
@@ -176,7 +183,9 @@ function OverviewSurface() {
               <span>Frontend foundation</span>
               <strong>72%</strong>
             </div>
-            <progress max="100" value="72">72%</progress>
+            <progress max="100" value="72">
+              72%
+            </progress>
           </div>
           <div className="work-project-links">
             <a href={projectHref}>Open project board</a>
@@ -196,11 +205,16 @@ function InboxSurface() {
           <small>Attention queue</small>
           <h3>Recent updates</h3>
         </div>
-        <button type="button" className="work-quiet-button">Mark all read</button>
+        <button type="button" className="work-quiet-button">
+          Mark all read
+        </button>
       </div>
       <div className="work-inbox-list">
         {inboxItems.map((item) => (
-          <article className={`work-inbox-item${item.unread ? ' is-unread' : ''}`} key={item.title}>
+          <article
+            className={`work-inbox-item${item.unread ? ' is-unread' : ''}`}
+            key={item.title}
+          >
             <span className="work-inbox-dot" aria-hidden="true" />
             <div>
               <strong>{item.title}</strong>
@@ -299,7 +313,9 @@ function TimelineSurface() {
           <article key={name}>
             <div>
               <strong>{name}</strong>
-              <small>{start} → {end}</small>
+              <small>
+                {start} → {end}
+              </small>
             </div>
             <span>{status}</span>
           </article>
@@ -320,7 +336,9 @@ function MembersSurface({ teams = false }: { teams?: boolean }) {
           ['Policy', '3 members', 'SOP, Legal, Compliance'],
         ].map(([name, count, detail]) => (
           <article className="work-person-card" key={name}>
-            <span className="work-team-mark">{name.slice(0, 2).toUpperCase()}</span>
+            <span className="work-team-mark">
+              {name.slice(0, 2).toUpperCase()}
+            </span>
             <strong>{name}</strong>
             <small>{count}</small>
             <p>{detail}</p>
@@ -371,7 +389,7 @@ function ActivitySurface() {
 }
 
 export function WorkSectionSurface({ section }: { section: WorkSection }) {
-  let content
+  let content: ReactNode
 
   switch (section.id) {
     case 'overview':
@@ -409,9 +427,6 @@ export function WorkSectionSurface({ section }: { section: WorkSection }) {
   return (
     <section className="work-surface" aria-labelledby="work-surface-title">
       <SurfaceHeader section={section} />
-      <div id="work-surface-title" className="sr-only">
-        {section.label}
-      </div>
       {content}
     </section>
   )
