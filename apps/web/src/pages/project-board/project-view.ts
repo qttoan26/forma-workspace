@@ -19,8 +19,5 @@ export const projectViewLabels: Record<ProjectView, string> = {
 }
 
 export function isProjectView(value: unknown): value is ProjectView {
-  return (
-    typeof value === 'string' &&
-    projectViews.includes(value as ProjectView)
-  )
+  return typeof value === 'string' && projectViews.includes(value as ProjectView)
 }
