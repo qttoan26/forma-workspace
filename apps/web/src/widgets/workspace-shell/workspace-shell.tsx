@@ -27,6 +27,7 @@ import { workspaceModules } from '@/shared/workspace/module-registry'
 import { workSectionPath } from '@/shared/workspace/work-section-registry'
 
 import './workspace-shell.css'
+import './workspace-sidebar-bitrix.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
 const sidebarPreferenceKey = 'forma-workspace:sidebar-expanded:v1'
