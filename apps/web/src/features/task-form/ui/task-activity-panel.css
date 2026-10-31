@@ -1,0 +1,201 @@
+.task-detail-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-surface-subtle);
+}
+
+.task-detail-tabs button {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: var(--forma-radius-md);
+  background: transparent;
+  color: var(--forma-color-text-secondary);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.task-detail-tabs button[aria-selected='true'] {
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-card);
+}
+
+.task-detail-panel {
+  display: grid;
+  gap: var(--forma-space-4);
+}
+
+.task-activity-panel {
+  display: grid;
+  gap: var(--forma-space-5);
+}
+
+.task-activity-composer {
+  display: grid;
+  gap: 0.65rem;
+  padding: var(--forma-space-4);
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-surface-subtle);
+}
+
+.task-activity-composer label {
+  color: var(--forma-color-text-strong);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.task-activity-composer textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  resize: vertical;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.task-activity-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--forma-space-3);
+}
+
+.task-activity-composer-actions span {
+  color: var(--forma-color-text-muted);
+  font-size: 0.75rem;
+}
+
+.task-activity-feed {
+  display: grid;
+  gap: var(--forma-space-3);
+}
+
+.task-activity-feed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--forma-space-3);
+}
+
+.task-activity-feed-heading h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.task-activity-feed-heading span {
+  min-width: 1.75rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--forma-radius-pill);
+  background: var(--forma-color-canvas);
+  color: var(--forma-color-text-muted);
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.task-activity-empty {
+  display: grid;
+  gap: 0.3rem;
+  padding: var(--forma-space-5);
+  border: 1px dashed var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-lg);
+  color: var(--forma-color-text-muted);
+  text-align: center;
+}
+
+.task-activity-empty strong {
+  color: var(--forma-color-text-strong);
+}
+
+.task-activity-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-activity-list li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0 0 var(--forma-space-4);
+}
+
+.task-activity-list li:not(:last-child)::before {
+  position: absolute;
+  top: 2rem;
+  bottom: 0;
+  left: 0.95rem;
+  width: 1px;
+  background: var(--forma-color-border);
+  content: '';
+}
+
+.task-activity-marker {
+  z-index: 1;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--forma-color-border);
+  border-radius: 50%;
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.task-activity-list li.is-comment .task-activity-marker {
+  background: var(--forma-color-text);
+  color: var(--forma-color-surface);
+}
+
+.task-activity-entry {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  padding-top: 0.15rem;
+}
+
+.task-activity-entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+}
+
+.task-activity-entry-meta strong {
+  color: var(--forma-color-text-strong);
+  font-size: 0.85rem;
+}
+
+.task-activity-entry-meta time {
+  color: var(--forma-color-text-muted);
+  font-size: 0.72rem;
+}
+
+.task-activity-entry p {
+  margin: 0;
+  color: var(--forma-color-text-secondary);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .task-activity-composer-actions,
+  .task-activity-entry-meta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
