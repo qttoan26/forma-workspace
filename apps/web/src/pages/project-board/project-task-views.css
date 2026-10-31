@@ -111,6 +111,32 @@
   font-size: 0.63rem;
 }
 
+.project-task-open {
+  width: fit-content;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #30383d;
+  font: inherit;
+  font-size: 0.73rem;
+  font-weight: 720;
+  text-align: left;
+  cursor: pointer;
+}
+
+.project-task-open:hover {
+  color: #1f7d67;
+  text-decoration: underline;
+  text-underline-offset: 0.16rem;
+}
+
+.project-task-open:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid #45a58d;
+  outline-offset: 0.18rem;
+}
+
 .project-task-key {
   color: #8b949a;
   font-size: 0.62rem;
