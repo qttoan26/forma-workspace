@@ -20,6 +20,7 @@ import {
 import type { ProjectView } from './project-view'
 import { useProjectLiveTasks } from './use-project-live-tasks'
 import './project-task-views.css'
+import './project-files-view.css'
 
 interface ProjectTaskViewsProps extends ProjectLiveTaskBoardProps {
   view: ProjectView
