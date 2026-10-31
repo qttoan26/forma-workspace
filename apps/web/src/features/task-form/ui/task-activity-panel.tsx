@@ -27,6 +27,7 @@ export function TaskActivityPanel({
   const [status, setStatus] = useState<ActivityStatus>('loading')
   const [comment, setComment] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveStatus, setSaveStatus] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -61,6 +62,7 @@ export function TaskActivityPanel({
 
     setComment('')
     setSaveError(null)
+    setSaveStatus(null)
     setEntries((current) => [...current, entry])
 
     try {
@@ -70,6 +72,7 @@ export function TaskActivityPanel({
         entry,
       )
       setEntries(storedEntries)
+      setSaveStatus('Comment saved locally.')
     } catch {
       setSaveError(
         'Comment is visible in this session but could not be saved locally.',
@@ -105,6 +108,7 @@ export function TaskActivityPanel({
             Comment
           </Button>
         </div>
+        {saveStatus ? <p role="status">{saveStatus}</p> : null}
         {saveError ? <p role="alert">{saveError}</p> : null}
       </div>
 
