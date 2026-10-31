@@ -142,7 +142,10 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
                   <span className="work-project-key">FOR</span>
                 </div>
 
-                <div className="work-project-summary" aria-label="Project summary">
+                <div
+                  className="work-project-summary"
+                  aria-label="Project summary"
+                >
                   <span>
                     <strong>1</strong>
                     <small>Active project</small>
@@ -162,7 +165,10 @@ export function ModulePage({ moduleId }: { moduleId: string }) {
                 </a>
               </section>
 
-              <section className="work-roadmap" aria-labelledby="work-roadmap-title">
+              <section
+                className="work-roadmap"
+                aria-labelledby="work-roadmap-title"
+              >
                 <div>
                   <p className="eyebrow">Next in Work</p>
                   <h2 id="work-roadmap-title">Implementation in progress</h2>
