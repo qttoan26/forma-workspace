@@ -16,9 +16,7 @@ export function loadTaskChecklist(
   if (!hasLocalStorage()) return []
 
   try {
-    const raw = globalThis.localStorage.getItem(
-      createStorageKey(projectId, taskId),
-    )
+    const raw = globalThis.localStorage.getItem(createStorageKey(projectId, taskId))
     if (!raw) return []
 
     const result = taskChecklistCollectionSchema.safeParse(JSON.parse(raw))
