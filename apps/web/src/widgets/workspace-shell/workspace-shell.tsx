@@ -133,7 +133,8 @@ export function WorkspaceShell({
 
           {personalLinks.map((item) => {
             const PersonalIcon = item.icon
-            const active = activeModuleId === 'work' && activeSectionId === item.id
+            const active =
+              activeModuleId === 'work' && activeSectionId === item.id
 
             return (
               <a
@@ -147,7 +148,9 @@ export function WorkspaceShell({
                   <PersonalIcon />
                 </span>
                 <span>{item.label}</span>
-                <span className="workspace-sidebar-counter">{item.counter}</span>
+                <span className="workspace-sidebar-counter">
+                  {item.counter}
+                </span>
               </a>
             )
           })}

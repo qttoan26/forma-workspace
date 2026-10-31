@@ -76,7 +76,9 @@ export function ModulePage({
     <WorkspaceShell
       activeModuleId={module.id}
       activeSectionId={workSection?.id}
-      pageLabel={workSection ? `${module.label} / ${workSection.label}` : module.label}
+      pageLabel={
+        workSection ? `${module.label} / ${workSection.label}` : module.label
+      }
     >
       <section className="module-page-content" aria-labelledby="module-title">
         <header className="module-page-header">
@@ -101,7 +103,8 @@ export function ModulePage({
               </div>
               <nav className="work-subnav-list">
                 {workSections.map((section) => {
-                  const SectionIcon = workSectionIcons[section.id] ?? ClipboardIcon
+                  const SectionIcon =
+                    workSectionIcons[section.id] ?? ClipboardIcon
                   const active = section.id === workSection.id
 
                   return (
@@ -119,7 +122,9 @@ export function ModulePage({
                         <small>{section.description}</small>
                       </span>
                       {section.counter ? (
-                        <span className="work-subnav-count">{section.counter}</span>
+                        <span className="work-subnav-count">
+                          {section.counter}
+                        </span>
                       ) : null}
                     </a>
                   )
