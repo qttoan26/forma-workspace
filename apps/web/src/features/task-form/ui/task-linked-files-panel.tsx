@@ -85,7 +85,10 @@ export function TaskLinkedFilesPanel({
   }
 
   return (
-    <section className="task-linked-files-panel" aria-label="Task linked files">
+    <section
+      className="task-linked-files-panel"
+      aria-label="Task linked files"
+    >
       <div className="task-linked-files-heading">
         <div>
           <p className="eyebrow">Documents & Data</p>
