@@ -48,7 +48,7 @@ export function ModulePage({
   sectionId,
 }: {
   moduleId: string
-  sectionId?: string
+  sectionId?: string | undefined
 }) {
   const module = getWorkspaceModule(moduleId)
 
