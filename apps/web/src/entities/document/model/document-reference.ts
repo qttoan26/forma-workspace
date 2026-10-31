@@ -20,9 +20,7 @@ export function createDocumentReference(input: {
   location: string
 }): DocumentReference {
   return documentReferenceSchema.parse({
-    id:
-      globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random()}`,
+    id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
     projectId: input.projectId,
     ...(input.taskId ? { taskId: input.taskId } : {}),
     name: input.name,
