@@ -190,10 +190,7 @@ export async function loadTaskActivityFromIndexedDb(
     const result = taskActivityRecordSchema.safeParse(rawRecord)
 
     if (!result.success) return []
-    if (
-      result.data.projectId !== projectId ||
-      result.data.taskId !== taskId
-    ) {
+    if (result.data.projectId !== projectId || result.data.taskId !== taskId) {
       return []
     }
 
@@ -213,10 +210,7 @@ export async function appendTaskActivityToIndexedDb(
   }
 
   const parsedEntry = taskActivityEntrySchema.parse(entry)
-  if (
-    parsedEntry.projectId !== projectId ||
-    parsedEntry.taskId !== taskId
-  ) {
+  if (parsedEntry.projectId !== projectId || parsedEntry.taskId !== taskId) {
     throw new Error('Task activity entry does not match task scope')
   }
 

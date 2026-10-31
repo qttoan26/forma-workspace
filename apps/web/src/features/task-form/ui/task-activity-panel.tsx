@@ -92,7 +92,8 @@ export function TaskActivityPanel({
           value={comment}
           onChange={(event) => setComment(event.target.value)}
           onKeyDown={(event) => {
-            if (!(event.ctrlKey || event.metaKey) || event.key !== 'Enter') return
+            if (!(event.ctrlKey || event.metaKey) || event.key !== 'Enter')
+              return
             event.preventDefault()
             void addComment()
           }}

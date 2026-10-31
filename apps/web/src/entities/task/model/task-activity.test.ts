@@ -1,4 +1,7 @@
-import { createTaskActivityEntry, taskActivityEntrySchema } from './task-activity'
+import {
+  createTaskActivityEntry,
+  taskActivityEntrySchema,
+} from './task-activity'
 
 describe('task activity model', () => {
   it('creates a scoped comment entry with a stable timestamp', () => {

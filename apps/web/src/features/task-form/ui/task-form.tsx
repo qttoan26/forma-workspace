@@ -95,7 +95,11 @@ export function TaskForm({
       </div>
 
       {task ? (
-        <div className="task-detail-tabs" role="tablist" aria-label="Task details">
+        <div
+          className="task-detail-tabs"
+          role="tablist"
+          aria-label="Task details"
+        >
           <button
             id={`task-details-tab-${task.id}`}
             type="button"
@@ -233,7 +237,8 @@ function describeTaskChanges(task: Task, values: TaskFormValues) {
   const changes: string[] = []
 
   if (task.title !== values.title) changes.push('title')
-  if ((task.description ?? '') !== values.description) changes.push('description')
+  if ((task.description ?? '') !== values.description)
+    changes.push('description')
   if (task.status !== values.status) {
     changes.push(
       `status (${taskStatusLabels[task.status]} → ${taskStatusLabels[values.status]})`,
