@@ -56,10 +56,7 @@ export function validateWebRuntimeConfiguration(
   const redirectUri = required(redirectValue, 'VITE_OIDC_REDIRECT_URI')
 
   validateHttpsUrl(apiBaseUrl, 'VITE_API_BASE_URL')
-  validateHttpsUrl(
-    authorizationEndpoint,
-    'VITE_OIDC_AUTHORIZATION_ENDPOINT',
-  )
+  validateHttpsUrl(authorizationEndpoint, 'VITE_OIDC_AUTHORIZATION_ENDPOINT')
   validateHttpsUrl(tokenEndpoint, 'VITE_OIDC_TOKEN_ENDPOINT')
   validateHttpsUrl(redirectUri, 'VITE_OIDC_REDIRECT_URI')
 }
