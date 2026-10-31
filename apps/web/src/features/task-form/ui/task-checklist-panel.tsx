@@ -65,7 +65,11 @@ export function TaskChecklistPanel({
     const nextTitle = title.trim()
     if (!nextTitle) return
 
-    const item = createTaskChecklistItem({ projectId, taskId, title: nextTitle })
+    const item = createTaskChecklistItem({
+      projectId,
+      taskId,
+      title: nextTitle,
+    })
     commit([...items, item])
     setTitle('')
     recordActivity(`Added checklist item “${nextTitle}”.`)
