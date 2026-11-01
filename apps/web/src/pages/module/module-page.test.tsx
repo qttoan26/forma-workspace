@@ -107,8 +107,11 @@ describe('Workspace section navigation', () => {
   it('does not present fabricated Inbox events or counts', () => {
     render(<ModulePage moduleId="work" sectionId="inbox" />)
     expect(
+      screen.getByText('Implementation in progress', { exact: true }),
+    ).toBeInTheDocument()
+    expect(
       screen.getByRole('region', { name: 'Inbox implementation status' }),
-    ).toHaveTextContent('Implementation in progress')
+    ).toHaveTextContent('Assignment notifications and mentions')
     expect(screen.queryByText(/You were assigned FOR/)).not.toBeInTheDocument()
     expect(document.querySelector('.workspace-sidebar-counter')).toBeNull()
   })

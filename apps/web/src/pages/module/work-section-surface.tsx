@@ -54,11 +54,7 @@ export function WorkSectionSurface({ section }: { section: WorkSection }) {
         className="module-state-card"
         aria-label={`${section.label} implementation status`}
       >
-        <h2>{section.label}</h2>
-        <p>{section.description}</p>
-        <span className="module-status module-status-implementation">
-          Implementation in progress
-        </span>
+        <h2>What will appear here</h2>
         <p>
           {section.id === 'inbox'
             ? 'Assignment notifications and mentions will appear here when notifications are connected.'

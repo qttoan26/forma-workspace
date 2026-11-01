@@ -55,3 +55,11 @@ The topbar search opens a modal with `Ctrl/Cmd + K` or the Search button. It sea
 Type to filter, use Up/Down to move between results, Enter to open the first match from the input or the focused destination, and Escape to close and restore focus. Native modal behavior contains keyboard focus; background scroll is restored on close. The mobile topbar exposes the same action. Links use Vite's application base path so the existing GitHub Pages fallback can resolve direct section URLs.
 
 The search index is static module metadata, not a second business-data store. New sidebar sections enter search through their registry; no additional API, storage engine, or UI library is introduced.
+
+## Navigation chrome and motion
+
+Page context lives in the shared topbar and sidebar; module content does not add another breadcrumb row. Project detail keeps a single Projects back link in its header. Unfinished detail pages show one page title and one implementation status, followed by the relevant planned capabilities.
+
+Sidebar widths and main-content offset share one size variable, duration, and easing curve. The inner menu keeps a fixed expanded width so labels do not wrap or icons shift during a transition. Each module uses one persistent disclosure button and submenu; closed submenus remain mounted for the grid-height animation but are inert and removed from the accessibility tree. This keeps keyboard focus on the same trigger when expanding from the icon rail and allows an in-flight transition to reverse without timers.
+
+Desktop rail, submenu, and mobile drawer motion use a shared 260 ms transition. Label fades use 160 ms. `prefers-reduced-motion` sets both durations to zero. All shell/sidebar styling is owned by `workspace-shell.css`; the older sidebar override file has been removed.
