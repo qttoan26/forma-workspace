@@ -31,7 +31,8 @@ const productionStages = [
   {
     id: 'quality',
     label: 'Quality Control',
-    description: 'Capture review status, exceptions, and rework before release.',
+    description:
+      'Capture review status, exceptions, and rework before release.',
     icon: CheckSquareIcon,
   },
   {
@@ -79,9 +80,7 @@ export function ProductionSurface() {
             Production remains the operational source of truth for processing.
           </p>
         </div>
-        <span className="production-foundation-badge">
-          Frontend foundation
-        </span>
+        <span className="production-foundation-badge">Frontend foundation</span>
       </header>
 
       <div className="production-stage-grid">
