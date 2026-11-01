@@ -106,7 +106,10 @@ export function AutomationSurface() {
 
       <div className="automation-capability-grid">
         {automationCapabilities.map((capability) => (
-          <article className="automation-capability-card" key={capability.title}>
+          <article
+            className="automation-capability-card"
+            key={capability.title}
+          >
             <p className="eyebrow">{capability.eyebrow}</p>
             <h3>{capability.title}</h3>
             <p>{capability.description}</p>
