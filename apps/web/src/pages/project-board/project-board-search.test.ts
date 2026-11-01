@@ -28,23 +28,26 @@ describe('parseProjectBoardSearch', () => {
     expect(parseProjectBoardSearch({ sort: 'due-date' }).sort).toBe('due-date')
   })
 
-  it('normalizes URL task creation and gives it precedence over editing', () => {
-    expect(
-      parseProjectBoardSearch({
-        task: 'FOR-18',
-        newTask: '1',
+  it.each(['1', 1])(
+    'normalizes URL task creation %s and gives it precedence over editing',
+    (newTask) => {
+      expect(
+        parseProjectBoardSearch({
+          task: 'FOR-18',
+          newTask,
+          view: 'board',
+        }),
+      ).toEqual({
+        priority: undefined,
+        assignee: undefined,
+        query: undefined,
+        sort: undefined,
         view: 'board',
-      }),
-    ).toEqual({
-      priority: undefined,
-      assignee: undefined,
-      query: undefined,
-      sort: undefined,
-      view: 'board',
-      task: undefined,
-      newTask: '1',
-    })
-  })
+        task: undefined,
+        newTask: '1',
+      })
+    },
+  )
 
   it('drops invalid, empty, and unknown search values', () => {
     expect(

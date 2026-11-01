@@ -11,6 +11,10 @@ import { HomePage } from '@/pages/home/home-page'
 import { LandingPage } from '@/pages/landing/landing-page'
 import { LoginPage } from '@/pages/login/login-page'
 import { ModuleRoutePage } from '@/pages/module/module-route-page'
+import {
+  compactWorkTaskSearch,
+  parseWorkTaskSearch,
+} from '@/pages/module/work-task-filters'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
 import { ProjectBoardLoading } from '@/pages/project-board/project-board-loading'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
@@ -57,6 +61,8 @@ const authCallbackRoute = createRoute({
 const moduleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId',
+  validateSearch: (search) =>
+    compactWorkTaskSearch(parseWorkTaskSearch(search)),
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })
@@ -64,6 +70,8 @@ const moduleRoute = createRoute({
 const moduleSectionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId/$sectionId',
+  validateSearch: (search) =>
+    compactWorkTaskSearch(parseWorkTaskSearch(search)),
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })

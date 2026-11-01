@@ -1,4 +1,5 @@
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
+import type { WorkTaskSearch } from './work-task-filters'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
 import {
   getModuleSections,
@@ -15,9 +16,13 @@ const appBaseUrl = import.meta.env.BASE_URL
 export function ModulePage({
   moduleId,
   sectionId,
+  taskSearch,
+  onTaskSearchChange,
 }: {
   moduleId: string
   sectionId?: string | undefined
+  taskSearch?: WorkTaskSearch | undefined
+  onTaskSearchChange?: ((search: WorkTaskSearch) => void) | undefined
 }) {
   const module = getWorkspaceModule(moduleId)
   const sections = getModuleSections(moduleId)
@@ -81,7 +86,12 @@ export function ModulePage({
           </span>
         </header>
         {workSection ? (
-          <WorkSectionSurface section={workSection} />
+          <WorkSectionSurface
+            key={workSection.id}
+            section={workSection}
+            taskSearch={taskSearch}
+            onTaskSearchChange={onTaskSearchChange}
+          />
         ) : selected ? (
           <section
             className="module-state-card"

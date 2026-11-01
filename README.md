@@ -12,6 +12,8 @@ Frontend demo: https://qttoan26.github.io/forma-workspace/
 
 > The GitHub Pages deployment is an explicit browser/demo build. It does not connect to the production API or OIDC provider. Production authentication remains enabled when `VITE_DEMO_MODE` is not set.
 
+Module rollout: [priorities and current Work scope](docs/module-priorities.md). Work Tasks/My Tasks provide URL-backed filters; Projects exposes progress and view links; Activity shows locally saved task comments and updates.
+
 ## Engineering principles
 
 - Pages-first architecture with earned complexity.

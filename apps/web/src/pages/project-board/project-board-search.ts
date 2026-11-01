@@ -35,7 +35,7 @@ const optionalView = z.preprocess(
 )
 
 const optionalNewTask = z.preprocess(
-  (value) => (value === '1' ? value : undefined),
+  (value) => (value === '1' || value === 1 ? '1' : undefined),
   z.literal('1').optional(),
 )
 

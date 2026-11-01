@@ -1,4 +1,16 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
+import { WorkTaskExplorer } from './work-task-explorer'
+import { WorkActivityFeed } from './work-activity-feed'
+import {
+  defaultWorkTaskSearch,
+  isTaskOverdue,
+  localDateKey,
+  type WorkTaskSearch,
+} from './work-task-filters'
+import {
+  projectViews,
+  projectViewLabels,
+} from '@/pages/project-board/project-view'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
@@ -35,7 +47,16 @@ function TaskTable({ tasks, data }: { tasks: Task[]; data: ProjectBoardData }) {
   )
 }
 
-export function WorkSectionSurface({ section }: { section: WorkSection }) {
+export function WorkSectionSurface({
+  section,
+  taskSearch,
+  onTaskSearchChange,
+}: {
+  section: WorkSection
+  taskSearch?: WorkTaskSearch | undefined
+  onTaskSearchChange?: ((search: WorkTaskSearch) => void) | undefined
+}) {
+  const [localSearch, setLocalSearch] = useState(defaultWorkTaskSearch)
   if (section.status === 'implementation')
     return (
       <section
@@ -52,10 +73,24 @@ export function WorkSectionSurface({ section }: { section: WorkSection }) {
         </p>
       </section>
     )
-  return <WorkSectionDataSurface section={section} />
+  return (
+    <WorkSectionDataSurface
+      section={section}
+      taskSearch={taskSearch ?? localSearch}
+      onTaskSearchChange={onTaskSearchChange ?? setLocalSearch}
+    />
+  )
 }
 
-function WorkSectionDataSurface({ section }: { section: WorkSection }) {
+function WorkSectionDataSurface({
+  section,
+  taskSearch,
+  onTaskSearchChange,
+}: {
+  section: WorkSection
+  taskSearch: WorkTaskSearch
+  onTaskSearchChange: (search: WorkTaskSearch) => void
+}) {
   const { data, error, userId, retry } = useWorkData()
   if (error)
     return (
@@ -70,7 +105,6 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
   if (!data) return <p role="status">Loading current work…</p>
 
   const tasks = data.initialTasks
-  const mine = tasks.filter((task) => task.assigneeId === userId)
   const completed = tasks.filter((task) => task.status === 'done').length
   const completion = tasks.length
     ? Math.round((completed / tasks.length) * 100)
@@ -132,9 +166,12 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
         </>
       ) : null}
       {section.id === 'tasks' ? (
-        <section className="work-panel">
-          <TaskTable tasks={tasks} data={data} />
-        </section>
+        <WorkTaskExplorer
+          data={data}
+          userId={userId}
+          search={taskSearch}
+          onSearchChange={onTaskSearchChange}
+        />
       ) : null}
       {section.id === 'my-tasks' ? (
         <>
@@ -143,9 +180,13 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
               'Your account is not linked to a project member yet.'}
           </p>
           {data.members.some((member) => member.id === userId) ? (
-            <section className="work-panel">
-              <TaskTable tasks={mine} data={data} />
-            </section>
+            <WorkTaskExplorer
+              data={data}
+              userId={userId}
+              personal
+              search={taskSearch}
+              onSearchChange={onTaskSearchChange}
+            />
           ) : (
             <p className="work-empty-state">
               Personal assignments will be shown once your account is linked.
@@ -153,6 +194,7 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
           )}
         </>
       ) : null}
+      {section.id === 'activity' ? <WorkActivityFeed data={data} /> : null}
       {section.id === 'projects' ? (
         <section className="work-panel">
           <article className="work-project-row">
@@ -164,6 +206,34 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
                 {tasks.length} tasks · {data.members.length} members ·{' '}
                 {completion}% complete
               </span>
+              <div className="work-project-progress">
+                <progress
+                  aria-label="Project task completion"
+                  max={100}
+                  value={completion}
+                />
+                <small>
+                  {tasks.length - completed} open ·{' '}
+                  {
+                    tasks.filter((task) => isTaskOverdue(task, localDateKey()))
+                      .length
+                  }{' '}
+                  overdue
+                </small>
+              </div>
+              <nav
+                className="work-project-views"
+                aria-label="Open project view"
+              >
+                {projectViews.map((view) => (
+                  <a
+                    key={view}
+                    href={`${projectHref}${view === 'board' ? '' : `?view=${view}`}`}
+                  >
+                    {projectViewLabels[view]}
+                  </a>
+                ))}
+              </nav>
             </div>
             <a className="module-primary-action" href={projectHref}>
               Open project
