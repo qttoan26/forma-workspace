@@ -1,3 +1,5 @@
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
+import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { useWorkData } from '@/pages/module/use-work-data'
 
 import { workspaceModules } from '@/shared/workspace/module-registry'
@@ -61,45 +63,6 @@ export function HomePage() {
           </a>
         </div>
 
-        <section
-          className="workspace-module-section"
-          aria-labelledby="modules-title"
-        >
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Workspace modules</p>
-              <h2 id="modules-title">Operational areas</h2>
-            </div>
-            <span className="panel-count">8 modules</span>
-          </div>
-
-          <div className="workspace-module-grid">
-            {workspaceModules.map((module) => (
-              <a
-                className="workspace-module-card"
-                href={hrefFor(module.path)}
-                key={module.id}
-              >
-                <span className="workspace-module-card-topline">
-                  <span className="workspace-module-eyebrow">
-                    {module.eyebrow}
-                  </span>
-                  <span
-                    className={`workspace-module-status workspace-module-status-${module.status}`}
-                  >
-                    {module.status === 'available'
-                      ? 'Available'
-                      : 'Implementing'}
-                  </span>
-                </span>
-                <strong>{module.label}</strong>
-                <p>{module.description}</p>
-                <span className="workspace-module-open">Open module →</span>
-              </a>
-            ))}
-          </div>
-        </section>
-
         {error ? (
           <p role="alert">
             Work summary could not be loaded.{' '}
@@ -117,6 +80,14 @@ export function HomePage() {
             </article>
           ))}
         </section>
+
+        {data && !error ? (
+          <WorkInsightsPanel
+            tasks={tasks}
+            members={data.members}
+            projectName={data.project.name}
+          />
+        ) : null}
 
         <div className="dashboard-grid">
           <section className="dashboard-panel" aria-labelledby="projects-title">
@@ -169,7 +140,10 @@ export function HomePage() {
               </div>
             </div>
 
-            <div className="attention-list">
+            <ScrollRegion
+              label="Tasks needing attention"
+              className="attention-list"
+            >
               {attentionTasks.map((task) => (
                 <a
                   href={`${projectHref}?task=${encodeURIComponent(task.id)}`}
@@ -192,9 +166,47 @@ export function HomePage() {
               {data && !attentionTasks.length ? (
                 <p>No urgent or high-priority tasks.</p>
               ) : null}
-            </div>
+            </ScrollRegion>
           </aside>
         </div>
+        <section
+          className="workspace-module-section"
+          aria-labelledby="modules-title"
+        >
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Workspace modules</p>
+              <h2 id="modules-title">Operational areas</h2>
+            </div>
+            <span className="panel-count">8 modules</span>
+          </div>
+
+          <div className="workspace-module-grid">
+            {workspaceModules.map((module) => (
+              <a
+                className="workspace-module-card"
+                href={hrefFor(module.path)}
+                key={module.id}
+              >
+                <span className="workspace-module-card-topline">
+                  <span className="workspace-module-eyebrow">
+                    {module.eyebrow}
+                  </span>
+                  <span
+                    className={`workspace-module-status workspace-module-status-${module.status}`}
+                  >
+                    {module.status === 'available'
+                      ? 'Available'
+                      : 'Implementing'}
+                  </span>
+                </span>
+                <strong>{module.label}</strong>
+                <p>{module.description}</p>
+                <span className="workspace-module-open">Open module →</span>
+              </a>
+            ))}
+          </div>
+        </section>
       </section>
     </WorkspaceShell>
   )

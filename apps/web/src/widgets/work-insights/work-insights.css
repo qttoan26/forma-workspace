@@ -1,0 +1,174 @@
+.work-insights {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1rem;
+  margin-block: 1rem;
+  min-width: 0;
+}
+.work-insight-card {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass-strong);
+}
+.work-insight-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+.work-insight-card h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: var(--forma-color-text-strong);
+}
+.work-insight-card header small {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.work-insight-card header > span {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.work-insight-context,
+.work-insight-footnote {
+  margin: 0.75rem 0;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.work-insight-status-layout {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+  padding-block: 0.5rem;
+}
+.work-insight-doughnut {
+  position: relative;
+  height: 170px;
+  width: 170px;
+}
+.work-insight-completion {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+.work-insight-completion strong {
+  font-size: 1.6rem;
+  color: var(--forma-color-text-strong);
+}
+.work-insight-completion span {
+  font-size: 0.75rem;
+  color: var(--forma-color-text-secondary);
+}
+.work-insight-status-data {
+  margin: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+.work-insight-status-data > div,
+.work-insight-status-data dt,
+.work-insight-legend,
+.work-insight-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.work-insight-status-data > div {
+  justify-content: space-between;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8rem;
+}
+.work-insight-status-data dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--forma-color-text-strong);
+}
+.work-insight-card i {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+.work-insight-legend {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+  color: var(--forma-color-text-secondary);
+}
+.work-insight-chart-scroll {
+  --forma-scroll-region-height: 20rem;
+  margin-block: 0.5rem;
+}
+.work-insight-bar {
+  position: relative;
+  min-width: 0;
+}
+.work-insight-data {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--forma-color-text-secondary);
+}
+.work-insight-data summary {
+  width: fit-content;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+.work-insight-data summary:focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 2px;
+}
+.work-insight-data table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.work-insight-data :is(th, td) {
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--forma-color-border);
+}
+.work-insight-data thead th {
+  position: sticky;
+  top: 0;
+  background: var(--forma-color-surface);
+}
+.work-insight-data caption {
+  text-align: left;
+  padding-block: 0.5rem;
+}
+.work-insight-empty {
+  display: grid;
+  min-height: 200px;
+  align-content: center;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@media (max-width: 1050px) {
+  .work-insights {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .work-insight-status-layout {
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+  .work-insight-doughnut {
+    width: 130px;
+    height: 130px;
+  }
+  .work-insight-card {
+    padding: 1rem;
+  }
+}

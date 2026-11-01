@@ -24,6 +24,31 @@
   outline-offset: 2px;
 }
 
+.board .board-column {
+  display: flex;
+  flex-direction: column;
+  min-height: min(22rem, 60dvh);
+  max-block-size: min(65dvh, 40rem);
+}
+
+.board-column > .column-header {
+  flex: 0 0 auto;
+}
+
+.board-column > .task-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  align-content: start;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.board-column > .task-list:focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: -2px;
+}
+
 .board-drag-hint {
   margin: 0 0 1rem;
   color: var(--forma-color-text-secondary);

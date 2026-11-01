@@ -4,6 +4,8 @@ Forma Workspace is a workspace-first operating platform. The frontend navigation
 
 The workspace shell now uses Bitrix-inspired glass tokens and a layered cyan/mint background. Project Table uses TanStack Table for sorting and pagination; Board uses dnd-kit handles for cross-status moves with mouse/touch/keyboard and retains Move to controls. Both reuse existing task ownership and persistence. Module placeholders remain explicit; this upgrade does not add backend models or claim unfinished module detail is complete.
 
+Home and Work Overview now share Chart.js task-status and owner-workload analytics from the saved project snapshot. Home puts actionable KPIs/charts before module navigation. Work Tasks/My Tasks/current-task tables reuse TanStack Table. Data tables and lists, including calendar/timeline/files, attention lists and board columns, scroll inside bounded containers; table headers stay sticky and pagination sits outside the scrolling body.
+
 ## Module boundaries
 
 - **Work** — Projects, tasks, priorities, ownership, and cross-team execution. Foundation available through the existing project board.

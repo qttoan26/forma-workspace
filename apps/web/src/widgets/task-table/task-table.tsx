@@ -19,14 +19,24 @@ import {
 } from '@/entities/task/model/task'
 
 import './task-table.css'
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 
-interface TaskTableProps {
+type TaskTableProps = {
   tasks: Task[]
   members: Member[]
-  onOpenTask: (taskId: string) => void
-}
+  emptyMessage?: string
+} & (
+  | { onOpenTask: (taskId: string) => void; getTaskHref?: never }
+  | { getTaskHref: (taskId: string) => string; onOpenTask?: never }
+)
 
-export function TaskTable({ tasks, members, onOpenTask }: TaskTableProps) {
+export function TaskTable({
+  tasks,
+  members,
+  onOpenTask,
+  getTaskHref,
+  emptyMessage = 'No matching tasks. Try clearing the project filters.',
+}: TaskTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -48,16 +58,21 @@ export function TaskTable({ tasks, members, onOpenTask }: TaskTableProps) {
       {
         accessorKey: 'title',
         header: 'Task',
-        cell: ({ row }) => (
-          <button
-            className="task-table-open"
-            type="button"
-            aria-label={`Open ${row.original.title}`}
-            onClick={() => onOpenTask(row.original.id)}
-          >
-            {row.original.title}
-          </button>
-        ),
+        cell: ({ row }) =>
+          getTaskHref ? (
+            <a className="task-table-open" href={getTaskHref(row.original.id)}>
+              {row.original.title}
+            </a>
+          ) : (
+            <button
+              className="task-table-open"
+              type="button"
+              aria-label={`Open ${row.original.title}`}
+              onClick={() => onOpenTask?.(row.original.id)}
+            >
+              {row.original.title}
+            </button>
+          ),
       },
       {
         accessorKey: 'status',
@@ -102,7 +117,7 @@ export function TaskTable({ tasks, members, onOpenTask }: TaskTableProps) {
           ),
       },
     ]
-  }, [members, onOpenTask])
+  }, [members, onOpenTask, getTaskHref])
   const table = useReactTable({
     data: tasks,
     columns,
@@ -119,12 +134,7 @@ export function TaskTable({ tasks, members, onOpenTask }: TaskTableProps) {
 
   return (
     <>
-      <div
-        className="task-table-scroll"
-        role="region"
-        aria-label="Scrollable task table"
-        tabIndex={0}
-      >
+      <ScrollRegion className="task-table-scroll" label="Scrollable task table">
         <table className="task-table" aria-label="Tasks">
           <thead>
             {table.getHeaderGroups().map((group) => (
@@ -182,13 +192,13 @@ export function TaskTable({ tasks, members, onOpenTask }: TaskTableProps) {
             ) : (
               <tr>
                 <td colSpan={columns.length} className="task-table-empty">
-                  No matching tasks. Try clearing the project filters.
+                  {emptyMessage}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       <div className="task-table-pagination">
         <span role="status" aria-live="polite">
           {tasks.length ? pageIndex * pageSize + 1 : 0}–

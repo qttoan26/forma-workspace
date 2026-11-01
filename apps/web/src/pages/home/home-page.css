@@ -403,3 +403,12 @@
     transition: none;
   }
 }
+
+.dashboard-content .dashboard-intro h1 {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+.workspace-module-section {
+  margin-top: 1.5rem;
+}
