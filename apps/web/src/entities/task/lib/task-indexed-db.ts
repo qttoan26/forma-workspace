@@ -6,6 +6,7 @@ import {
   type TaskActivityEntry,
 } from '@/entities/task/model/task-activity'
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
+import { notifyTaskActivitySaved } from './task-activity-events'
 import {
   reportBrowserStorageFailure,
   reportBrowserStorageSuccess,
@@ -214,23 +215,85 @@ export async function appendTaskActivityToIndexedDb(
     throw new Error('Task activity entry does not match task scope')
   }
 
-  const currentEntries = await loadTaskActivityFromIndexedDb(projectId, taskId)
-  const entries = taskActivityCollectionSchema.parse([
-    ...currentEntries,
-    parsedEntry,
-  ])
   const database = await openDatabase()
   try {
     const transaction = database.transaction(taskActivityStoreName, 'readwrite')
-    transaction.objectStore(taskActivityStoreName).put({
-      scopeKey: createTaskActivityScopeKey(projectId, taskId),
-      projectId,
-      taskId,
-      entries,
-      updatedAt: new Date().toISOString(),
-    })
-    await transactionToPromise(transaction)
+    const completion = transactionToPromise(transaction)
+    const store = transaction.objectStore(taskActivityStoreName)
+    const scopeKey = createTaskActivityScopeKey(projectId, taskId)
+    const request = store.get(scopeKey) as IDBRequest<unknown>
+    let entries: TaskActivityEntry[] = []
+    request.onsuccess = () => {
+      const result = taskActivityRecordSchema.safeParse(request.result)
+      const current =
+        result.success &&
+        result.data.projectId === projectId &&
+        result.data.taskId === taskId
+          ? result.data.entries.filter(
+              (entry) =>
+                entry.projectId === projectId && entry.taskId === taskId,
+            )
+          : []
+      entries = [
+        ...current.filter((entry) => entry.id !== parsedEntry.id),
+        parsedEntry,
+      ]
+      store.put({
+        scopeKey,
+        projectId,
+        taskId,
+        entries,
+        updatedAt: new Date().toISOString(),
+      })
+    }
+    await completion
+    notifyTaskActivitySaved(projectId)
     return entries
+  } finally {
+    database.close()
+  }
+}
+
+/** Read the existing activity store once, limited to tasks in the current snapshot. */
+export async function loadProjectActivityFromIndexedDb(
+  projectId: string,
+  taskIds: string[],
+): Promise<TaskActivityEntry[]> {
+  if (!hasIndexedDb()) throw new Error('IndexedDB is unavailable')
+  const allowedTasks = new Set(taskIds)
+  const database = await openDatabase()
+  try {
+    const transaction = database.transaction(taskActivityStoreName, 'readonly')
+    const completion = transactionToPromise(transaction)
+    const request = transaction.objectStore(taskActivityStoreName).openCursor()
+    const entries: TaskActivityEntry[] = []
+    request.onsuccess = () => {
+      const cursor = request.result
+      if (!cursor) return
+      const result = taskActivityRecordSchema.safeParse(cursor.value)
+      if (result.success) {
+        const record = result.data
+        if (
+          record.projectId === projectId &&
+          allowedTasks.has(record.taskId) &&
+          record.scopeKey ===
+            createTaskActivityScopeKey(projectId, record.taskId)
+        ) {
+          entries.push(
+            ...record.entries.filter(
+              (entry) =>
+                entry.projectId === projectId && entry.taskId === record.taskId,
+            ),
+          )
+        }
+      }
+      cursor.continue()
+    }
+    await completion
+    return entries.sort(
+      (a, b) =>
+        b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id),
+    )
   } finally {
     database.close()
   }

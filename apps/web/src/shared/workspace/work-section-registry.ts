@@ -75,8 +75,9 @@ export const workSections: WorkSection[] = [
   {
     id: 'activity',
     label: 'Activity',
-    description: 'Workspace activity and audit context',
-    status: 'implementation',
+    description:
+      'Saved comments and task detail updates in the current project',
+    status: 'available',
   },
 ]
 
