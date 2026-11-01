@@ -47,3 +47,11 @@ Work overview, tasks, My Tasks, projects, deadlines, and delivery sequence read 
 Current Work scope is the existing project catalog entry, not a completed cross-project aggregation service. Calendar and Timeline summarize task due dates and link to the existing project views. Multi-project discovery, notifications, and account-to-member mapping remain follow-up work.
 
 The project page keeps its persistence failure callback stable across task drawer URL changes so the mutation adapter does not reset and skip a saved edit when returning to a sidebar section. The smoke flow verifies this round trip.
+
+## Quick navigation search
+
+The topbar search opens a modal with `Ctrl/Cmd + K` or the Search button. It searches module names, sidebar section names, parent context, and descriptions from the same navigation registries. Exact and prefix name matches rank first; every destination retains its module context and implementation status. It searches navigation, not task or document content.
+
+Type to filter, use Up/Down to move between results, Enter to open the first match from the input or the focused destination, and Escape to close and restore focus. Native modal behavior contains keyboard focus; background scroll is restored on close. The mobile topbar exposes the same action. Links use Vite's application base path so the existing GitHub Pages fallback can resolve direct section URLs.
+
+The search index is static module metadata, not a second business-data store. New sidebar sections enter search through their registry; no additional API, storage engine, or UI library is introduced.

@@ -17,7 +17,6 @@ import {
   FileStackIcon,
   HomeIcon,
   MenuIcon,
-  SearchIcon,
   SettingsIcon,
   ShieldIcon,
   SparkIcon,
@@ -30,6 +29,8 @@ import {
   getModuleSections,
   moduleSectionPath,
 } from '@/shared/workspace/module-section-registry'
+
+import { WorkspaceNavigationSearch } from '@/widgets/workspace-navigation-search/workspace-navigation-search'
 
 import './workspace-shell.css'
 import './workspace-sidebar-bitrix.css'
@@ -343,15 +344,7 @@ export function WorkspaceShell({
           </div>
 
           <div className="workspace-topbar-actions">
-            <button
-              className="workspace-search-button"
-              type="button"
-              disabled
-              title="Workspace search — implementation in progress"
-            >
-              <SearchIcon />
-              <span>Search</span>
-            </button>
+            <WorkspaceNavigationSearch disabled={mobileOpen} />
             <a
               className="workspace-notification-button"
               aria-label="Open inbox"
