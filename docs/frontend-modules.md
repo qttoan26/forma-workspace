@@ -45,3 +45,5 @@ The Bitrix-inspired sidebar owns module navigation and nested section links. The
 Work overview, tasks, My Tasks, projects, deadlines, and delivery sequence read the same project repository and saved task collection as the project board. Task links open the existing task drawer. Dashboard metrics derive from that collection too. The demo explicitly identifies its sample workspace; authenticated My Tasks requires a matching member identity. Inbox, workspace activity, and unconnected operational sections remain labeled `Implementation in progress`; no static unread counts, fabricated events, team sizes, or availability are shown.
 
 Current Work scope is the existing project catalog entry, not a completed cross-project aggregation service. Calendar and Timeline summarize task due dates and link to the existing project views. Multi-project discovery, notifications, and account-to-member mapping remain follow-up work.
+
+The project page keeps its persistence failure callback stable across task drawer URL changes so the mutation adapter does not reset and skip a saved edit when returning to a sidebar section. The smoke flow verifies this round trip.

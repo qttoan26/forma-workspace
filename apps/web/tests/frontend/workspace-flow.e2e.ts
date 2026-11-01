@@ -204,7 +204,17 @@ test('sidebar opens the selected detail and reflects edits from the project boar
     .getByLabel('Title')
     .fill('Sidebar and board share this saved task')
   await drawer.getByRole('button', { name: 'Save changes' }).click()
-  await page.goto('/modules/work/tasks')
+  await expect(drawer).toBeHidden()
+  await expect(
+    page.getByRole('button', {
+      name: 'Edit Sidebar and board share this saved task',
+      exact: true,
+    }),
+  ).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Work sections' })
+    .getByRole('link', { name: 'Tasks', exact: true })
+    .click()
   await expect(
     page.getByRole('link', {
       name: 'Sidebar and board share this saved task',
