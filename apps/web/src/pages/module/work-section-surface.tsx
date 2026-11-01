@@ -1,3 +1,6 @@
+import { lazy, Suspense } from 'react'
+import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
 import { taskStatusLabels } from '@/entities/task/model/task'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
@@ -11,39 +14,24 @@ import './work-section-surface.css'
 const appBaseUrl = import.meta.env.BASE_URL
 const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
 
+const SharedTaskTable = lazy(() =>
+  import('@/widgets/task-table/task-table').then((module) => ({
+    default: module.TaskTable,
+  })),
+)
+
 function TaskTable({ tasks, data }: { tasks: Task[]; data: ProjectBoardData }) {
-  if (!tasks.length)
-    return <p className="work-empty-state">No tasks to display.</p>
   return (
-    <div className="work-data-table" role="table" aria-label="Tasks">
-      <div className="work-data-table-row is-header" role="row">
-        <span role="columnheader">Task</span>
-        <span role="columnheader">Status</span>
-        <span role="columnheader">Due</span>
-        <span role="columnheader">Owner</span>
-      </div>
-      {tasks.map((task) => (
-        <div className="work-data-table-row" role="row" key={task.id}>
-          <span className="work-task-main" role="cell">
-            <small>{task.id}</small>
-            <a href={`${projectHref}?task=${encodeURIComponent(task.id)}`}>
-              {task.title}
-            </a>
-            <em>{data.project.name}</em>
-          </span>
-          <span role="cell">
-            <span className="work-status-chip">
-              {taskStatusLabels[task.status]}
-            </span>
-          </span>
-          <span role="cell">{task.dueDate ?? 'No due date'}</span>
-          <span role="cell">
-            {data.members.find((member) => member.id === task.assigneeId)
-              ?.name ?? 'Unassigned'}
-          </span>
-        </div>
-      ))}
-    </div>
+    <Suspense fallback={<p role="status">Loading task table…</p>}>
+      <SharedTaskTable
+        tasks={tasks}
+        members={data.members}
+        getTaskHref={(taskId) =>
+          `${projectHref}?task=${encodeURIComponent(taskId)}`
+        }
+        emptyMessage="No tasks to display."
+      />
+    </Suspense>
   )
 }
 
@@ -124,6 +112,11 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
               <span>{data.project.name}</span>
             </article>
           </section>
+          <WorkInsightsPanel
+            tasks={tasks}
+            members={data.members}
+            projectName={data.project.name}
+          />
           <section className="work-panel">
             <div className="work-panel-heading">
               <h2>Current tasks</h2>
@@ -138,7 +131,11 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
           </section>
         </>
       ) : null}
-      {section.id === 'tasks' ? <TaskTable tasks={tasks} data={data} /> : null}
+      {section.id === 'tasks' ? (
+        <section className="work-panel">
+          <TaskTable tasks={tasks} data={data} />
+        </section>
+      ) : null}
       {section.id === 'my-tasks' ? (
         <>
           <p className="work-data-context">
@@ -146,7 +143,9 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
               'Your account is not linked to a project member yet.'}
           </p>
           {data.members.some((member) => member.id === userId) ? (
-            <TaskTable tasks={mine} data={data} />
+            <section className="work-panel">
+              <TaskTable tasks={mine} data={data} />
+            </section>
           ) : (
             <p className="work-empty-state">
               Personal assignments will be shown once your account is linked.
@@ -189,7 +188,10 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
             have no due date.
           </p>
           {datedTasks.length ? (
-            <div className="work-agenda-list">
+            <ScrollRegion
+              label="Task deadline list"
+              className="work-agenda-list"
+            >
               {datedTasks.map((task) => (
                 <article key={task.id}>
                   <span>{task.dueDate}</span>
@@ -201,7 +203,7 @@ function WorkSectionDataSurface({ section }: { section: WorkSection }) {
                   <small>{taskStatusLabels[task.status]}</small>
                 </article>
               ))}
-            </div>
+            </ScrollRegion>
           ) : (
             <p className="work-empty-state">
               Add due dates to tasks to see the schedule.

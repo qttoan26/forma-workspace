@@ -440,6 +440,7 @@ function TaskColumn({
           className="task-list"
           role="list"
           aria-label={`${taskStatusLabels[status]} tasks`}
+          tabIndex={0}
         >
           {tasks.map((task, index) => (
             <TaskCard

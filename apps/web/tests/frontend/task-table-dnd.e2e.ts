@@ -87,8 +87,7 @@ test('supports keyboard drop into an empty column and Escape cancellation', asyn
   await expect(handle).toHaveAttribute('aria-pressed', 'true')
   // KeyboardSensor attaches its document listener after the pickup event.
   await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+    () => new Promise<void>((resolve) => setTimeout(resolve, 0)),
   )
   await page.keyboard.press('ArrowLeft')
   await expect(
@@ -104,10 +103,12 @@ test('supports keyboard drop into an empty column and Escape cancellation', asyn
   await handle.focus()
   await page.keyboard.press('Space')
   await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+    () => new Promise<void>((resolve) => setTimeout(resolve, 0)),
   )
   await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.board-column[data-status="todo"]')).toHaveClass(
+    /is-drag-over/,
+  )
   await page.keyboard.press('Escape')
   await expect(
     page

@@ -1,6 +1,5 @@
 .task-table-scroll {
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
+  position: relative;
 }
 
 .task-table {
@@ -38,6 +37,13 @@
   color: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.task-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--forma-color-border);
 }
 
 .task-table th[aria-sort='ascending'],
@@ -133,7 +139,7 @@
 }
 
 .task-table-scroll:focus-visible,
-.task-table button:focus-visible,
+.task-table :is(button, a):focus-visible,
 .task-table-pagination :is(button, select):focus-visible {
   outline: 2px solid var(--forma-color-accent-text);
   outline-offset: -2px;

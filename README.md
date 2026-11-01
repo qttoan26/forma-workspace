@@ -80,21 +80,22 @@ See [`docs/architecture`](docs/architecture/README.md) for the architecture cont
 
 ### Frontend — `@forma/web`
 
-| Package                       | Current role                                        |
-| ----------------------------- | --------------------------------------------------- |
-| React `19.2.x`                | UI runtime                                          |
-| React DOM `19.2.x`            | browser renderer                                    |
-| Vite `7.1.x`                  | dev server and production build                     |
-| TanStack Router `1.132.x`     | typed routing, protected routes, loaders            |
-| TanStack Virtual `3.14.x`     | scalable virtualized UI surfaces                    |
-| TanStack Table `8.21.x`       | semantic task tables, sorting and pagination        |
-| dnd-kit Core `6.3.x`          | mouse, touch and keyboard task status moves         |
-| React Hook Form `7.65.x`      | form state                                          |
-| `@hookform/resolvers` `5.2.x` | form/schema integration                             |
-| Zod `4.1.x`                   | runtime validation                                  |
-| Playwright `1.56.x`           | browser smoke and performance tests                 |
-| Testing Library               | component behavior and accessibility-oriented tests |
-| jsdom `27.x`                  | browser-like unit-test environment                  |
+| Package                       | Current role                                             |
+| ----------------------------- | -------------------------------------------------------- |
+| React `19.2.x`                | UI runtime                                               |
+| React DOM `19.2.x`            | browser renderer                                         |
+| Vite `7.1.x`                  | dev server and production build                          |
+| TanStack Router `1.132.x`     | typed routing, protected routes, loaders                 |
+| TanStack Virtual `3.14.x`     | scalable virtualized UI surfaces                         |
+| TanStack Table `8.21.x`       | semantic task tables, sorting and pagination             |
+| dnd-kit Core `6.3.x`          | mouse, touch and keyboard task status moves              |
+| Chart.js `4.6.x`              | status and owner workload charts in Home / Work Overview |
+| React Hook Form `7.65.x`      | form state                                               |
+| `@hookform/resolvers` `5.2.x` | form/schema integration                                  |
+| Zod `4.1.x`                   | runtime validation                                       |
+| Playwright `1.56.x`           | browser smoke and performance tests                      |
+| Testing Library               | component behavior and accessibility-oriented tests      |
+| jsdom `27.x`                  | browser-like unit-test environment                       |
 
 The frontend uses browser storage intentionally:
 
@@ -103,6 +104,8 @@ The frontend uses browser storage intentionally:
 - **localStorage/sessionStorage** only when the lifetime of the data justifies it; access tokens are not stored long-term in localStorage.
 
 TanStack is preferred for matching frontend concerns; Router and Virtual remain in use, with Table powering the project inventory. Drag and drop uses dnd-kit and the existing task mutation/persistence path. The Bitrix-inspired shell uses shared glass tokens with opaque fallbacks, reduced-transparency support and readable content surfaces. See [ADR-001](docs/decisions/001-tanstack-dnd-glass-ui.md).
+
+Home and Work Overview share lazy-loaded Chart.js analytics derived from the current project's saved tasks. Work Tasks, My Tasks and project inventory share TanStack Table. Tables, task lists, schedules, file references, attention lists and Kanban columns scroll inside bounded content areas; table headers and pagination remain available. See [ADR-002](docs/decisions/002-chartjs-overview-contained-scroll.md).
 
 ### API — `@forma/api`
 

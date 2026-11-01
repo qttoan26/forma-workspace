@@ -1,3 +1,4 @@
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { lazy, Suspense } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
@@ -110,7 +111,10 @@ function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Work grouped by status"
         meta={`${tasks.length} tasks`}
       />
-      <div className="project-list-groups">
+      <ScrollRegion
+        label="Project task list content"
+        className="project-list-groups"
+      >
         {taskStatuses.map((status) => {
           const statusTasks = tasks.filter((task) => task.status === status)
 
@@ -148,7 +152,7 @@ function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
             </section>
           )
         })}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }
@@ -185,7 +189,10 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Due-date schedule"
         meta={`${tasks.filter((task) => task.dueDate).length} scheduled`}
       />
-      <div className="project-calendar-list">
+      <ScrollRegion
+        label="Project calendar content"
+        className="project-calendar-list"
+      >
         {orderedTasks.map((task) => (
           <article className="project-calendar-item" key={task.id}>
             <div className="project-calendar-date">
@@ -204,7 +211,7 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
             />
           </article>
         ))}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }
@@ -220,7 +227,10 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Delivery sequence"
         meta={`${tasks.length} tasks`}
       />
-      <div className="project-timeline-list">
+      <ScrollRegion
+        label="Project timeline content"
+        className="project-timeline-list"
+      >
         {orderedTasks.map((task, index) => (
           <article className="project-timeline-item" key={task.id}>
             <span className="project-timeline-marker" aria-hidden="true">
@@ -243,7 +253,7 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
             </div>
           </article>
         ))}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }

@@ -23,6 +23,19 @@ const tasks: Task[] = Array.from({ length: 27 }, (_, index) => ({
 }))
 
 describe('TaskTable', () => {
+  it('preserves direct task links when used by Work sections', () => {
+    render(
+      <TaskTable
+        tasks={tasks.slice(0, 1)}
+        members={[]}
+        getTaskHref={(id) => `/project?task=${id}`}
+      />,
+    )
+    expect(screen.getByRole('link', { name: 'Task 01' })).toHaveAttribute(
+      'href',
+      '/project?task=FOR-1',
+    )
+  })
   it('sorts titles with semantic headers and opens the correct task after sorting', () => {
     const onOpenTask = vi.fn()
     render(<TaskTable tasks={tasks} members={[]} onOpenTask={onOpenTask} />)

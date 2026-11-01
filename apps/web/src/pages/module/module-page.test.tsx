@@ -93,9 +93,14 @@ describe('Workspace section navigation', () => {
     ])
     render(<ModulePage moduleId="work" sectionId="my-tasks" />)
     expect(
-      await screen.findByRole('link', {
-        name: 'Saved task from project board',
-      }),
+      // The shared table is a lazy chunk loaded after the repository snapshot.
+      await screen.findByRole(
+        'link',
+        {
+          name: 'Saved task from project board',
+        },
+        { timeout: 3000 },
+      ),
     ).toHaveAttribute(
       'href',
       '/workspaces/forma/projects/project-1?task=FOR-18',

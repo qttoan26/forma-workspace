@@ -1,3 +1,4 @@
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { useEffect, useMemo, useState } from 'react'
 
 import {
@@ -90,50 +91,52 @@ export function ProjectFilesView({
           </div>
         </div>
       ) : (
-        <ul className="project-files-list">
-          {orderedReferences.map((reference) => {
-            const linkedTask = reference.taskId
-              ? taskById.get(reference.taskId)
-              : undefined
+        <ScrollRegion label="Project files list">
+          <ul className="project-files-list">
+            {orderedReferences.map((reference) => {
+              const linkedTask = reference.taskId
+                ? taskById.get(reference.taskId)
+                : undefined
 
-            return (
-              <li key={reference.id}>
-                <div className="project-file-main">
-                  <span className="project-file-mark" aria-hidden="true">
-                    F
-                  </span>
-                  <div>
-                    <strong>{reference.name}</strong>
-                    <small>{reference.location}</small>
+              return (
+                <li key={reference.id}>
+                  <div className="project-file-main">
+                    <span className="project-file-mark" aria-hidden="true">
+                      F
+                    </span>
+                    <div>
+                      <strong>{reference.name}</strong>
+                      <small>{reference.location}</small>
+                    </div>
                   </div>
-                </div>
-                <div className="project-file-context">
-                  {linkedTask ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenTask(linkedTask.id)}
-                    >
-                      {linkedTask.title}
-                    </button>
-                  ) : reference.taskId ? (
-                    <span>Task {reference.taskId}</span>
-                  ) : (
-                    <span>Project-level reference</span>
-                  )}
-                  {isHttpLocation(reference.location) ? (
-                    <a
-                      href={reference.location}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open reference
-                    </a>
-                  ) : null}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+                  <div className="project-file-context">
+                    {linkedTask ? (
+                      <button
+                        type="button"
+                        onClick={() => onOpenTask(linkedTask.id)}
+                      >
+                        {linkedTask.title}
+                      </button>
+                    ) : reference.taskId ? (
+                      <span>Task {reference.taskId}</span>
+                    ) : (
+                      <span>Project-level reference</span>
+                    )}
+                    {isHttpLocation(reference.location) ? (
+                      <a
+                        href={reference.location}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open reference
+                      </a>
+                    ) : null}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </ScrollRegion>
       )}
     </section>
   )
