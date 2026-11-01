@@ -43,10 +43,7 @@ jobs:
         run: pnpm lint
 
       - name: Format check
-        run: |
-          pnpm exec prettier --write apps/web/src/pages/module/automation-surface.tsx
-          git diff -- apps/web/src/pages/module/automation-surface.tsx
-          git diff --exit-code -- apps/web/src/pages/module/automation-surface.tsx
+        run: pnpm format:check
 
       - name: Test
         run: pnpm test
