@@ -4,17 +4,18 @@
   inset: 0;
   display: flex;
   justify-content: flex-end;
-  background: rgb(31 38 43 / 32%);
-  backdrop-filter: blur(1px);
+  background: var(--forma-color-overlay);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .task-editor-drawer {
   width: min(36rem, calc(100vw - 2rem));
   height: 100%;
   overflow-y: auto;
-  border-left: 1px solid #dfe4e7;
-  background: #fff;
-  box-shadow: -18px 0 48px rgb(32 41 47 / 16%);
+  border-left: 1px solid var(--forma-color-accent-border);
+  background: var(--forma-task-editor-background);
+  box-shadow: -18px 0 48px rgb(31 75 86 / 16%);
 }
 
 .task-editor-drawer .task-form {
@@ -23,6 +24,7 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  background: transparent;
 }
 
 @media (max-width: 700px) {
@@ -33,9 +35,16 @@
   .task-editor-drawer {
     width: 100%;
     height: min(92vh, 46rem);
-    border-top: 1px solid #dfe4e7;
+    border-top: 1px solid var(--forma-color-accent-border);
     border-left: 0;
     border-radius: 1rem 1rem 0 0;
-    box-shadow: 0 -18px 48px rgb(32 41 47 / 16%);
+    box-shadow: 0 -18px 48px rgb(31 75 86 / 16%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .task-editor-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }

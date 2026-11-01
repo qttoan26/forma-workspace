@@ -639,6 +639,7 @@ function TaskCard({
         </label>
         <Button
           type="button"
+          className="task-action-edit"
           aria-label={`Edit ${task.title}`}
           onClick={() => onEdit(task.id)}
         >
@@ -646,6 +647,7 @@ function TaskCard({
         </Button>
         <Button
           type="button"
+          className="task-action-delete"
           aria-label={`Delete ${task.title}`}
           onClick={() => onDelete(task)}
         >

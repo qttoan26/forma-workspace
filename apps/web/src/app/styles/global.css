@@ -143,57 +143,6 @@ h1 {
   color: var(--forma-color-text-strong);
 }
 
-.task-form {
-  display: grid;
-  gap: var(--forma-space-4);
-  width: min(100%, 44rem);
-  margin: 0 0 1.5rem auto;
-  padding: var(--forma-space-5);
-  border: 1px solid var(--forma-color-border-strong);
-  border-radius: var(--forma-radius-xl);
-  background: var(--forma-color-surface);
-  box-shadow: var(--forma-shadow-overlay);
-}
-
-.task-form-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--forma-space-4);
-}
-
-.task-form-heading h2 {
-  margin: 0.25rem 0 0;
-}
-
-.task-form label {
-  display: grid;
-  gap: 0.4rem;
-  color: var(--forma-color-text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.task-form input,
-.task-form select {
-  width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--forma-color-border-strong);
-  border-radius: var(--forma-radius-md);
-  background: var(--forma-color-surface);
-  color: var(--forma-color-text);
-}
-
-.task-form small[role='alert'] {
-  color: var(--forma-color-error-text);
-}
-
-.task-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--forma-space-4);
-}
-
 .board {
   display: grid;
   grid-template-columns: repeat(4, minmax(16rem, 1fr));
@@ -304,13 +253,8 @@ h1 {
 }
 
 @media (max-width: 700px) {
-  .workspace-header,
-  .task-form-heading {
+  .workspace-header {
     flex-direction: column;
-  }
-
-  .task-form-grid {
-    grid-template-columns: 1fr;
   }
 
   .board {

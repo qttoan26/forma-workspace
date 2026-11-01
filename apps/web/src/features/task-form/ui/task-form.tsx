@@ -22,6 +22,7 @@ import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
 import { TaskActivityPanel } from './task-activity-panel'
 import { TaskChecklistPanel } from './task-checklist-panel'
 import { TaskLinkedFilesPanel } from './task-linked-files-panel'
+import './task-form.css'
 
 interface TaskFormProps {
   members: Member[]
