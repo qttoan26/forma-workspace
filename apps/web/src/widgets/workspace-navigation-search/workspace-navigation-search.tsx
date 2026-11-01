@@ -112,6 +112,12 @@ export function WorkspaceNavigationSearch({
         className="workspace-navigation-search"
         ref={dialogRef}
         aria-labelledby={titleId}
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape' || event.nativeEvent.isComposing) return
+          event.preventDefault()
+          event.stopPropagation()
+          setIsOpen(false)
+        }}
         onClose={() => setIsOpen(false)}
         onCancel={(event) => {
           event.preventDefault()
