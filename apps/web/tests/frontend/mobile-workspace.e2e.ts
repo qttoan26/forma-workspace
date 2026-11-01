@@ -59,6 +59,10 @@ test('opens all modules from the dock and returns focus after dismissal', async 
   await expect(page.locator('body')).toHaveCSS('overflow', 'hidden')
   await page.keyboard.press('Shift+Tab')
   await expect(
+    sidebar.getByRole('link', { name: 'Forma Workspace home' }),
+  ).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(
     sidebar.getByRole('button', { name: 'Expand Admin sections' }),
   ).toBeFocused()
   await page.keyboard.press('Escape')
