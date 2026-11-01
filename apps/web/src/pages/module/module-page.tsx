@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from 'react'
 
+import { AutomationSurface } from '@/pages/module/automation-surface'
 import { DocumentsDataSurface } from '@/pages/module/documents-data-surface'
 import { ProductionSurface } from '@/pages/module/production-surface'
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
@@ -74,6 +75,7 @@ export function ModulePage({
   const isWorkModule = module.id === 'work'
   const isDocumentsModule = module.id === 'documents'
   const isProductionModule = module.id === 'production'
+  const isAutomationModule = module.id === 'automation'
   const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
 
   return (
@@ -144,6 +146,8 @@ export function ModulePage({
           <DocumentsDataSurface />
         ) : isProductionModule ? (
           <ProductionSurface />
+        ) : isAutomationModule ? (
+          <AutomationSurface />
         ) : (
           <section
             className="module-state-card"
