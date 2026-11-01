@@ -197,9 +197,9 @@ describe('TaskBoard', () => {
       />,
     )
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      `0 of ${initialTasks.length} tasks shown`,
-    )
+    expect(
+      screen.getByRole('status', { name: 'Task count' }),
+    ).toHaveTextContent(`0 of ${initialTasks.length} tasks shown`)
   })
 
   it('suggests clearing filters when no tasks match', () => {

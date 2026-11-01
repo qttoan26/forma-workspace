@@ -87,6 +87,8 @@ See [`docs/architecture`](docs/architecture/README.md) for the architecture cont
 | Vite `7.1.x`                  | dev server and production build                     |
 | TanStack Router `1.132.x`     | typed routing, protected routes, loaders            |
 | TanStack Virtual `3.14.x`     | scalable virtualized UI surfaces                    |
+| TanStack Table `8.21.x`       | semantic task tables, sorting and pagination        |
+| dnd-kit Core `6.3.x`          | mouse, touch and keyboard task status moves         |
 | React Hook Form `7.65.x`      | form state                                          |
 | `@hookform/resolvers` `5.2.x` | form/schema integration                             |
 | Zod `4.1.x`                   | runtime validation                                  |
@@ -99,6 +101,8 @@ The frontend uses browser storage intentionally:
 - **IndexedDB** for durable task/project data and offline-capable persistence.
 - **sessionStorage** for short-lived OIDC PKCE transaction/session state.
 - **localStorage/sessionStorage** only when the lifetime of the data justifies it; access tokens are not stored long-term in localStorage.
+
+TanStack is preferred for matching frontend concerns; Router and Virtual remain in use, with Table powering the project inventory. Drag and drop uses dnd-kit and the existing task mutation/persistence path. The Bitrix-inspired shell uses shared glass tokens with opaque fallbacks, reduced-transparency support and readable content surfaces. See [ADR-001](docs/decisions/001-tanstack-dnd-glass-ui.md).
 
 ### API — `@forma/api`
 

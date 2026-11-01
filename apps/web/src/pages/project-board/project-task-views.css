@@ -97,8 +97,7 @@
 
 .project-list-task strong,
 .project-calendar-task strong,
-.project-timeline-copy strong,
-.project-task-table-row strong {
+.project-timeline-copy strong {
   color: #30383d;
   font-size: 0.73rem;
 }
@@ -164,39 +163,6 @@
   padding: 0.85rem;
   color: #9aa1a6;
   font-size: 0.68rem;
-}
-
-.project-table-wrap {
-  overflow-x: auto;
-}
-
-.project-task-table {
-  min-width: 760px;
-}
-
-.project-task-table-row {
-  display: grid;
-  grid-template-columns: 70px minmax(220px, 1fr) 110px 90px 150px 100px;
-  gap: 0.6rem;
-  align-items: center;
-  min-height: 3rem;
-  padding: 0.55rem 0.8rem;
-  color: #626b71;
-  font-size: 0.69rem;
-}
-
-.project-task-table-row + .project-task-table-row {
-  border-top: 1px solid #edf0f1;
-}
-
-.project-task-table-row.is-header {
-  min-height: 2.3rem;
-  background: #fafbfb;
-  color: #949ca1;
-  font-size: 0.61rem;
-  font-weight: 740;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .project-calendar-list,

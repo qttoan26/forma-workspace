@@ -13,6 +13,17 @@
   --forma-color-warning-surface: #ffedd5;
   --forma-color-warning-text: #9a3412;
   --forma-color-error-text: #b91c1c;
+  --forma-color-accent-text: #176b61;
+  --forma-color-accent-subtle: #edf8f5;
+  --forma-color-glass: #f0f8fa;
+  --forma-color-glass-strong: #f7fbfc;
+  --forma-color-glass-border: rgb(255 255 255 / 78%);
+  --forma-workspace-background:
+    radial-gradient(ellipse at 0% 0%, #bce5e8 0%, transparent 52%),
+    radial-gradient(ellipse at 100% 12%, #d3e5f5 0%, transparent 50%),
+    linear-gradient(150deg, #e8f5f2, #edf3f8 65%, #f4f8fa);
+  --forma-glass-blur: 16px;
+  --forma-shadow-glass: 0 8px 32px rgb(31 75 86 / 6%);
 
   --forma-radius-sm: 0.45rem;
   --forma-radius-md: 0.55rem;
@@ -30,4 +41,19 @@
   --forma-space-5: 1.25rem;
   --forma-space-6: 1.5rem;
   --forma-space-8: 2rem;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  :root {
+    --forma-color-glass: rgb(244 251 252 / 72%);
+    --forma-color-glass-strong: rgb(255 255 255 / 86%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --forma-color-glass: #f0f8fa;
+    --forma-color-glass-strong: #fff;
+    --forma-glass-blur: 0px;
+  }
 }

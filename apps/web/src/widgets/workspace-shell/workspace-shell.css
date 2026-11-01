@@ -5,7 +5,8 @@
   --workspace-label-duration: 160ms;
   --workspace-motion-easing: cubic-bezier(0.22, 0.61, 0.36, 1);
   min-height: 100vh;
-  background: #f6f7f8;
+  background: var(--forma-workspace-background);
+  background-size: 100% max(100vh, 100%);
   color: var(--forma-color-text);
 }
 .workspace-shell.is-sidebar-expanded {
@@ -17,8 +18,11 @@
   z-index: 40;
   width: var(--workspace-sidebar-size);
   overflow: hidden;
-  border-right: 1px solid #e3e6e8;
-  background: #f5f6f7;
+  border-right: 1px solid var(--forma-color-glass-border);
+  background: var(--forma-color-glass);
+  -webkit-backdrop-filter: blur(var(--forma-glass-blur));
+  backdrop-filter: blur(var(--forma-glass-blur));
+  box-shadow: var(--forma-shadow-glass);
   color: #2f3438;
   transition:
     width var(--workspace-motion-duration) var(--workspace-motion-easing),
@@ -37,8 +41,8 @@
   align-items: center;
   gap: 12px;
   padding: 0 16px;
-  border-bottom: 1px solid #e2e5e7;
-  background: #fff;
+  border-bottom: 1px solid var(--forma-color-glass-border);
+  background: rgb(255 255 255 / 35%);
 }
 .workspace-sidebar-collapse,
 .workspace-sidebar-close {
@@ -112,7 +116,7 @@
   position: relative;
   height: 24px;
   margin: 8px 10px 4px;
-  color: #7b8991;
+  color: #566b75;
   font-size: 0.63rem;
   font-weight: 700;
   line-height: 24px;
@@ -196,7 +200,7 @@
 }
 .workspace-sidebar-link[aria-current='page'],
 .workspace-sidebar-group.is-active > .workspace-sidebar-link {
-  background: #e6f3f0;
+  background: rgb(211 239 232 / 86%);
   color: #176d5c;
   box-shadow: inset 3px 0 #1aa183;
 }
@@ -300,9 +304,10 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 16px 0 20px;
-  border-bottom: 1px solid #e3e6e8;
-  background: rgb(255 255 255 / 96%);
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--forma-color-glass-border);
+  background: var(--forma-color-glass);
+  -webkit-backdrop-filter: blur(var(--forma-glass-blur));
+  backdrop-filter: blur(var(--forma-glass-blur));
 }
 .workspace-topbar-context,
 .workspace-topbar-actions,
@@ -366,8 +371,8 @@
   padding: 8px 10px;
   border: 1px solid #e0e3e5;
   border-radius: 7px;
-  background: #f7f8f9;
-  color: #7b8991;
+  background: var(--forma-color-glass-strong);
+  color: #546972;
   cursor: pointer;
 }
 .workspace-search-button:disabled {

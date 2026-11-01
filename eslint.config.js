@@ -42,9 +42,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/web/src/widgets/task-board/task-board.tsx'],
+    files: [
+      'apps/web/src/widgets/task-board/task-board.tsx',
+      'apps/web/src/widgets/task-table/task-table.tsx',
+    ],
     rules: {
-      // TanStack Virtual intentionally exposes imperative functions that React Compiler skips memoizing.
+      // TanStack Virtual/Table v8 expose imperative functions; React Compiler must skip memoizing these widgets.
       'react-hooks/incompatible-library': 'off',
     },
   },

@@ -1,5 +1,5 @@
 .project-board-shell {
-  background: #f7f7f8;
+  background: transparent;
 }
 
 .project-back-link {
@@ -22,12 +22,20 @@
   padding: var(--forma-space-6);
   border: 1px solid var(--forma-color-border);
   border-radius: 1.2rem;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+  background: var(--forma-color-glass-strong);
+  box-shadow: var(--forma-shadow-glass);
 }
 
-.project-board-header h1 {
-  margin-bottom: var(--forma-space-3);
+.workspace-header.project-board-header h1 {
+  margin: 0 0 var(--forma-space-2);
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.project-board-header .project-description {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
 .project-board-members {
@@ -137,7 +145,7 @@
   padding: var(--forma-space-4);
   border: 1px solid var(--forma-color-border);
   border-radius: var(--forma-radius-xl);
-  background: rgb(255 255 255 / 94%);
+  background: var(--forma-color-glass-strong);
 }
 
 .board-filters label {
