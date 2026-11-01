@@ -33,8 +33,11 @@ import {
 import { WorkspaceNavigationSearch } from '@/widgets/workspace-navigation-search/workspace-navigation-search'
 
 import './workspace-shell.css'
+import './workspace-mobile.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
+const mobileNavigationQuery =
+  '(max-width: 760px), (max-width: 1024px) and (pointer: coarse)'
 const sidebarPreferenceKey = 'forma-workspace:sidebar-expanded:v1'
 
 function hrefFor(path: string) {
@@ -73,14 +76,14 @@ export function WorkspaceShell({
     activeModuleId ?? null,
   )
   const [isMobile, setIsMobile] = useState(
-    () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
+    () => window.matchMedia?.(mobileNavigationQuery).matches ?? false,
   )
   const sidebarRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const demoMode = isDemoMode()
 
   useEffect(() => {
-    const media = window.matchMedia?.('(max-width: 760px)')
+    const media = window.matchMedia?.(mobileNavigationQuery)
     if (!media) return
     const update = () => {
       setIsMobile(media.matches)
@@ -328,7 +331,10 @@ export function WorkspaceShell({
               ref={menuButtonRef}
               aria-controls="workspace-navigation"
               aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(true)}
+              onClick={(event) => {
+                menuButtonRef.current = event.currentTarget
+                setMobileOpen(true)
+              }}
             >
               <MenuIcon />
             </button>
@@ -385,6 +391,50 @@ export function WorkspaceShell({
         >
           {children}
         </main>
+        <nav className="workspace-mobile-dock" aria-label="Mobile navigation">
+          <a
+            href={appBaseUrl}
+            aria-current={!activeModuleId ? 'page' : undefined}
+          >
+            <HomeIcon />
+            <span>Home</span>
+          </a>
+          <a
+            href={hrefFor(workSectionPath('overview'))}
+            aria-current={
+              activeModuleId === 'work' && activeSectionId !== 'inbox'
+                ? 'page'
+                : undefined
+            }
+          >
+            <ClipboardIcon />
+            <span>Work</span>
+          </a>
+          <a
+            href={hrefFor(workSectionPath('inbox'))}
+            aria-current={
+              activeModuleId === 'work' && activeSectionId === 'inbox'
+                ? 'page'
+                : undefined
+            }
+          >
+            <BellIcon />
+            <span>Inbox</span>
+          </a>
+          <button
+            type="button"
+            aria-label="Browse modules"
+            aria-controls="workspace-navigation"
+            aria-expanded={mobileOpen}
+            onClick={(event) => {
+              menuButtonRef.current = event.currentTarget
+              setMobileOpen(true)
+            }}
+          >
+            <MenuIcon />
+            <span>Menu</span>
+          </button>
+        </nav>
       </div>
     </div>
   )

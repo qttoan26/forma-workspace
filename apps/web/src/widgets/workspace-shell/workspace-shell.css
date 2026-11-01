@@ -466,7 +466,7 @@
     display: none;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 1024px) and (pointer: coarse) {
   .workspace-shell,
   .workspace-shell.is-sidebar-expanded {
     --workspace-sidebar-size: 0px;
