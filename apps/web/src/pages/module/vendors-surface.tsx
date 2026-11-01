@@ -24,7 +24,8 @@ const vendorStages = [
   {
     id: 'execution',
     label: 'Execution',
-    description: 'Track external work status without duplicating Production state.',
+    description:
+      'Track external work status without duplicating Production state.',
     icon: CheckSquareIcon,
   },
   {
@@ -102,10 +103,7 @@ export function VendorsSurface() {
 
       <div className="vendors-capability-grid">
         {vendorCapabilities.map((capability) => (
-          <article
-            className="vendors-capability-card"
-            key={capability.title}
-          >
+          <article className="vendors-capability-card" key={capability.title}>
             <p className="eyebrow">{capability.eyebrow}</p>
             <h3>{capability.title}</h3>
             <p>{capability.description}</p>
