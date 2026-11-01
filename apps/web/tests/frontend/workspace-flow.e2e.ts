@@ -273,3 +273,100 @@ test('mobile sidebar contains focus, closes with Escape and opens the correct se
     ),
   ).toBe(true)
 })
+
+test('finds a sidebar section and opens its correct detail with Enter', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page
+    .getByRole('button', { name: 'Search workspace navigation' })
+    .click()
+  const dialog = page.getByRole('dialog', { name: 'Find your workspace tools' })
+  const input = dialog.getByRole('searchbox', {
+    name: 'Find a module or section',
+  })
+  await expect(input).toBeFocused()
+  await input.fill('OCR')
+  await expect(
+    dialog.getByRole('link', { name: /OCR & extraction/ }),
+  ).toBeVisible()
+  await input.press('Enter')
+  await expect(page).toHaveURL(/\/modules\/documents\/ocr$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'OCR & extraction' }),
+  ).toBeVisible()
+})
+
+test('supports quick-search shortcuts, empty results and focus restoration', async ({
+  page,
+}) => {
+  await page.goto('/modules/work/tasks')
+  const trigger = page.getByRole('button', {
+    name: 'Search workspace navigation',
+  })
+  await trigger.focus()
+  await page.keyboard.press('Control+k')
+  const dialog = page.getByRole('dialog', { name: 'Find your workspace tools' })
+  const input = dialog.getByRole('searchbox', {
+    name: 'Find a module or section',
+  })
+  await input.fill('missing-destination')
+  await expect(dialog.getByRole('status')).toHaveText(
+    'No destinations found for “missing-destination”.',
+  )
+  await expect(dialog.getByRole('link')).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  await expect(trigger).toBeFocused()
+  await trigger.click()
+  await expect(input).toHaveValue('')
+  await input.fill('Projects')
+  await input.press('ArrowDown')
+  const firstResult = dialog.getByRole('link').first()
+  await expect(firstResult).toBeFocused()
+  await firstResult.press('ArrowUp')
+  await expect(input).toBeFocused()
+  await page.keyboard.press('Control+k')
+  await expect(dialog).toBeHidden()
+  await expect(trigger).toBeFocused()
+})
+
+test('opens quick navigation on mobile and respects the Pages-compatible section path', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page
+    .getByRole('button', { name: 'Search workspace navigation' })
+    .click()
+  const dialog = page.getByRole('dialog', { name: 'Find your workspace tools' })
+  await dialog
+    .getByRole('searchbox', { name: 'Find a module or section' })
+    .fill('admin permissions')
+  await expect(
+    dialog.getByRole('link', { name: /Roles & permissions/ }),
+  ).toBeVisible()
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true)
+  await dialog.getByRole('link', { name: /Roles & permissions/ }).click()
+  await expect(page).toHaveURL(/\/modules\/admin\/access$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Roles & permissions' }),
+  ).toBeVisible()
+})
+
+test('does not open navigation search over an active task editor', async ({
+  page,
+}) => {
+  await page.goto('/workspaces/forma/projects/project-1?task=FOR-18')
+  const editor = page.getByRole('dialog', { name: 'Edit task' })
+  await expect(editor).toBeVisible()
+  await page.keyboard.press('Control+k')
+  await expect(
+    page.getByRole('dialog', { name: 'Find your workspace tools' }),
+  ).toBeHidden()
+  await expect(editor).toBeVisible()
+})
