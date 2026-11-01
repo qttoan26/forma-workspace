@@ -33,7 +33,6 @@ import {
 import { WorkspaceNavigationSearch } from '@/widgets/workspace-navigation-search/workspace-navigation-search'
 
 import './workspace-shell.css'
-import './workspace-sidebar-bitrix.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
 const sidebarPreferenceKey = 'forma-workspace:sidebar-expanded:v1'
@@ -109,7 +108,10 @@ export function WorkspaceShell({
         sidebarRef.current?.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled])',
         ) ?? [],
-      ).filter((element) => element.getClientRects().length > 0)
+      ).filter(
+        (element) =>
+          !element.closest('[inert]') && element.getClientRects().length > 0,
+      )
       const first = focusable[0]
       const last = focusable.at(-1)
       if (event.shiftKey && document.activeElement === first) {
@@ -147,88 +149,77 @@ export function WorkspaceShell({
         setOpenModuleId(expanded ? null : module.id)
       }
     }
+    const showSections = (sidebarExpanded || isMobile) && expanded
     return (
       <div
         className={`workspace-sidebar-group${active ? ' is-active' : ''}`}
         key={module.id}
       >
-        <div className="workspace-sidebar-group-heading">
-          {!sidebarExpanded && !isMobile ? (
-            <button
-              type="button"
-              className="workspace-sidebar-link workspace-sidebar-module-button"
-              aria-label={`Open ${module.label} menu`}
-              title={module.label}
-              aria-current={active ? 'location' : undefined}
-              aria-expanded={false}
-              onClick={openGroup}
+        <button
+          className="workspace-sidebar-link workspace-sidebar-group-toggle"
+          type="button"
+          aria-label={
+            !sidebarExpanded && !isMobile
+              ? `Open ${module.label} menu`
+              : `${expanded ? 'Collapse' : 'Expand'} ${module.label} sections`
+          }
+          aria-controls={`navigation-${module.id}`}
+          aria-expanded={showSections}
+          aria-current={active ? 'location' : undefined}
+          title={!sidebarExpanded && !isMobile ? module.label : undefined}
+          onClick={openGroup}
+        >
+          <span className="workspace-sidebar-icon">
+            <ModuleIcon />
+          </span>
+          <span className="workspace-sidebar-label">{module.label}</span>
+          <ChevronDownIcon className="workspace-sidebar-chevron" />
+        </button>
+        <div
+          className="workspace-sidebar-disclosure"
+          data-open={showSections}
+          aria-hidden={!showSections}
+          inert={!showSections}
+        >
+          <div className="workspace-sidebar-disclosure-inner">
+            <nav
+              className="workspace-sidebar-children"
+              id={`navigation-${module.id}`}
+              aria-label={`${module.label} sections`}
             >
-              <span className="workspace-sidebar-icon">
-                <ModuleIcon />
-              </span>
-            </button>
-          ) : (
-            <>
-              <a
-                className="workspace-sidebar-link"
-                href={hrefFor(module.path)}
-                aria-current={active && !expanded ? 'location' : undefined}
-                onClick={() => setMobileOpen(false)}
-              >
-                <span className="workspace-sidebar-icon">
-                  <ModuleIcon />
-                </span>
-                <span className="workspace-sidebar-label">{module.label}</span>
-              </a>
-              <button
-                className="workspace-sidebar-group-toggle"
-                type="button"
-                aria-label={`${expanded ? 'Collapse' : 'Expand'} ${module.label} sections`}
-                aria-controls={`navigation-${module.id}`}
-                aria-expanded={expanded}
-                onClick={openGroup}
-              >
-                <ChevronDownIcon />
-              </button>
-            </>
-          )}
+              {module.id !== 'work' ? (
+                <a
+                  href={hrefFor(module.path)}
+                  aria-current={active && !activeSectionId ? 'page' : undefined}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Overview
+                </a>
+              ) : null}
+              {sections.map((section) => (
+                <a
+                  href={hrefFor(moduleSectionPath(module.id, section.id))}
+                  key={section.id}
+                  aria-current={
+                    active && activeSectionId === section.id
+                      ? 'page'
+                      : undefined
+                  }
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span>{section.label}</span>
+                  {section.status === 'implementation' ? (
+                    <span
+                      className="workspace-sidebar-pending"
+                      title="Implementation in progress"
+                      aria-label="Implementation in progress"
+                    />
+                  ) : null}
+                </a>
+              ))}
+            </nav>
+          </div>
         </div>
-        {(sidebarExpanded || isMobile) && expanded ? (
-          <nav
-            className="workspace-sidebar-children"
-            id={`navigation-${module.id}`}
-            aria-label={`${module.label} sections`}
-          >
-            {module.id !== 'work' ? (
-              <a
-                href={hrefFor(module.path)}
-                aria-current={active && !activeSectionId ? 'page' : undefined}
-                onClick={() => setMobileOpen(false)}
-              >
-                Overview
-              </a>
-            ) : null}
-            {sections.map((section) => (
-              <a
-                href={hrefFor(moduleSectionPath(module.id, section.id))}
-                key={section.id}
-                aria-current={
-                  active && activeSectionId === section.id ? 'page' : undefined
-                }
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>{section.label}</span>
-                {section.status === 'implementation' ? (
-                  <span
-                    className="workspace-sidebar-pending"
-                    title="Implementation in progress"
-                    aria-label="Implementation in progress"
-                  />
-                ) : null}
-              </a>
-            ))}
-          </nav>
-        ) : null}
       </div>
     )
   }
@@ -260,67 +251,71 @@ export function WorkspaceShell({
         ref={sidebarRef}
         inert={isMobile && !mobileOpen}
       >
-        <div className="workspace-sidebar-brand-row">
-          <a
-            className="workspace-sidebar-brand"
-            href={appBaseUrl}
-            aria-label="Forma Workspace home"
-            title={sidebarExpanded ? undefined : 'Forma Workspace'}
-          >
-            <span className="workspace-sidebar-brand-mark" aria-hidden="true">
-              F
-            </span>
-            <span className="workspace-sidebar-brand-copy">
-              <strong>Forma</strong>
-              <small>Workspace</small>
-            </span>
-          </a>
-          <button
-            className="workspace-sidebar-collapse"
-            type="button"
-            aria-label={
-              sidebarExpanded ? 'Collapse navigation' : 'Expand navigation'
-            }
-            aria-expanded={sidebarExpanded}
-            title={sidebarExpanded ? 'Collapse menu' : 'Expand menu'}
-            onClick={toggleSidebar}
-          >
-            <MenuIcon />
-          </button>
-          <button
-            className="workspace-sidebar-close"
-            type="button"
-            aria-label="Close navigation"
-            onClick={() => setMobileOpen(false)}
-          >
-            <XIcon />
-          </button>
-        </div>
-
-        <nav className="workspace-sidebar-nav" aria-label="Workspace modules">
-          <p className="workspace-sidebar-section-label">Workspace</p>
-          <a
-            className="workspace-sidebar-link"
-            aria-current={!activeModuleId ? 'page' : undefined}
-            href={appBaseUrl}
-            title={sidebarExpanded ? undefined : 'Overview'}
-            onClick={() => setMobileOpen(false)}
-          >
-            <span className="workspace-sidebar-icon" aria-hidden="true">
-              <HomeIcon />
-            </span>
-            <span className="workspace-sidebar-label">Overview</span>
-          </a>
-
-          <p className="workspace-sidebar-section-label">Modules</p>
-          {primaryModules.map(renderModule)}
-        </nav>
-
-        {adminModule ? (
-          <div className="workspace-sidebar-footer">
-            {renderModule(adminModule)}
+        <div className="workspace-sidebar-inner">
+          <div className="workspace-sidebar-brand-row">
+            <button
+              className="workspace-sidebar-collapse"
+              type="button"
+              aria-label={
+                sidebarExpanded ? 'Collapse navigation' : 'Expand navigation'
+              }
+              aria-expanded={sidebarExpanded}
+              aria-controls="workspace-navigation"
+              title={sidebarExpanded ? 'Collapse menu' : 'Expand menu'}
+              onClick={toggleSidebar}
+            >
+              <MenuIcon />
+            </button>
+            <a
+              className="workspace-sidebar-brand"
+              inert={!sidebarExpanded && !isMobile}
+              href={appBaseUrl}
+              aria-label="Forma Workspace home"
+              title={sidebarExpanded ? undefined : 'Forma Workspace'}
+            >
+              <span className="workspace-sidebar-brand-mark" aria-hidden="true">
+                F
+              </span>
+              <span className="workspace-sidebar-brand-copy">
+                <strong>Forma</strong>
+                <small>Workspace</small>
+              </span>
+            </a>
+            <button
+              className="workspace-sidebar-close"
+              type="button"
+              aria-label="Close navigation"
+              onClick={() => setMobileOpen(false)}
+            >
+              <XIcon />
+            </button>
           </div>
-        ) : null}
+
+          <nav className="workspace-sidebar-nav" aria-label="Workspace modules">
+            <p className="workspace-sidebar-section-label">Workspace</p>
+            <a
+              className="workspace-sidebar-link"
+              aria-current={!activeModuleId ? 'page' : undefined}
+              href={appBaseUrl}
+              title={sidebarExpanded ? undefined : 'Overview'}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span className="workspace-sidebar-icon" aria-hidden="true">
+                <HomeIcon />
+              </span>
+              <span className="workspace-sidebar-label">Overview</span>
+            </a>
+
+            <p className="workspace-sidebar-section-label">Modules</p>
+            {primaryModules.map(renderModule)}
+          </nav>
+
+          {adminModule ? (
+            <div className="workspace-sidebar-footer">
+              {renderModule(adminModule)}
+            </div>
+          ) : null}
+        </div>
       </aside>
 
       <div className="workspace-shell-main" inert={isMobile && mobileOpen}>
@@ -339,7 +334,7 @@ export function WorkspaceShell({
             </button>
             <div>
               <small>Forma Workspace</small>
-              <strong>{pageLabel}</strong>
+              <strong title={pageLabel}>{pageLabel}</strong>
             </div>
           </div>
 

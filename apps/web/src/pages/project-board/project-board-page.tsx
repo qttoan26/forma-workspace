@@ -32,7 +32,7 @@ const appBaseUrl = import.meta.env.BASE_URL
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
-  const { workspace, project, members, initialTasks } = useLoaderData({
+  const { project, members, initialTasks } = useLoaderData({
     from: projectRoutePath,
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -173,16 +173,14 @@ export function ProjectBoardPage() {
       pageLabel={`Work / ${project.name}`}
     >
       <div className="project-board-shell project-detail-page">
-        <nav className="project-board-nav" aria-label="Project navigation">
-          <a href={`${appBaseUrl}modules/work/projects`}>← Projects</a>
-          <span>{workspace.name}</span>
-          <span aria-hidden="true">/</span>
-          <strong>{project.key}</strong>
-        </nav>
-
         <header className="workspace-header project-board-header">
           <div>
-            <p className="eyebrow">Active project</p>
+            <a
+              className="project-back-link"
+              href={`${appBaseUrl}modules/work/projects`}
+            >
+              ← Projects
+            </a>
             <h1>{project.name}</h1>
             <p className="project-description">{project.description}</p>
           </div>

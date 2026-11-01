@@ -68,24 +68,9 @@ export function ModulePage({
       }
     >
       <section className="module-page-content" aria-labelledby="module-title">
-        <nav className="module-breadcrumb" aria-label="Breadcrumb">
-          <a href={appBaseUrl}>Workspace</a>
-          <span aria-hidden="true">/</span>
-          {selected ? (
-            <>
-              <a href={`${appBaseUrl}${module.path.slice(1)}`}>
-                {module.label}
-              </a>
-              <span aria-hidden="true">/</span>
-              <span aria-current="page">{selected.label}</span>
-            </>
-          ) : (
-            <span aria-current="page">{module.label}</span>
-          )}
-        </nav>
         <header className="module-page-header">
           <div>
-            <p className="eyebrow">{module.label}</p>
+            {selected ? <p className="eyebrow">{module.label}</p> : null}
             <h1 id="module-title">{selected?.label ?? module.label}</h1>
             <p>{selected?.description ?? module.description}</p>
           </div>
@@ -102,14 +87,13 @@ export function ModulePage({
             className="module-state-card"
             aria-label={`${selected.label} implementation status`}
           >
-            <h2>{selected.label}</h2>
+            <h2>Planned capabilities</h2>
             <p>This area is being completed.</p>
             <ul className="module-detail-scope">
               {selected.scope?.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
-            <p>Implementation in progress</p>
           </section>
         ) : (
           <section

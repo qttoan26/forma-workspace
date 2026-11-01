@@ -370,3 +370,142 @@ test('does not open navigation search over an active task editor', async ({
   ).toBeHidden()
   await expect(editor).toBeVisible()
 })
+
+test('keeps one page heading and removes redundant content breadcrumbs', async ({
+  page,
+}) => {
+  await page.goto('/modules/documents/ocr')
+  await expect(
+    page.getByRole('navigation', { name: 'Breadcrumb' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('heading', { name: 'OCR & extraction', exact: true }),
+  ).toHaveCount(1)
+  await expect(
+    page.getByText('Implementation in progress', { exact: true }),
+  ).toHaveCount(1)
+  await expect(
+    page.getByRole('heading', { name: 'Planned capabilities' }),
+  ).toBeVisible()
+  await page.goto('/workspaces/forma/projects/project-1')
+  await expect(
+    page.getByRole('navigation', { name: 'Project navigation' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('link', { name: '← Projects', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Product launch' }),
+  ).toHaveCount(1)
+})
+
+test('animates the rail and content together while retaining icon position and focus', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/modules/work/projects')
+  await page.getByRole('button', { name: 'Open Work menu' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Collapse Work sections' }),
+  ).toBeFocused()
+  await expect
+    .poll(async () =>
+      page
+        .locator('.workspace-sidebar')
+        .evaluate((element) =>
+          Math.round(element.getBoundingClientRect().width),
+        ),
+    )
+    .toBe(256)
+  await page
+    .getByRole('button', { name: 'Collapse navigation', exact: true })
+    .click()
+  const frames = await page.evaluate(async () => {
+    const sidebar = document.querySelector('.workspace-sidebar')!
+    const main = document.querySelector('.workspace-shell-main')!
+    const icon = document.querySelector(
+      '.workspace-sidebar-group-toggle .workspace-sidebar-icon',
+    )!
+    const frames: { width: number; mainLeft: number; iconLeft: number }[] = []
+    const start = performance.now()
+    await new Promise<void>((resolve) => {
+      function sample(time: number) {
+        frames.push({
+          width: sidebar.getBoundingClientRect().width,
+          mainLeft: main.getBoundingClientRect().left,
+          iconLeft: icon.getBoundingClientRect().left,
+        })
+        if (time - start < 340) requestAnimationFrame(sample)
+        else resolve()
+      }
+      requestAnimationFrame(sample)
+    })
+    return frames
+  })
+  expect(frames.some((frame) => frame.width > 73 && frame.width < 255)).toBe(
+    true,
+  )
+  expect(
+    frames.every((frame) => Math.abs(frame.width - frame.mainLeft) < 1),
+  ).toBe(true)
+  expect(
+    Math.max(...frames.map((frame) => frame.iconLeft)) -
+      Math.min(...frames.map((frame) => frame.iconLeft)),
+  ).toBeLessThan(1)
+  await expect(
+    page.getByRole('button', { name: 'Expand navigation', exact: true }),
+  ).toBeFocused()
+  await expect(page.locator('#navigation-work')).toHaveCount(1)
+  await expect(
+    page.locator('#navigation-work').locator('..').locator('..'),
+  ).toHaveAttribute('inert', '')
+  await page.getByRole('button', { name: 'Open Work menu' }).press('Enter')
+  await expect(
+    page.getByRole('button', { name: 'Collapse Work sections' }),
+  ).toBeFocused()
+  await page.getByRole('button', { name: 'Collapse Work sections' }).click()
+  await expect(
+    page.getByRole('navigation', { name: 'Work sections' }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Expand Work sections' }).click()
+  await expect(
+    page.getByRole('navigation', { name: 'Work sections' }),
+  ).toBeVisible()
+  await expect(page.locator('#navigation-work')).toHaveCount(1)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Projects' }),
+  ).toBeVisible()
+})
+
+test('honors reduced motion and restores the sidebar preference after reload', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/modules/work/tasks')
+  await page.getByRole('button', { name: 'Open Work menu' }).click()
+  expect(
+    await page.locator('.workspace-sidebar').evaluate((element) =>
+      getComputedStyle(element)
+        .transitionDuration.split(',')
+        .every((duration) => parseFloat(duration) === 0),
+    ),
+  ).toBe(true)
+  await page.reload()
+  await expect(
+    page.getByRole('button', { name: 'Collapse navigation', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: 'Work sections' }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Collapse navigation', exact: true })
+    .click()
+  await expect(page.locator('.workspace-sidebar')).toHaveCSS('width', '72px')
+  await page.reload()
+  await expect(
+    page.getByRole('button', { name: 'Open Work menu' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Tasks' }),
+  ).toBeVisible()
+})
