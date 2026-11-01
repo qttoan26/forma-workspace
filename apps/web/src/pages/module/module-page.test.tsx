@@ -109,14 +109,16 @@ describe('Workspace section navigation', () => {
     expect(screen.queryByText('FOR-101')).not.toBeInTheDocument()
   })
 
-  it('does not present fabricated Inbox events or counts', () => {
+  it('opens the Inbox surface without fabricating historical events or sidebar counts', async () => {
     render(<ModulePage moduleId="work" sectionId="inbox" />)
     expect(
-      screen.getByText('Implementation in progress', { exact: true }),
+      await screen.findByRole('region', { name: 'Project inbox' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Assignments/ })).toBeInTheDocument()
+    expect(screen.getAllByText(/Current assignment/).length).toBeGreaterThan(0)
     expect(
-      screen.getByRole('region', { name: 'Inbox implementation status' }),
-    ).toHaveTextContent('Assignment notifications and mentions')
+      screen.queryByRole('region', { name: 'Inbox implementation status' }),
+    ).not.toBeInTheDocument()
     expect(screen.queryByText(/You were assigned FOR/)).not.toBeInTheDocument()
     expect(document.querySelector('.workspace-sidebar-counter')).toBeNull()
   })

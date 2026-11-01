@@ -26,6 +26,10 @@ import './work-section-surface.css'
 const appBaseUrl = import.meta.env.BASE_URL
 const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
 
+const WorkInbox = lazy(() =>
+  import('./work-inbox').then((module) => ({ default: module.WorkInbox })),
+)
+
 const SharedTaskTable = lazy(() =>
   import('@/widgets/task-table/task-table').then((module) => ({
     default: module.TaskTable,
@@ -65,11 +69,9 @@ export function WorkSectionSurface({
       >
         <h2>What will appear here</h2>
         <p>
-          {section.id === 'inbox'
-            ? 'Assignment notifications and mentions will appear here when notifications are connected.'
-            : section.id === 'activity'
-              ? 'Workspace-wide events will appear here when the activity feed is connected. Task comments are available inside each task.'
-              : 'Team membership and responsibilities are managed in Admin.'}
+          {section.id === 'activity'
+            ? 'Workspace-wide events will appear here when the activity feed is connected. Task comments are available inside each task.'
+            : 'Team membership and responsibilities are managed in Admin.'}
         </p>
       </section>
     )
@@ -115,7 +117,7 @@ function WorkSectionDataSurface({
 
   return (
     <section className="work-surface" aria-label={`${section.label} details`}>
-      {isDemoMode() ? (
+      {isDemoMode() && section.id !== 'inbox' ? (
         <p className="work-data-context">
           Demo workspace · Uses the same saved tasks as the project board.
         </p>
@@ -195,6 +197,11 @@ function WorkSectionDataSurface({
         </>
       ) : null}
       {section.id === 'activity' ? <WorkActivityFeed data={data} /> : null}
+      {section.id === 'inbox' ? (
+        <Suspense fallback={<p role="status">Loading inbox…</p>}>
+          <WorkInbox data={data} userId={userId} />
+        </Suspense>
+      ) : null}
       {section.id === 'projects' ? (
         <section className="work-panel">
           <article className="work-project-row">

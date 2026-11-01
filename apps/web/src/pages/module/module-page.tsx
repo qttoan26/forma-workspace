@@ -72,7 +72,10 @@ export function ModulePage({
         selected ? `${module.label} / ${selected.label}` : module.label
       }
     >
-      <section className="module-page-content" aria-labelledby="module-title">
+      <section
+        className={`module-page-content${workSection?.id === 'inbox' ? ' module-page-inbox' : ''}`}
+        aria-labelledby="module-title"
+      >
         <header className="module-page-header">
           <div>
             {selected ? <p className="eyebrow">{module.label}</p> : null}

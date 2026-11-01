@@ -28,7 +28,7 @@ export const workSections: WorkSection[] = [
     id: 'inbox',
     label: 'Inbox',
     description: 'Mentions, assignments and updates',
-    status: 'implementation',
+    status: 'available',
   },
   {
     id: 'my-tasks',
