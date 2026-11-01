@@ -18,7 +18,8 @@ const productionStages = [
   {
     id: 'queue',
     label: 'Queue',
-    description: 'Prioritize batches and assign work to the right operating team.',
+    description:
+      'Prioritize batches and assign work to the right operating team.',
     icon: FactoryIcon,
   },
   {
@@ -64,7 +65,10 @@ const visibilityCards = [
 
 export function ProductionSurface() {
   return (
-    <section className="production-surface" aria-label="Production module foundation">
+    <section
+      className="production-surface"
+      aria-label="Production module foundation"
+    >
       <header className="production-intro">
         <div>
           <p className="eyebrow">Operations</p>
