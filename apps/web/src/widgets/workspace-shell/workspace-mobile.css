@@ -7,7 +7,6 @@
   .workspace-shell {
     --forma-mobile-dock-space: calc(88px + env(safe-area-inset-bottom, 0px));
     min-height: 100dvh;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
   .workspace-shell .workspace-topbar {

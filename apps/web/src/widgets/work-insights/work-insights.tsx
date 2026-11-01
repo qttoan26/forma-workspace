@@ -222,6 +222,7 @@ function InsightChart({
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    const font = { family: getComputedStyle(canvas).fontFamily }
     const chart = new Chart(canvas, {
       type: kind,
       data: {
@@ -235,6 +236,7 @@ function InsightChart({
         })),
       },
       options: {
+        font,
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
@@ -257,10 +259,20 @@ function InsightChart({
                 },
               },
             }),
-        plugins: { tooltip: { enabled: true } },
+        plugins: {
+          tooltip: { enabled: true, bodyFont: font, titleFont: font },
+        },
       },
     })
-    return () => chart.destroy()
+    let disposed = false
+    // Re-measure canvas labels after the fallback webfont has loaded.
+    void document.fonts?.ready.then(() => {
+      if (!disposed) chart.update('none')
+    })
+    return () => {
+      disposed = true
+      chart.destroy()
+    }
   }, [kind, labels, series, colors])
   return (
     <canvas ref={canvasRef} role="img" aria-label={label}>
