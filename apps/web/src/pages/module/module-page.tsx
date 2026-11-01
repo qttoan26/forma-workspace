@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react'
 
 import { AutomationSurface } from '@/pages/module/automation-surface'
+import { CustomersSurface } from '@/pages/module/customers-surface'
 import { DocumentsDataSurface } from '@/pages/module/documents-data-surface'
 import { ProductionSurface } from '@/pages/module/production-surface'
 import { VendorsSurface } from '@/pages/module/vendors-surface'
@@ -78,6 +79,7 @@ export function ModulePage({
   const isProductionModule = module.id === 'production'
   const isAutomationModule = module.id === 'automation'
   const isVendorsModule = module.id === 'vendors'
+  const isCustomersModule = module.id === 'customers'
   const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
 
   return (
@@ -152,6 +154,8 @@ export function ModulePage({
           <AutomationSurface />
         ) : isVendorsModule ? (
           <VendorsSurface />
+        ) : isCustomersModule ? (
+          <CustomersSurface />
         ) : (
           <section
             className="module-state-card"
