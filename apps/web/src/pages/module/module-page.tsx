@@ -3,6 +3,7 @@ import type { ComponentType, SVGProps } from 'react'
 import { AutomationSurface } from '@/pages/module/automation-surface'
 import { DocumentsDataSurface } from '@/pages/module/documents-data-surface'
 import { ProductionSurface } from '@/pages/module/production-surface'
+import { VendorsSurface } from '@/pages/module/vendors-surface'
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
 import {
   BellIcon,
@@ -76,6 +77,7 @@ export function ModulePage({
   const isDocumentsModule = module.id === 'documents'
   const isProductionModule = module.id === 'production'
   const isAutomationModule = module.id === 'automation'
+  const isVendorsModule = module.id === 'vendors'
   const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
 
   return (
@@ -148,6 +150,8 @@ export function ModulePage({
           <ProductionSurface />
         ) : isAutomationModule ? (
           <AutomationSurface />
+        ) : isVendorsModule ? (
+          <VendorsSurface />
         ) : (
           <section
             className="module-state-card"
