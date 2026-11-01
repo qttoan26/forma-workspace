@@ -1,51 +1,16 @@
-import type { ComponentType, SVGProps } from 'react'
-
-import { AutomationSurface } from '@/pages/module/automation-surface'
-import { DocumentsDataSurface } from '@/pages/module/documents-data-surface'
-import { ProductionSurface } from '@/pages/module/production-surface'
-import { VendorsSurface } from '@/pages/module/vendors-surface'
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
-import {
-  BellIcon,
-  CalendarIcon,
-  CheckSquareIcon,
-  ClipboardIcon,
-  FolderIcon,
-  HomeIcon,
-  SparkIcon,
-  UserIcon,
-  UsersIcon,
-} from '@/shared/ui/workspace-icons'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
 import {
-  getWorkSection,
-  workSectionPath,
-  workSections,
-} from '@/shared/workspace/work-section-registry'
+  getModuleSections,
+  moduleSectionPath,
+  type ModuleSection,
+} from '@/shared/workspace/module-section-registry'
+import { getWorkSection } from '@/shared/workspace/work-section-registry'
 import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 
 import './module-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
-
-type WorkspaceIcon = ComponentType<SVGProps<SVGSVGElement>>
-
-const workSectionIcons: Record<string, WorkspaceIcon> = {
-  overview: HomeIcon,
-  inbox: BellIcon,
-  'my-tasks': UserIcon,
-  projects: FolderIcon,
-  tasks: CheckSquareIcon,
-  calendar: CalendarIcon,
-  timeline: ClipboardIcon,
-  members: UsersIcon,
-  teams: UsersIcon,
-  activity: SparkIcon,
-}
-
-function hrefFor(path: string) {
-  return `${appBaseUrl}${path.replace(/^\//, '')}`
-}
 
 export function ModulePage({
   moduleId,
@@ -55,116 +20,116 @@ export function ModulePage({
   sectionId?: string | undefined
 }) {
   const module = getWorkspaceModule(moduleId)
+  const sections = getModuleSections(moduleId)
+  const selected: ModuleSection | undefined =
+    moduleId === 'work'
+      ? getWorkSection(sectionId)
+      : sections.find((section) => section.id === sectionId)
+  const invalidSection = Boolean(sectionId && !selected)
 
-  if (!module) {
+  if (!module || invalidSection)
     return (
-      <WorkspaceShell pageLabel="Module not found">
+      <WorkspaceShell
+        activeModuleId={module?.id}
+        pageLabel={invalidSection ? 'Section not found' : 'Module not found'}
+      >
         <section className="module-page-content">
           <section className="module-state-card">
-            <p className="eyebrow">Forma Workspace</p>
-            <h1>Module not found</h1>
-            <p>The requested workspace module is not available.</p>
-            <a className="module-primary-action" href={appBaseUrl}>
-              Back to workspace overview
+            <h1>{invalidSection ? 'Section not found' : 'Module not found'}</h1>
+            <p>
+              The requested {invalidSection ? 'section' : 'module'} is not
+              available.
+            </p>
+            <a
+              className="module-primary-action"
+              href={
+                module ? `${appBaseUrl}${module.path.slice(1)}` : appBaseUrl
+              }
+            >
+              {module
+                ? `Back to ${module.label}`
+                : 'Back to workspace overview'}
             </a>
           </section>
         </section>
       </WorkspaceShell>
     )
-  }
 
-  const isWorkModule = module.id === 'work'
-  const isDocumentsModule = module.id === 'documents'
-  const isProductionModule = module.id === 'production'
-  const isAutomationModule = module.id === 'automation'
-  const isVendorsModule = module.id === 'vendors'
-  const workSection = isWorkModule ? getWorkSection(sectionId) : undefined
+  const workSection =
+    module.id === 'work' ? getWorkSection(sectionId) : undefined
+  const status = selected?.status ?? module.status
 
   return (
     <WorkspaceShell
       activeModuleId={module.id}
-      activeSectionId={workSection?.id}
+      activeSectionId={selected?.id}
       pageLabel={
-        workSection ? `${module.label} / ${workSection.label}` : module.label
+        selected ? `${module.label} / ${selected.label}` : module.label
       }
     >
       <section className="module-page-content" aria-labelledby="module-title">
+        <nav className="module-breadcrumb" aria-label="Breadcrumb">
+          <a href={appBaseUrl}>Workspace</a>
+          <span aria-hidden="true">/</span>
+          {selected ? (
+            <>
+              <a href={`${appBaseUrl}${module.path.slice(1)}`}>
+                {module.label}
+              </a>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page">{selected.label}</span>
+            </>
+          ) : (
+            <span aria-current="page">{module.label}</span>
+          )}
+        </nav>
         <header className="module-page-header">
           <div>
-            <p className="eyebrow">{module.eyebrow}</p>
-            <h1 id="module-title">{module.label}</h1>
-            <p>{module.description}</p>
+            <p className="eyebrow">{module.label}</p>
+            <h1 id="module-title">{selected?.label ?? module.label}</h1>
+            <p>{selected?.description ?? module.description}</p>
           </div>
-          <span className={`module-status module-status-${module.status}`}>
-            {module.status === 'available'
-              ? 'Frontend foundation available'
+          <span className={`module-status module-status-${status}`}>
+            {status === 'available'
+              ? 'Available'
               : 'Implementation in progress'}
           </span>
         </header>
-
-        {isWorkModule && workSection ? (
-          <div className="work-module-layout">
-            <aside className="work-subnav" aria-label="Work sections">
-              <div className="work-subnav-heading">
-                <span>Work</span>
-                <small>Execution</small>
-              </div>
-              <nav className="work-subnav-list">
-                {workSections.map((section) => {
-                  const SectionIcon =
-                    workSectionIcons[section.id] ?? ClipboardIcon
-                  const active = section.id === workSection.id
-
-                  return (
-                    <a
-                      className={`work-subnav-item${active ? ' is-active' : ''}`}
-                      href={hrefFor(workSectionPath(section.id))}
-                      key={section.id}
-                      aria-current={active ? 'page' : undefined}
-                    >
-                      <span className="work-subnav-icon" aria-hidden="true">
-                        <SectionIcon />
-                      </span>
-                      <span className="work-subnav-copy">
-                        <strong>{section.label}</strong>
-                        <small>{section.description}</small>
-                      </span>
-                      {section.counter ? (
-                        <span className="work-subnav-count">
-                          {section.counter}
-                        </span>
-                      ) : null}
-                    </a>
-                  )
-                })}
-              </nav>
-            </aside>
-
-            <div className="work-module-main">
-              <WorkSectionSurface section={workSection} />
-            </div>
-          </div>
-        ) : isDocumentsModule ? (
-          <DocumentsDataSurface />
-        ) : isProductionModule ? (
-          <ProductionSurface />
-        ) : isAutomationModule ? (
-          <AutomationSurface />
-        ) : isVendorsModule ? (
-          <VendorsSurface />
-        ) : (
+        {workSection ? (
+          <WorkSectionSurface section={workSection} />
+        ) : selected ? (
           <section
             className="module-state-card"
-            aria-label={`${module.label} implementation status`}
+            aria-label={`${selected.label} implementation status`}
           >
-            <p className="eyebrow">Implementation status</p>
-            <h2>This module is being completed.</h2>
-            <p>
-              Navigation and module boundaries are in place first. Detailed
-              workflows, screens, permissions, and backend integration will be
-              implemented incrementally without changing the workspace
-              structure.
-            </p>
+            <h2>{selected.label}</h2>
+            <p>This area is being completed.</p>
+            <ul className="module-detail-scope">
+              {selected.scope?.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p>Implementation in progress</p>
+          </section>
+        ) : (
+          <section
+            className="module-section-grid"
+            aria-label={`${module.label} areas`}
+          >
+            {sections.map((section) => (
+              <a
+                className="module-section-card"
+                key={section.id}
+                href={`${appBaseUrl}${moduleSectionPath(module.id, section.id).slice(1)}`}
+              >
+                <strong>
+                  {section.label}
+                  <span aria-hidden="true">↗</span>
+                </strong>
+                <p>{section.description}</p>
+                <small>Implementation in progress</small>
+              </a>
+            ))}
           </section>
         )}
       </section>

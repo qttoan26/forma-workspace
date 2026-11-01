@@ -1,4 +1,6 @@
 import {
+  useEffect,
+  useRef,
   useState,
   type ComponentType,
   type ReactNode,
@@ -10,7 +12,6 @@ import {
   BellIcon,
   BuildingIcon,
   ChevronDownIcon,
-  CheckSquareIcon,
   ClipboardIcon,
   FactoryIcon,
   FileStackIcon,
@@ -25,6 +26,10 @@ import {
 } from '@/shared/ui/workspace-icons'
 import { workspaceModules } from '@/shared/workspace/module-registry'
 import { workSectionPath } from '@/shared/workspace/work-section-registry'
+import {
+  getModuleSections,
+  moduleSectionPath,
+} from '@/shared/workspace/module-section-registry'
 
 import './workspace-shell.css'
 import './workspace-sidebar-bitrix.css'
@@ -49,23 +54,6 @@ const moduleIcons: Record<string, WorkspaceIcon> = {
   admin: SettingsIcon,
 }
 
-const personalLinks = [
-  {
-    id: 'inbox',
-    label: 'Inbox',
-    icon: BellIcon,
-    path: workSectionPath('inbox'),
-    counter: 3,
-  },
-  {
-    id: 'my-tasks',
-    label: 'My Tasks',
-    icon: CheckSquareIcon,
-    path: workSectionPath('my-tasks'),
-    counter: 2,
-  },
-] as const
-
 type WorkspaceShellProps = {
   activeModuleId?: string | undefined
   activeSectionId?: string | undefined
@@ -81,11 +69,168 @@ export function WorkspaceShell({
 }: WorkspaceShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(readSidebarPreference)
+  const [openModuleId, setOpenModuleId] = useState<string | null>(
+    activeModuleId ?? null,
+  )
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
+  )
+  const sidebarRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const demoMode = isDemoMode()
+
+  useEffect(() => {
+    const media = window.matchMedia?.('(max-width: 760px)')
+    if (!media) return
+    const update = () => {
+      setIsMobile(media.matches)
+      setMobileOpen(false)
+    }
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    if (!mobileOpen || !isMobile) return
+    const menuButton = menuButtonRef.current
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    sidebarRef.current
+      ?.querySelector<HTMLButtonElement>('.workspace-sidebar-close')
+      ?.focus()
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = Array.from(
+        sidebarRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled])',
+        ) ?? [],
+      ).filter((element) => element.getClientRects().length > 0)
+      const first = focusable[0]
+      const last = focusable.at(-1)
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKeyDown)
+      menuButton?.focus()
+    }
+  }, [mobileOpen, isMobile])
   const adminModule = workspaceModules.find((module) => module.id === 'admin')
   const primaryModules = workspaceModules.filter(
     (module) => module.id !== 'admin',
   )
+
+  function renderModule(module: (typeof workspaceModules)[number]) {
+    const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
+    const active = activeModuleId === module.id
+    const expanded = openModuleId === module.id
+    const sections = getModuleSections(module.id)
+    function openGroup() {
+      if (!sidebarExpanded && !isMobile) {
+        setSidebarExpanded(true)
+        saveSidebarPreference(true)
+        setOpenModuleId(module.id)
+      } else {
+        setOpenModuleId(expanded ? null : module.id)
+      }
+    }
+    return (
+      <div
+        className={`workspace-sidebar-group${active ? ' is-active' : ''}`}
+        key={module.id}
+      >
+        <div className="workspace-sidebar-group-heading">
+          {!sidebarExpanded && !isMobile ? (
+            <button
+              type="button"
+              className="workspace-sidebar-link workspace-sidebar-module-button"
+              aria-label={`Open ${module.label} menu`}
+              title={module.label}
+              aria-current={active ? 'location' : undefined}
+              aria-expanded={false}
+              onClick={openGroup}
+            >
+              <span className="workspace-sidebar-icon">
+                <ModuleIcon />
+              </span>
+            </button>
+          ) : (
+            <>
+              <a
+                className="workspace-sidebar-link"
+                href={hrefFor(module.path)}
+                aria-current={active && !expanded ? 'location' : undefined}
+                onClick={() => setMobileOpen(false)}
+              >
+                <span className="workspace-sidebar-icon">
+                  <ModuleIcon />
+                </span>
+                <span className="workspace-sidebar-label">{module.label}</span>
+              </a>
+              <button
+                className="workspace-sidebar-group-toggle"
+                type="button"
+                aria-label={`${expanded ? 'Collapse' : 'Expand'} ${module.label} sections`}
+                aria-controls={`navigation-${module.id}`}
+                aria-expanded={expanded}
+                onClick={openGroup}
+              >
+                <ChevronDownIcon />
+              </button>
+            </>
+          )}
+        </div>
+        {(sidebarExpanded || isMobile) && expanded ? (
+          <nav
+            className="workspace-sidebar-children"
+            id={`navigation-${module.id}`}
+            aria-label={`${module.label} sections`}
+          >
+            {module.id !== 'work' ? (
+              <a
+                href={hrefFor(module.path)}
+                aria-current={active && !activeSectionId ? 'page' : undefined}
+                onClick={() => setMobileOpen(false)}
+              >
+                Overview
+              </a>
+            ) : null}
+            {sections.map((section) => (
+              <a
+                href={hrefFor(moduleSectionPath(module.id, section.id))}
+                key={section.id}
+                aria-current={
+                  active && activeSectionId === section.id ? 'page' : undefined
+                }
+                onClick={() => setMobileOpen(false)}
+              >
+                <span>{section.label}</span>
+                {section.status === 'implementation' ? (
+                  <span
+                    className="workspace-sidebar-pending"
+                    title="Implementation in progress"
+                    aria-label="Implementation in progress"
+                  />
+                ) : null}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+      </div>
+    )
+  }
 
   function toggleSidebar() {
     setSidebarExpanded((expanded) => {
@@ -103,12 +248,16 @@ export function WorkspaceShell({
         className={`workspace-shell-backdrop${mobileOpen ? ' is-visible' : ''}`}
         type="button"
         aria-label="Close navigation"
+        tabIndex={-1}
         onClick={() => setMobileOpen(false)}
       />
 
       <aside
         className={`workspace-sidebar${mobileOpen ? ' is-open' : ''}`}
         aria-label="Main navigation"
+        id="workspace-navigation"
+        ref={sidebarRef}
+        inert={isMobile && !mobileOpen}
       >
         <div className="workspace-sidebar-brand-row">
           <a
@@ -162,92 +311,26 @@ export function WorkspaceShell({
             <span className="workspace-sidebar-label">Overview</span>
           </a>
 
-          {personalLinks.map((item) => {
-            const PersonalIcon = item.icon
-            const active =
-              activeModuleId === 'work' && activeSectionId === item.id
-
-            return (
-              <a
-                className="workspace-sidebar-link"
-                aria-current={active ? 'page' : undefined}
-                href={hrefFor(item.path)}
-                key={item.id}
-                title={sidebarExpanded ? undefined : item.label}
-                onClick={() => setMobileOpen(false)}
-              >
-                <span className="workspace-sidebar-icon" aria-hidden="true">
-                  <PersonalIcon />
-                </span>
-                <span className="workspace-sidebar-label">{item.label}</span>
-                <span className="workspace-sidebar-counter">
-                  {item.counter}
-                </span>
-              </a>
-            )
-          })}
-
-          <p className="workspace-sidebar-section-label">Operations</p>
-          {primaryModules.map((module) => {
-            const ModuleIcon = moduleIcons[module.id] ?? ClipboardIcon
-            const active = activeModuleId === module.id && !activeSectionId
-
-            return (
-              <a
-                className="workspace-sidebar-link"
-                aria-current={active ? 'page' : undefined}
-                href={hrefFor(module.path)}
-                key={module.id}
-                title={sidebarExpanded ? undefined : module.label}
-                onClick={() => setMobileOpen(false)}
-              >
-                <span className="workspace-sidebar-icon" aria-hidden="true">
-                  <ModuleIcon />
-                </span>
-                <span className="workspace-sidebar-link-copy">
-                  <span>{module.label}</span>
-                  {module.status === 'implementation' ? (
-                    <small>In progress</small>
-                  ) : null}
-                </span>
-                {module.id === 'work' ? (
-                  <span
-                    className="workspace-sidebar-counter"
-                    aria-label="4 open tasks"
-                  >
-                    4
-                  </span>
-                ) : null}
-              </a>
-            )
-          })}
+          <p className="workspace-sidebar-section-label">Modules</p>
+          {primaryModules.map(renderModule)}
         </nav>
 
         {adminModule ? (
           <div className="workspace-sidebar-footer">
-            <a
-              className="workspace-sidebar-link workspace-sidebar-settings"
-              aria-current={activeModuleId === 'admin' ? 'page' : undefined}
-              href={hrefFor(adminModule.path)}
-              title={sidebarExpanded ? undefined : 'Settings'}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span className="workspace-sidebar-icon" aria-hidden="true">
-                <SettingsIcon />
-              </span>
-              <span className="workspace-sidebar-label">Settings</span>
-            </a>
+            {renderModule(adminModule)}
           </div>
         ) : null}
       </aside>
 
-      <div className="workspace-shell-main">
+      <div className="workspace-shell-main" inert={isMobile && mobileOpen}>
         <header className="workspace-topbar">
           <div className="workspace-topbar-context">
             <button
               className="workspace-menu-button"
               type="button"
               aria-label="Open navigation"
+              ref={menuButtonRef}
+              aria-controls="workspace-navigation"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(true)}
             >
@@ -260,33 +343,39 @@ export function WorkspaceShell({
           </div>
 
           <div className="workspace-topbar-actions">
-            <button className="workspace-search-button" type="button">
+            <button
+              className="workspace-search-button"
+              type="button"
+              disabled
+              title="Workspace search — implementation in progress"
+            >
               <SearchIcon />
               <span>Search</span>
-              <kbd>⌘ K</kbd>
             </button>
-            <button
+            <a
               className="workspace-notification-button"
-              type="button"
-              aria-label="Notifications, 2 unread"
+              aria-label="Open inbox"
+              href={hrefFor(workSectionPath('inbox'))}
+              title="Inbox"
             >
               <BellIcon />
-              <span className="workspace-notification-count">2</span>
-            </button>
-            <button
+            </a>
+            <span
               className="workspace-account"
-              type="button"
-              aria-label="Open account menu"
+              aria-label={
+                demoMode ? 'Demo account: Sam Lee' : 'Workspace account'
+              }
             >
               <span className="workspace-account-copy">
-                <strong>Sam Lee</strong>
-                <small>Frontend</small>
+                <strong>{demoMode ? 'Sam Lee' : 'Account'}</strong>
+                <small>
+                  {demoMode ? 'Demo workspace' : 'Workspace member'}
+                </small>
               </span>
               <span className="workspace-avatar" aria-hidden="true">
-                SL
+                {demoMode ? 'SL' : 'F'}
               </span>
-              <ChevronDownIcon className="workspace-account-chevron" />
-            </button>
+            </span>
             {demoMode ? (
               <span className="workspace-demo-badge">Demo</span>
             ) : (
@@ -301,7 +390,11 @@ export function WorkspaceShell({
           </div>
         </header>
 
-        <main className="workspace-shell-content" id="main-content">
+        <main
+          className="workspace-shell-content"
+          id="main-content"
+          tabIndex={-1}
+        >
           {children}
         </main>
       </div>

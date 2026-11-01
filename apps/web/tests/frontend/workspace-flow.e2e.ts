@@ -186,3 +186,90 @@ test('exposes the skip link for keyboard navigation', async ({ page }) => {
   await page.keyboard.press('Enter')
   await expect(page.locator('#main-content')).toBeVisible()
 })
+
+test('sidebar opens the selected detail and reflects edits from the project board', async ({
+  page,
+}) => {
+  await page.goto('/modules/work/tasks')
+  await page.getByRole('button', { name: 'Open Work menu' }).click()
+  const workMenu = page.getByRole('navigation', { name: 'Work sections' })
+  await expect(
+    workMenu.getByRole('link', { name: 'Tasks', exact: true }),
+  ).toHaveAttribute('aria-current', 'page')
+  await page
+    .getByRole('link', { name: 'Create board interaction model', exact: true })
+    .click()
+  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  await drawer
+    .getByLabel('Title')
+    .fill('Sidebar and board share this saved task')
+  await drawer.getByRole('button', { name: 'Save changes' }).click()
+  await expect(drawer).toBeHidden()
+  await expect(
+    page.getByRole('button', {
+      name: 'Edit Sidebar and board share this saved task',
+      exact: true,
+    }),
+  ).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Work sections' })
+    .getByRole('link', { name: 'Tasks', exact: true })
+    .click()
+  await expect(
+    page.getByRole('link', {
+      name: 'Sidebar and board share this saved task',
+      exact: true,
+    }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Expand Documents & Data sections' })
+    .click()
+  await page
+    .getByRole('navigation', { name: 'Documents & Data sections' })
+    .getByRole('link', { name: /OCR & extraction/ })
+    .click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'OCR & extraction' }),
+  ).toBeVisible()
+  await expect(page.getByText('Extraction jobs', { exact: true })).toBeVisible()
+})
+
+test('mobile sidebar contains focus, closes with Escape and opens the correct section', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/modules/work/tasks')
+  await page
+    .getByRole('button', { name: 'Open navigation', exact: true })
+    .click()
+  await expect(page.locator('.workspace-sidebar-close')).toBeFocused()
+  await expect(page.locator('.workspace-shell-main')).toHaveAttribute(
+    'inert',
+    '',
+  )
+  await page.keyboard.press('Escape')
+  await expect(
+    page.getByRole('button', { name: 'Open navigation', exact: true }),
+  ).toBeFocused()
+  await expect(page.locator('.workspace-sidebar')).toHaveAttribute('inert', '')
+  await page
+    .getByRole('button', { name: 'Open navigation', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Expand Production sections' }).click()
+  await page
+    .getByRole('navigation', { name: 'Production sections' })
+    .getByRole('link', { name: /Quality control/ })
+    .click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Quality control' }),
+  ).toBeVisible()
+  await expect(
+    page.getByText('Review checklist', { exact: true }),
+  ).toBeVisible()
+  await expect(page.locator('.workspace-sidebar')).toHaveAttribute('inert', '')
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true)
+})

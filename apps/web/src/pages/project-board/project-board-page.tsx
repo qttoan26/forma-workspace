@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import {
@@ -38,6 +38,9 @@ export function ProjectBoardPage() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
   const activeView = search.view ?? 'board'
+  const handlePersistenceFailure = useCallback(() => {
+    setHasPersistenceFailure(true)
+  }, [])
 
   useEffect(() => {
     function syncAndRefresh() {
@@ -329,7 +332,7 @@ export function ProjectBoardPage() {
           onSelectedTaskChange={selectTask}
           isCreatingTask={search.newTask === '1'}
           onCreatingTaskChange={setCreatingTask}
-          onPersistenceFailure={() => setHasPersistenceFailure(true)}
+          onPersistenceFailure={handlePersistenceFailure}
           filters={filters}
         />
       </div>

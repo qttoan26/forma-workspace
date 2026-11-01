@@ -35,3 +35,15 @@ Module names are product navigation boundaries, not a replacement for the techni
 5. Add permissions and backend integration at feature boundaries instead of coupling them to navigation.
 
 This keeps the product aligned with the original goal: one workspace for multi-department operations, with document digitization, automation, internal work, vendor collaboration, customer delivery, and governance growing on a stable frontend foundation.
+
+## Sidebar and section detail contract
+
+The Bitrix-inspired sidebar owns module navigation and nested section links. The selected module remains highlighted while its section is active, including project detail routes under Work → Projects. The desktop icon rail expands into section navigation; mobile uses an off-canvas menu with focus containment, Escape dismissal, and focus restoration. Expansion preference is stored locally.
+
+`module-section-registry.ts` and `work-section-registry.ts` define the visible section names, routes, descriptions, and availability. A section URL renders that section's title and content. Invalid sections show a not-found state instead of silently rendering a module overview. Admin owns organization, teams, access, integrations, and workspace settings; Work shows project members only. The legacy Work/Teams URL remains an implementation notice.
+
+Work overview, tasks, My Tasks, projects, deadlines, and delivery sequence read the same project repository and saved task collection as the project board. Task links open the existing task drawer. Dashboard metrics derive from that collection too. The demo explicitly identifies its sample workspace; authenticated My Tasks requires a matching member identity. Inbox, workspace activity, and unconnected operational sections remain labeled `Implementation in progress`; no static unread counts, fabricated events, team sizes, or availability are shown.
+
+Current Work scope is the existing project catalog entry, not a completed cross-project aggregation service. Calendar and Timeline summarize task due dates and link to the existing project views. Multi-project discovery, notifications, and account-to-member mapping remain follow-up work.
+
+The project page keeps its persistence failure callback stable across task drawer URL changes so the mutation adapter does not reset and skip a saved edit when returning to a sidebar section. The smoke flow verifies this round trip.
