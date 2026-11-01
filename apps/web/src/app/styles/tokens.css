@@ -1,4 +1,8 @@
 :root {
+  --forma-font-family:
+    -apple-system, BlinkMacSystemFont, 'Inter Variable', system-ui, 'Segoe UI',
+    'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
   --forma-color-canvas: #f4f4f5;
   --forma-color-surface: #ffffff;
   --forma-color-surface-subtle: #fafafa;
