@@ -1,0 +1,286 @@
+.workspace-mobile-dock {
+  display: none;
+}
+
+/* Keep the desktop shell; adapt navigation and controls to a phone viewport. */
+@media (max-width: 760px), (max-width: 1024px) and (pointer: coarse) {
+  .workspace-shell {
+    --forma-mobile-dock-space: calc(88px + env(safe-area-inset-bottom, 0px));
+    min-height: 100dvh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .workspace-shell .workspace-topbar {
+    min-height: calc(64px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    background: var(--forma-color-glass);
+  }
+
+  .workspace-shell .workspace-topbar-context strong {
+    font-size: 1rem;
+    letter-spacing: -0.025em;
+  }
+
+  .workspace-shell .workspace-topbar-actions {
+    gap: 2px;
+  }
+
+  .workspace-shell
+    :is(
+      .workspace-menu-button,
+      .workspace-search-button,
+      .workspace-notification-button,
+      .workspace-sidebar-close
+    ) {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .workspace-shell .workspace-search-button {
+    border-color: var(--forma-color-glass-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 80%);
+  }
+
+  .workspace-shell .workspace-account {
+    padding: 0 2px;
+  }
+
+  .workspace-shell .workspace-sidebar {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    width: calc(
+      var(--workspace-sidebar-panel-size) + env(safe-area-inset-left, 0px)
+    );
+    border-radius: 0 28px 28px 0;
+  }
+
+  .workspace-shell .workspace-sidebar-inner {
+    width: 100%;
+  }
+
+  .workspace-shell :is(.workspace-sidebar-link, .workspace-sidebar-children a) {
+    min-height: 44px;
+    border-radius: 12px;
+  }
+
+  .workspace-shell .workspace-shell-content {
+    min-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: var(--forma-mobile-dock-space);
+    overflow-wrap: anywhere;
+  }
+
+  .workspace-mobile-dock {
+    position: fixed;
+    z-index: 32;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    max-width: 440px;
+    margin-inline: auto;
+    padding: 6px;
+    border: 1px solid var(--forma-color-glass-border);
+    border-radius: 30px;
+    background: var(--forma-color-glass-strong);
+    -webkit-backdrop-filter: blur(var(--forma-glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--forma-glass-blur)) saturate(150%);
+    box-shadow:
+      0 8px 32px rgb(31 75 86 / 16%),
+      inset 0 1px 0 rgb(255 255 255 / 80%);
+  }
+
+  .workspace-mobile-dock :is(a, button) {
+    display: grid;
+    min-width: 0;
+    min-height: 52px;
+    align-content: center;
+    justify-items: center;
+    gap: 3px;
+    padding: 4px;
+    border: 0;
+    border-radius: 24px;
+    background: transparent;
+    color: #52676d;
+    font: inherit;
+    font-size: 0.65rem;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .workspace-mobile-dock svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .workspace-mobile-dock :is([aria-current='page'], [aria-expanded='true']) {
+    background: #dcefe9;
+    color: #176d5c;
+  }
+
+  .workspace-mobile-dock :is(a, button):focus-visible {
+    outline: 2px solid #176d5c;
+    outline-offset: -2px;
+  }
+
+  .workspace-mobile-dock :is(a, button):active {
+    background: #e4f2ee;
+  }
+
+  .workspace-shell
+    :is(
+      .module-state-card,
+      .module-section-card,
+      .work-panel,
+      .work-person-card,
+      .work-metric-grid,
+      .dashboard-panel,
+      .metric-grid,
+      .work-insight-card,
+      .project-board-header,
+      .board-filters,
+      .project-view-nav
+    ) {
+    border-radius: 20px;
+  }
+
+  .workspace-shell
+    :is(
+      .module-state-card,
+      .module-section-card,
+      .work-panel,
+      .work-person-card,
+      .work-metric-grid,
+      .dashboard-panel
+    ) {
+    background: var(--forma-color-glass-strong);
+  }
+
+  .workspace-shell
+    :is(.dashboard-content, .module-page-content, .project-detail-page) {
+    width: calc(100% - 24px);
+    padding-top: 20px;
+    padding-bottom: 24px;
+  }
+
+  .workspace-shell .board-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .workspace-shell .board-filter-search {
+    grid-column: 1 / -1;
+  }
+
+  .workspace-shell
+    :is(
+      .project-view-nav button,
+      .button-primary,
+      .button-secondary,
+      .module-primary-action,
+      .dashboard-primary-action,
+      .task-table-pagination button,
+      .task-table-pagination select,
+      .work-insight-data summary,
+      .project-back-link
+    ) {
+    min-height: 44px;
+  }
+
+  .workspace-shell
+    :is(
+      .project-view-nav button,
+      .module-primary-action,
+      .button-primary,
+      .button-secondary
+    ) {
+    border-radius: 14px;
+  }
+
+  .workspace-shell :is(input, select, textarea),
+  .task-editor-drawer :is(input, select, textarea),
+  .workspace-navigation-search input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .workspace-shell .content-scroll-region {
+    scroll-padding-bottom: 16px;
+  }
+
+  .workspace-shell .task-table-pagination {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .workspace-navigation-search[open] {
+    max-height: calc(
+      100dvh - env(safe-area-inset-top, 0px) -
+        env(safe-area-inset-bottom, 0px) - 24px
+    );
+    margin-top: max(12px, env(safe-area-inset-top, 0px));
+    border-radius: 24px;
+  }
+
+  .workspace-navigation-search-heading button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+
+  .task-editor-backdrop .task-editor-drawer {
+    overscroll-behavior: contain;
+    scroll-padding-block: 100px 24px;
+  }
+}
+
+@media (max-width: 700px), (max-width: 1024px) and (pointer: coarse) {
+  .task-editor-backdrop .task-editor-drawer {
+    height: min(calc(100dvh - env(safe-area-inset-top, 0px) - 12px), 46rem);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-radius: 28px 28px 0 0;
+  }
+
+  .task-editor-drawer .task-form-heading {
+    position: sticky;
+    top: -20px;
+    z-index: 2;
+    flex-direction: row;
+    align-items: center;
+    margin: -20px -20px 0;
+    padding: 20px;
+    border-bottom: 1px solid var(--forma-color-border);
+    background: var(--forma-color-glass-strong);
+    -webkit-backdrop-filter: blur(var(--forma-glass-blur));
+    backdrop-filter: blur(var(--forma-glass-blur));
+  }
+
+  .task-editor-drawer .task-form-heading h2 {
+    font-size: 1.1rem;
+    overflow-wrap: anywhere;
+  }
+
+  .task-editor-drawer .task-form-heading button {
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .workspace-shell .workspace-account {
+    display: none;
+  }
+}
