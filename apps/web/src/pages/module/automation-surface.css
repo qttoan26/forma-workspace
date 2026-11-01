@@ -1,0 +1,160 @@
+.automation-surface {
+  display: grid;
+  gap: 1rem;
+}
+
+.automation-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--forma-color-border);
+  border-radius: 0.8rem;
+  background: #fff;
+}
+
+.automation-intro > div {
+  max-width: 70ch;
+}
+
+.automation-intro h2,
+.automation-capability-card h3,
+.automation-boundary-card h3 {
+  margin: 0.2rem 0 0;
+  color: #2f363b;
+}
+
+.automation-intro h2 {
+  font-size: 1rem;
+}
+
+.automation-intro p,
+.automation-stage-card p,
+.automation-capability-card p,
+.automation-boundary-card p {
+  color: #7e878d;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.automation-intro > div > p:last-child,
+.automation-capability-card p:last-child,
+.automation-boundary-card p:last-child {
+  margin-bottom: 0;
+}
+
+.automation-foundation-badge {
+  flex: 0 0 auto;
+  padding: 0.32rem 0.52rem;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #4e6ea8;
+  font-size: 0.62rem;
+  font-weight: 760;
+}
+
+.automation-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.automation-stage-card {
+  display: grid;
+  min-height: 170px;
+  align-content: start;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  border: 1px solid var(--forma-color-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.automation-stage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.automation-stage-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  background: #f3f6fb;
+  color: #5572a5;
+}
+
+.automation-stage-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.automation-stage-index {
+  color: #afb5b9;
+  font-size: 0.58rem;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+}
+
+.automation-stage-card > strong {
+  color: #30383d;
+  font-size: 0.78rem;
+}
+
+.automation-stage-card > p {
+  margin: 0;
+}
+
+.automation-stage-card > small {
+  margin-top: auto;
+  color: #9aa1a6;
+  font-size: 0.6rem;
+  font-weight: 720;
+}
+
+.automation-capability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.automation-capability-card,
+.automation-boundary-card {
+  padding: 1rem;
+  border: 1px solid var(--forma-color-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.automation-capability-card h3,
+.automation-boundary-card h3 {
+  font-size: 0.84rem;
+}
+
+.automation-boundary-card {
+  border-color: #dbe3f2;
+  background: #fafcff;
+}
+
+@media (max-width: 1100px) {
+  .automation-stage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .automation-capability-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .automation-intro {
+    display: grid;
+  }
+
+  .automation-stage-grid {
+    grid-template-columns: 1fr;
+  }
+}
