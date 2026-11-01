@@ -14,6 +14,22 @@
   padding: 4px 0 20px;
   border-bottom: 1px solid #e0e5e7;
 }
+.module-page-content.module-page-inbox {
+  grid-template-rows: auto minmax(0, 1fr);
+  height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+  min-height: 540px;
+  padding-bottom: calc(20px + var(--forma-mobile-dock-space, 0px));
+}
+.module-page-inbox > .work-surface {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.module-page-inbox .work-inbox {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
 .module-page-header h1,
 .module-state-card h1 {
   margin: 6px 0 12px;
