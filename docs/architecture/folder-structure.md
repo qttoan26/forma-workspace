@@ -45,6 +45,8 @@ Owns route-level composition. Pages connect URL state and route parameters to lo
 
 Owns substantial reusable UI compositions. The task board is the first active widget because it coordinates task domain data and task-management features into a stable workspace region.
 
+`widgets/task-table` owns the TanStack Table composition for project inventory. It consumes task/member entities and emits task-open actions; project pages retain filter, route and editor ownership. `widgets/task-board/model/task-board-dnd.ts` defines typed collision/keyboard behavior for dnd-kit status moves.
+
 ### features
 
 Owns meaningful user actions and workflows. Task creation/editing is the first active feature because its validation and form behavior form an independently testable product capability.

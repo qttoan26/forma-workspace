@@ -23,3 +23,123 @@
   outline: 2px solid #18181b;
   outline-offset: 2px;
 }
+
+.board-drag-hint {
+  margin: 0 0 1rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.board-toolbar {
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.board-toolbar p {
+  margin: 0;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.task-card .task-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.task-card .move-task {
+  grid-column: 1 / -1;
+}
+
+.task-card .task-actions button {
+  min-height: 36px;
+  padding: 0.45rem;
+  font-size: 0.8125rem;
+}
+
+.board-column {
+  border-color: var(--forma-color-glass-border);
+  background: var(--forma-color-glass);
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.board-column.is-drag-over {
+  background: #e1f3ed;
+  box-shadow: inset 0 0 0 2px var(--forma-color-accent-text);
+}
+
+.task-card {
+  position: relative;
+  transition: box-shadow 160ms ease;
+}
+
+.task-card:hover,
+.task-card:focus-within {
+  box-shadow: 0 4px 14px rgb(31 75 86 / 10%);
+}
+
+.task-card.is-dragging {
+  opacity: 0.4;
+}
+
+.task-drag-handle {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--forma-radius-sm);
+  background: transparent;
+  color: var(--forma-color-text-secondary);
+  cursor: grab;
+  touch-action: none;
+}
+
+.task-drag-handle:hover,
+.task-drag-handle:active {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+
+.task-drag-handle:active {
+  cursor: grabbing;
+}
+
+.task-drag-handle:focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 2px;
+}
+
+.task-drag-preview {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 2px solid var(--forma-color-accent-text);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
+  box-shadow: 0 12px 32px rgb(31 75 86 / 20%);
+  cursor: grabbing;
+  pointer-events: none;
+}
+
+.task-drag-preview :is(small, span) {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+}
+
+@media (pointer: coarse) {
+  .task-card .task-actions button {
+    min-height: 44px;
+  }
+
+  .task-drag-handle {
+    width: 44px;
+    height: 44px;
+  }
+}

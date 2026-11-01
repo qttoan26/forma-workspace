@@ -1,3 +1,5 @@
+import { lazy, Suspense } from 'react'
+
 import type { Member } from '@/entities/member/model/member'
 import {
   taskStatuses,
@@ -14,6 +16,12 @@ import {
 import type { ProjectView } from './project-view'
 import { useProjectLiveTasks } from './use-project-live-tasks'
 import './project-task-views.css'
+
+const TaskTable = lazy(() =>
+  import('@/widgets/task-table/task-table').then((module) => ({
+    default: module.TaskTable,
+  })),
+)
 
 interface ProjectTaskViewsProps extends ProjectLiveTaskBoardProps {
   view: ProjectView
@@ -146,8 +154,6 @@ function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
 }
 
 function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
-  const memberById = createMemberMap(members)
-
   return (
     <section className="project-view-surface" aria-label="Project task table">
       <ProjectViewHeading
@@ -155,36 +161,15 @@ function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Dense project inventory"
         meta={`${tasks.length} rows`}
       />
-      <div className="project-table-wrap">
-        <div className="project-task-table" role="table" aria-label="Tasks">
-          <div className="project-task-table-row is-header" role="row">
-            <span role="columnheader">ID</span>
-            <span role="columnheader">Task</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Priority</span>
-            <span role="columnheader">Assignee</span>
-            <span role="columnheader">Due</span>
-          </div>
-          {tasks.map((task) => (
-            <div className="project-task-table-row" role="row" key={task.id}>
-              <span className="project-task-key" role="cell">
-                {task.id}
-              </span>
-              <span role="cell">
-                <TaskOpenButton task={task} onOpenTask={onOpenTask} />
-              </span>
-              <span role="cell">{taskStatusLabels[task.status]}</span>
-              <span role="cell">{task.priority}</span>
-              <span role="cell">
-                {task.assigneeId
-                  ? (memberById.get(task.assigneeId)?.name ?? 'Unassigned')
-                  : 'Unassigned'}
-              </span>
-              <span role="cell">{task.dueDate ?? '—'}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Suspense
+        fallback={
+          <p className="project-view-empty-row" role="status">
+            Loading task table…
+          </p>
+        }
+      >
+        <TaskTable tasks={tasks} members={members} onOpenTask={onOpenTask} />
+      </Suspense>
     </section>
   )
 }

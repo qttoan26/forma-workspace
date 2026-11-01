@@ -7,12 +7,16 @@
   overscroll-behavior: contain;
   border: 1px solid #d8e1e3;
   border-radius: 12px;
-  background: #fff;
+  background: var(--forma-color-glass-strong);
+  -webkit-backdrop-filter: blur(var(--forma-glass-blur));
+  backdrop-filter: blur(var(--forma-glass-blur));
   color: #2e4149;
   box-shadow: 0 24px 80px rgb(16 33 40 / 24%);
 }
 .workspace-navigation-search::backdrop {
   background: rgb(20 35 42 / 38%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 .workspace-navigation-search-heading {
   display: flex;

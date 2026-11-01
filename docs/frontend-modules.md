@@ -2,6 +2,8 @@
 
 Forma Workspace is a workspace-first operating platform. The frontend navigation exposes stable module boundaries before detailed workflows are implemented so the product can grow without repeatedly changing its information architecture.
 
+The workspace shell now uses Bitrix-inspired glass tokens and a layered cyan/mint background. Project Table uses TanStack Table for sorting and pagination; Board uses dnd-kit handles for cross-status moves with mouse/touch/keyboard and retains Move to controls. Both reuse existing task ownership and persistence. Module placeholders remain explicit; this upgrade does not add backend models or claim unfinished module detail is complete.
+
 ## Module boundaries
 
 - **Work** — Projects, tasks, priorities, ownership, and cross-team execution. Foundation available through the existing project board.
