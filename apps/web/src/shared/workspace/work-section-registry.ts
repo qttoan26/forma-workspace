@@ -15,7 +15,6 @@ export type WorkSection = {
   label: string
   description: string
   status: WorkSectionStatus
-  counter?: number
 }
 
 export const workSections: WorkSection[] = [
@@ -29,59 +28,55 @@ export const workSections: WorkSection[] = [
     id: 'inbox',
     label: 'Inbox',
     description: 'Mentions, assignments and updates',
-    status: 'available',
-    counter: 3,
+    status: 'implementation',
   },
   {
     id: 'my-tasks',
     label: 'My Tasks',
     description: 'Personal priorities and assignments',
     status: 'available',
-    counter: 4,
   },
   {
     id: 'projects',
     label: 'Projects',
     description: 'Boards, delivery and project execution',
     status: 'available',
-    counter: 1,
   },
   {
     id: 'tasks',
     label: 'Tasks',
-    description: 'Cross-project task management',
+    description: 'Tasks in the current project',
     status: 'available',
-    counter: 4,
   },
   {
     id: 'calendar',
     label: 'Calendar',
-    description: 'Deadlines, events and milestones',
+    description: 'Task due dates and upcoming deadlines',
     status: 'available',
   },
   {
     id: 'timeline',
     label: 'Timeline',
-    description: 'Project phases and delivery windows',
+    description: 'Tasks ordered by delivery date',
     status: 'available',
   },
   {
     id: 'members',
-    label: 'Members',
-    description: 'People, roles and availability',
+    label: 'Project members',
+    description: 'People assigned to the current project',
     status: 'available',
   },
   {
     id: 'teams',
     label: 'Teams',
     description: 'Functional groups and ownership',
-    status: 'available',
+    status: 'implementation',
   },
   {
     id: 'activity',
     label: 'Activity',
     description: 'Workspace activity and audit context',
-    status: 'available',
+    status: 'implementation',
   },
 ]
 
