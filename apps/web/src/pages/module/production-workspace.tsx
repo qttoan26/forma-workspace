@@ -468,6 +468,7 @@ export function ProductionWorkspaceContent({
                   <label>
                     Quality reviewer
                     <select
+                      aria-label="Quality reviewer"
                       value={reviewerId}
                       onChange={(event) => setReviewerId(event.target.value)}
                       disabled={busy}
