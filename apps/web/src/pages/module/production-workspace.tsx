@@ -15,6 +15,9 @@ import { useProductionJobs } from '@/entities/production/lib/use-production-jobs
 import { mutateProductionJob } from '@/entities/production/lib/production-job-storage'
 import {
   missingProductionSources,
+  productionStatuses,
+  productionStatusLabels,
+  productionTransitions,
   productionWorkTypes,
   productionWorkTypeLabels,
   type ProductionJob,
@@ -65,6 +68,8 @@ export function ProductionWorkspaceContent({
     error: sourceError,
     refresh: refreshDocuments,
   } = useDocumentReferences(data.project.id)
+  const [workflowNote, setWorkflowNote] = useState('')
+  const [reviewerId, setReviewerId] = useState('')
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all')
   const [owner, setOwner] = useState('all')
@@ -105,6 +110,8 @@ export function ProductionWorkspaceContent({
   }, [data.workspace.slug, data.project.id])
   const editJob = useCallback((job: ProductionJob) => {
     setEditor(job)
+    setWorkflowNote('')
+    setReviewerId('')
     setMessage('')
     setActionError('')
     setRemoveConfirmation(false)
@@ -129,6 +136,10 @@ export function ProductionWorkspaceContent({
     const term = query.trim().toLocaleLowerCase()
     return jobs.filter(
       (job) =>
+        (sectionId !== 'processing' ||
+          ['queued', 'processing'].includes(job.status)) &&
+        (sectionId !== 'quality' ||
+          ['quality', 'approved'].includes(job.status)) &&
         (status === 'all' || job.status === status) &&
         (owner === 'all' ||
           (owner === 'unassigned' ? !job.ownerId : job.ownerId === owner)) &&
@@ -138,19 +149,28 @@ export function ProductionWorkspaceContent({
           .toLocaleLowerCase()
           .includes(term),
     )
-  }, [jobs, data, query, status, owner, type, priority])
-  async function changeJob(kind: 'status' | 'remove') {
+  }, [jobs, data, query, status, owner, type, priority, sectionId])
+  async function changeJob(
+    kind: 'status' | 'remove',
+    targetStatus?: ProductionJob['status'],
+  ) {
     if (!editor || busy || error || sourceError || (kind === 'status' && dirty))
       return
     setBusy(true)
     setActionError('')
     try {
-      const nextStatus = editor.status === 'draft' ? 'queued' : 'draft'
+      const nextStatus = targetStatus ?? 'draft'
       await mutateProductionJob(
         data.project.id,
         kind === 'remove'
           ? { kind: 'remove', expected: editor }
-          : { kind: 'status', expected: editor, status: nextStatus },
+          : {
+              kind: 'status',
+              expected: editor,
+              status: nextStatus,
+              note: workflowNote,
+              reviewerId,
+            },
         getSources,
       )
       saved(
@@ -158,13 +178,13 @@ export function ProductionWorkspaceContent({
           ? 'Work package removed locally. Its source tasks and documents are unchanged.'
           : nextStatus === 'queued'
             ? 'Work package queued locally.'
-            : 'Work package returned to draft.',
+            : nextStatus === 'draft'
+              ? 'Work package returned to draft.'
+              : `Work package saved locally: ${productionStatusLabels[nextStatus]}.`,
       )
     } catch (cause) {
       setActionError(
-        cause instanceof Error &&
-          (cause.message.includes('another view') ||
-            /source/i.test(cause.message))
+        cause instanceof Error
           ? cause.message
           : 'The change could not be saved. The previous work package is still available. Try again.',
       )
@@ -195,10 +215,21 @@ export function ProductionWorkspaceContent({
           </a>
           <a
             href={`${appBaseUrl}modules/production/queue`}
-            aria-current={sectionId !== 'intake' ? 'page' : undefined}
+            aria-current={
+              !sectionId || sectionId === 'queue' ? 'page' : undefined
+            }
           >
             Queue
           </a>
+          {['processing', 'quality'].map((id) => (
+            <a
+              key={id}
+              href={`${appBaseUrl}modules/production/${id}`}
+              aria-current={sectionId === id ? 'page' : undefined}
+            >
+              {id === 'processing' ? 'Processing' : 'Quality control'}
+            </a>
+          ))}
         </nav>
       </div>
       <div
@@ -208,6 +239,18 @@ export function ProductionWorkspaceContent({
         {[
           ['Drafts', jobs.filter((job) => job.status === 'draft').length],
           ['Queued', jobs.filter((job) => job.status === 'queued').length],
+          [
+            'Processing',
+            jobs.filter((job) => job.status === 'processing').length,
+          ],
+          [
+            'Quality review',
+            jobs.filter((job) => job.status === 'quality').length,
+          ],
+          [
+            'QC approved',
+            jobs.filter((job) => job.status === 'approved').length,
+          ],
           ['Unassigned', jobs.filter((job) => !job.ownerId).length],
         ].map(([label, count]) => (
           <article key={label}>
@@ -217,8 +260,9 @@ export function ProductionWorkspaceContent({
         ))}
       </div>
       <p className="production-boundary">
-        Prepare work packages from existing tasks and document references.
-        Processing, quality control and delivery are still in progress.
+        Track manual processing and quality decisions for existing work
+        packages. No automated processing runs here. QC approval records a local
+        review; delivery is still in progress.
       </p>
       {message ? (
         <p className="production-success" role="status">
@@ -261,7 +305,13 @@ export function ProductionWorkspaceContent({
       ) : null}
       <div className="production-queue-heading">
         <div>
-          <p className="eyebrow">Production queue</p>
+          <p className="eyebrow">
+            {sectionId === 'processing'
+              ? 'Processing · queued and active'
+              : sectionId === 'quality'
+                ? 'Quality · review and approved'
+                : 'Production queue'}
+          </p>
           <h2>Work packages</h2>
         </div>
         <a
@@ -288,8 +338,11 @@ export function ProductionWorkspaceContent({
             onChange={(event) => setStatus(event.target.value)}
           >
             <option value="all">All statuses</option>
-            <option value="draft">Draft</option>
-            <option value="queued">Queued</option>
+            {productionStatuses.map((value) => (
+              <option key={value} value={value}>
+                {productionStatusLabels[value]}
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -367,7 +420,7 @@ export function ProductionWorkspaceContent({
       {editor ? (
         <ProductionEditorModal busy={busy} onClose={closeEditor}>
           <p className="production-editor-meta">
-            {editor.status === 'draft' ? 'Draft' : 'Queued'}
+            {productionStatusLabels[editor.status]}
           </p>
           <h3>{editor.name}</h3>
           {error || sourceError ? (
@@ -382,38 +435,128 @@ export function ProductionWorkspaceContent({
                   selections before saving or queuing.
                 </p>
               ) : null}
-              <ProductionJobForm
-                projectId={data.project.id}
-                tasks={data.initialTasks}
-                members={data.members}
-                documents={references}
-                job={editor}
-                getSources={getSources}
-                onSaved={saved}
-                onBusyChange={setBusy}
-                onEdited={() => setDirty(true)}
-              />
+              {['draft', 'queued'].includes(editor.status) ? (
+                <ProductionJobForm
+                  projectId={data.project.id}
+                  tasks={data.initialTasks}
+                  members={data.members}
+                  documents={references}
+                  job={editor}
+                  getSources={getSources}
+                  onSaved={saved}
+                  onBusyChange={setBusy}
+                  onEdited={() => setDirty(true)}
+                />
+              ) : (
+                <p>
+                  Return the package to the queue before editing its plan.
+                  Source tasks and documents remain unchanged.
+                </p>
+              )}
+              <div className="production-workflow-fields">
+                <label>
+                  Workflow note
+                  <textarea
+                    value={workflowNote}
+                    maxLength={2000}
+                    onChange={(event) => setWorkflowNote(event.target.value)}
+                    disabled={busy}
+                    placeholder="Handoff summary, review findings, corrections or reason to reopen…"
+                  />
+                </label>
+                {editor.status === 'quality' ? (
+                  <label>
+                    Quality reviewer
+                    <select
+                      aria-label="Quality reviewer"
+                      value={reviewerId}
+                      onChange={(event) => setReviewerId(event.target.value)}
+                      disabled={busy}
+                    >
+                      <option value="">Select reviewer</option>
+                      {data.members.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+              </div>
+              {(editor.workflowHistory ?? []).length ? (
+                <section
+                  className="production-workflow-history"
+                  aria-label="Local workflow history"
+                >
+                  <h4>Local workflow history</h4>
+                  <p>
+                    Manual records on this browser; reviewer names are selected,
+                    not authenticated.
+                  </p>
+                  <ol>
+                    {[...(editor.workflowHistory ?? [])]
+                      .reverse()
+                      .map((entry, index) => (
+                        <li key={index}>
+                          <strong>
+                            {productionStatusLabels[entry.from]} →{' '}
+                            {productionStatusLabels[entry.to]}
+                          </strong>
+                          <time dateTime={entry.at}>
+                            {new Date(entry.at).toLocaleString()}
+                          </time>
+                          {entry.reviewerId ? (
+                            <span>
+                              Reviewer:{' '}
+                              {data.members.find(
+                                (member) => member.id === entry.reviewerId,
+                              )?.name ?? 'Unavailable reviewer'}
+                            </span>
+                          ) : null}
+                          {entry.note ? <p>{entry.note}</p> : null}
+                        </li>
+                      ))}
+                  </ol>
+                </section>
+              ) : null}
               {dirty ? (
                 <p className="production-warning">
                   Save your changes before changing the queue status.
                 </p>
               ) : null}
               <div className="production-editor-actions">
-                <Button
-                  variant="primary"
-                  disabled={
-                    busy ||
-                    dirty ||
-                    (editor.status === 'draft' && unavailable.length > 0)
-                  }
-                  onClick={() => {
-                    void changeJob('status')
-                  }}
-                >
-                  {editor.status === 'draft'
-                    ? 'Queue package'
-                    : 'Return to draft'}
-                </Button>
+                {productionTransitions[editor.status].map((target) => (
+                  <Button
+                    key={target}
+                    variant="primary"
+                    disabled={
+                      busy ||
+                      dirty ||
+                      (target !== 'draft' &&
+                        !(target === 'queued' && editor.status !== 'draft') &&
+                        unavailable.length > 0)
+                    }
+                    onClick={() => {
+                      void changeJob('status', target)
+                    }}
+                  >
+                    {target === 'queued'
+                      ? editor.status === 'draft'
+                        ? 'Queue package'
+                        : 'Return to queue'
+                      : target === 'draft'
+                        ? 'Return to draft'
+                        : target === 'quality'
+                          ? 'Submit for quality review'
+                          : target === 'approved'
+                            ? 'Approve quality'
+                            : editor.status === 'queued'
+                              ? 'Start processing'
+                              : editor.status === 'quality'
+                                ? 'Request rework'
+                                : 'Reopen processing'}
+                  </Button>
+                ))}
                 <button
                   className="production-danger"
                   type="button"

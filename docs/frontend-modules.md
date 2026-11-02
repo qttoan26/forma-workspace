@@ -85,3 +85,5 @@ Document intake and Document library are available for the current project on th
 ## Production intake and queue
 
 Job intake and Production queues are available for current-project browser-local planning. Packages reference existing Work task IDs and optional document-reference IDs, with work type, requirements, owner, priority and due date. Draft/Queued transitions are explicit; no processing or delivery is triggered. The queue supports search, status/owner/type/priority filters, sorting and pagination with internal scrolling. Missing source selections require repair, conflicting edits are rejected, and failed saves keep form inputs. Processing, quality control and delivery remain unfinished. See [Production boundaries](decisions/005-production-intake-queue.md).
+
+Production Processing and Quality control now support explicit browser-local stage transitions, handoff/review notes, selected reviewers, rework and reopening approved packages. See [ADR-006](decisions/006-production-processing-quality.md). QC approval does not execute processing or deliver files.

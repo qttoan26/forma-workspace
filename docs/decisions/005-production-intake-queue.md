@@ -22,7 +22,7 @@ Package views refresh on same-tab saves, cross-tab storage events and focus. Fai
 - Intake and queues are manual browser-local planning, not an execution runner, shared multi-user queue, audit log or server-enforced access system.
 - Work types cover general operations, scanning, OCR preparation, data entry and BPO.
 - TanStack Table provides sorting, filtering, pagination and contained scrolling. The native modal supports Escape and focus restoration; source lists scroll internally.
-- Scope remains the existing project catalog entry. Processing, quality control and delivery retain implementation notices; backend expansion remains separate from frontend hardening.
+- Scope remains the existing project catalog entry. Manual Processing/Quality planning is added in [ADR-006](006-production-processing-quality.md); delivery retains its implementation notice; backend expansion remains separate from frontend hardening.
 - No dependency or backend API changes.
 
 ## Alternatives considered

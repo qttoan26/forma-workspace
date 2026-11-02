@@ -117,7 +117,10 @@ export function ModulePage({
             />
           </Suspense>
         ) : module.id === 'production' &&
-          (!selected || selected.id === 'intake' || selected.id === 'queue') ? (
+          (!selected ||
+            ['intake', 'queue', 'processing', 'quality'].includes(
+              selected.id,
+            )) ? (
           <Suspense
             fallback={<p role="status">Loading production workspace…</p>}
           >

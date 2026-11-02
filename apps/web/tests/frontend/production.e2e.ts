@@ -325,3 +325,87 @@ test.describe('Phone production queue', () => {
     await expect(page.getByText('26–40 of 40 packages')).toBeVisible()
   })
 })
+
+test('tracks manual processing, quality rework and approval with notes across reloads', async ({
+  page,
+}) => {
+  await page.goto('/modules/production/intake')
+  await fillPackage(page, 'Armor quality cycle')
+  await page
+    .getByRole('button', { name: 'Save draft package', exact: true })
+    .click()
+  const table = page.getByRole('table', { name: 'Work packages' })
+  const editor = page.getByRole('dialog', { name: 'Work package editor' })
+  const open = async () =>
+    table
+      .getByRole('button', { name: 'Armor quality cycle', exact: true })
+      .click()
+  const action = async (name: string) => {
+    await editor.getByRole('button', { name, exact: true }).click()
+    await expect(editor).toHaveCount(0)
+  }
+  await open()
+  await action('Queue package')
+  await page.goto('/modules/production/processing')
+  await open()
+  await action('Start processing')
+  await open()
+  await expect(editor.getByLabel('Package name', { exact: true })).toHaveCount(
+    0,
+  )
+  await editor
+    .getByRole('button', { name: 'Submit for quality review', exact: true })
+    .click()
+  await expect(editor.getByRole('alert')).toContainText('note')
+  await editor
+    .getByLabel('Workflow note', { exact: true })
+    .fill('Manual output ready')
+  await action('Submit for quality review')
+  await expect(
+    table.getByRole('button', { name: 'Armor quality cycle', exact: true }),
+  ).toHaveCount(0)
+  await page.goto('/modules/production/quality')
+  await open()
+  await editor
+    .getByLabel('Workflow note', { exact: true })
+    .fill('Correct page rotation')
+  await editor
+    .getByRole('button', { name: 'Request rework', exact: true })
+    .click()
+  await expect(editor.getByRole('alert')).toContainText('reviewer')
+  await editor
+    .getByLabel('Quality reviewer', { exact: true })
+    .selectOption('member-1')
+  await action('Request rework')
+  await page.goto('/modules/production/processing')
+  await open()
+  await expect(
+    editor.getByRole('region', { name: 'Local workflow history' }),
+  ).toContainText('Correct page rotation')
+  await editor
+    .getByLabel('Workflow note', { exact: true })
+    .fill('Rotation corrected')
+  await action('Submit for quality review')
+  await page.goto('/modules/production/quality')
+  await open()
+  await editor
+    .getByLabel('Workflow note', { exact: true })
+    .fill('All checks pass')
+  await editor
+    .getByLabel('Quality reviewer', { exact: true })
+    .selectOption('member-1')
+  await action('Approve quality')
+  await page.reload()
+  await expect(table.getByText('QC approved', { exact: true })).toBeVisible()
+  await open()
+  await expect(
+    editor.getByRole('region', { name: 'Local workflow history' }),
+  ).toContainText('Steve Rogers')
+  await editor
+    .getByLabel('Workflow note', { exact: true })
+    .fill('Review updated requirements')
+  await action('Reopen processing')
+  await expect(
+    table.getByRole('button', { name: 'Armor quality cycle', exact: true }),
+  ).toHaveCount(0)
+})

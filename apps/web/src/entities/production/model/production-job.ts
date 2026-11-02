@@ -48,10 +48,48 @@ export const productionJobInputSchema = z.object({
   priority: taskPrioritySchema,
   dueDate: taskDueDateSchema.optional(),
 })
+export const productionStatuses = [
+  'draft',
+  'queued',
+  'processing',
+  'quality',
+  'approved',
+] as const
+export const productionStatusLabels: Record<
+  (typeof productionStatuses)[number],
+  string
+> = {
+  draft: 'Draft',
+  queued: 'Queued',
+  processing: 'Processing',
+  quality: 'Quality review',
+  approved: 'QC approved',
+}
+export const productionTransitions: Record<
+  (typeof productionStatuses)[number],
+  readonly (typeof productionStatuses)[number][]
+> = {
+  draft: ['queued'],
+  queued: ['draft', 'processing'],
+  processing: ['queued', 'quality'],
+  quality: ['processing', 'approved', 'queued'],
+  approved: ['processing', 'queued'],
+}
 export const productionJobSchema = productionJobInputSchema.extend({
   id: z.string().min(1),
   projectId: z.string().min(1),
-  status: z.enum(['draft', 'queued']),
+  status: z.enum(productionStatuses),
+  workflowHistory: z
+    .array(
+      z.object({
+        from: z.enum(productionStatuses),
+        to: z.enum(productionStatuses),
+        note: z.string().trim().max(2000),
+        reviewerId: z.string().min(1).optional(),
+        at: z.iso.datetime(),
+      }),
+    )
+    .optional(),
   revision: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-table'
 import {
   productionWorkTypeLabels,
+  productionStatusLabels,
   missingProductionSources,
   type ProductionJob,
   type ProductionSourceContext,
@@ -71,7 +72,7 @@ export function ProductionQueueTable({
         header: 'Status',
         cell: ({ row }) => (
           <span className={`production-badge is-${row.original.status}`}>
-            {row.original.status === 'draft' ? 'Draft' : 'Queued'}
+            {productionStatusLabels[row.original.status]}
           </span>
         ),
       },

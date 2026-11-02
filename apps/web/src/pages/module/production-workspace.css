@@ -48,6 +48,10 @@
   font-size: 0.75rem;
   font-weight: 400;
 }
+.production-context nav {
+  flex-wrap: wrap;
+  min-width: 0;
+}
 .production-context nav a {
   padding: 0.65rem 0.9rem;
   border-radius: var(--forma-radius-pill);
@@ -477,5 +481,72 @@
   .production-job-form :is(input, select, textarea),
   .production-toolbar :is(input, select) {
     font-size: 1rem;
+  }
+}
+
+.production-workflow-fields {
+  display: grid;
+  gap: 12px;
+  margin-block: 18px;
+}
+.production-workflow-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.production-workflow-fields textarea,
+.production-workflow-fields select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: 10px;
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  padding: 10px;
+  font: inherit;
+}
+.production-workflow-fields textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.production-workflow-history {
+  margin-block: 18px;
+}
+.production-workflow-history ol {
+  max-height: 220px;
+  overflow: auto;
+  padding-left: 24px;
+}
+.production-workflow-history li {
+  padding: 8px;
+  border-bottom: 1px solid var(--forma-color-accent-border);
+  overflow-wrap: anywhere;
+}
+.production-workflow-history time,
+.production-workflow-history li > span {
+  display: block;
+  font-size: 12px;
+  color: var(--forma-color-text-secondary);
+}
+.production-workflow-history p {
+  white-space: pre-wrap;
+}
+.production-badge.is-processing {
+  background: #e0f4ff;
+  color: #126187;
+}
+.production-badge.is-quality {
+  background: #fff0d4;
+  color: #81530a;
+}
+.production-badge.is-approved {
+  background: #dcf6e9;
+  color: #186045;
+}
+@media (pointer: coarse) {
+  .production-workflow-fields textarea,
+  .production-workflow-fields select {
+    font-size: 16px;
   }
 }
