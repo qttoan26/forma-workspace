@@ -264,7 +264,7 @@ test('mobile sidebar contains focus, closes with Escape and opens the correct se
     page.getByRole('heading', { level: 1, name: 'Quality control' }),
   ).toBeVisible()
   await expect(
-    page.getByText('Review checklist', { exact: true }),
+    page.getByRole('table', { name: 'Work packages', exact: true }),
   ).toBeVisible()
   await expect(page.locator('.workspace-sidebar')).toHaveAttribute('inert', '')
   expect(
