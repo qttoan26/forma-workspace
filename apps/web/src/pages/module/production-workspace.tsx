@@ -440,7 +440,150 @@ export function ProductionWorkspaceContent({
                   projectId={data.project.id}
                   tasks={data.initialTasks}
                   members={data.members}
-                 …1505 tokens truncated…        type="button"
+                  documents={references}
+                  job={editor}
+                  getSources={getSources}
+                  onSaved={saved}
+                  onBusyChange={setBusy}
+                  onEdited={() => setDirty(true)}
+                />
+              ) : (
+                <p>
+                  Return the package to the queue before editing its plan.
+                  Source tasks and documents remain unchanged.
+                </p>
+              )}
+              <div className="production-workflow-fields">
+                <label>
+                  Workflow note
+                  <textarea
+                    value={workflowNote}
+                    maxLength={2000}
+                    onChange={(event) => setWorkflowNote(event.target.value)}
+                    disabled={busy}
+                    placeholder="Handoff summary, review findings, corrections or reason to reopen…"
+                  />
+                </label>
+                {editor.status === 'quality' ? (
+                  <label>
+                    Quality reviewer
+                    <select
+                      value={reviewerId}
+                      onChange={(event) => setReviewerId(event.target.value)}
+                      disabled={busy}
+                    >
+                      <option value="">Select reviewer</option>
+                      {data.members.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+              </div>
+              {(editor.workflowHistory ?? []).length ? (
+                <section
+                  className="production-workflow-history"
+                  aria-label="Local workflow history"
+                >
+                  <h4>Local workflow history</h4>
+                  <p>
+                    Manual records on this browser; reviewer names are selected,
+                    not authenticated.
+                  </p>
+                  <ol>
+                    {[...(editor.workflowHistory ?? [])]
+                      .reverse()
+                      .map((entry, index) => (
+                        <li key={index}>
+                          <strong>
+                            {productionStatusLabels[entry.from]} →{' '}
+                            {productionStatusLabels[entry.to]}
+                          </strong>
+                          <time dateTime={entry.at}>
+                            {new Date(entry.at).toLocaleString()}
+                          </time>
+                          {entry.reviewerId ? (
+                            <span>
+                              Reviewer:{' '}
+                              {data.members.find(
+                                (member) => member.id === entry.reviewerId,
+                              )?.name ?? 'Unavailable reviewer'}
+                            </span>
+                          ) : null}
+                          {entry.note ? <p>{entry.note}</p> : null}
+                        </li>
+                      ))}
+                  </ol>
+                </section>
+              ) : null}
+              {dirty ? (
+                <p className="production-warning">
+                  Save your changes before changing the queue status.
+                </p>
+              ) : null}
+              <div className="production-editor-actions">
+                {productionTransitions[editor.status].map((target) => (
+                  <Button
+                    key={target}
+                    variant="primary"
+                    disabled={
+                      busy ||
+                      dirty ||
+                      (target !== 'draft' &&
+                        !(target === 'queued' && editor.status !== 'draft') &&
+                        unavailable.length > 0)
+                    }
+                    onClick={() => {
+                      void changeJob('status', target)
+                    }}
+                  >
+                    {target === 'queued'
+                      ? editor.status === 'draft'
+                        ? 'Queue package'
+                        : 'Return to queue'
+                      : target === 'draft'
+                        ? 'Return to draft'
+                        : target === 'quality'
+                          ? 'Submit for quality review'
+                          : target === 'approved'
+                            ? 'Approve quality'
+                            : editor.status === 'queued'
+                              ? 'Start processing'
+                              : editor.status === 'quality'
+                                ? 'Request rework'
+                                : 'Reopen processing'}
+                  </Button>
+                ))}
+                <button
+                  className="production-danger"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setRemoveConfirmation(true)}
+                >
+                  Remove package
+                </button>
+              </div>
+              {removeConfirmation ? (
+                <div
+                  className="production-remove-confirmation"
+                  role="group"
+                  aria-label="Confirm package removal"
+                >
+                  <p>
+                    Remove this work package? Source tasks and documents will
+                    remain in their modules.
+                  </p>
+                  <Button
+                    disabled={busy}
+                    onClick={() => setRemoveConfirmation(false)}
+                  >
+                    Keep package
+                  </Button>
+                  <button
+                    className="production-danger"
+                    type="button"
                     disabled={busy}
                     onClick={() => {
                       void changeJob('remove')
