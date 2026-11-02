@@ -224,9 +224,10 @@ test('requires repairing a removed document reference before queueing', async ({
   await expect(
     editor.getByRole('button', { name: 'Queue package', exact: true }),
   ).toBeDisabled()
-  await editor
-    .getByRole('checkbox', { name: /Document .*unavailable/ })
-    .uncheck()
+  await editor.getByRole('checkbox', { name: /Document .*unavailable/ }).click()
+  await expect(
+    editor.getByRole('checkbox', { name: /Document .*unavailable/ }),
+  ).toHaveCount(0)
   await editor
     .getByRole('button', { name: 'Save package', exact: true })
     .click()
