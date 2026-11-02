@@ -20,7 +20,7 @@
 }
 
 .task-list-virtualized:focus-visible {
-  outline: 2px solid #18181b;
+  outline: 2px solid var(--forma-color-accent-text);
   outline-offset: 2px;
 }
 
@@ -83,27 +83,113 @@
   font-size: 0.8125rem;
 }
 
-.board-column {
+.board .board-column {
+  --task-column-color: var(--forma-color-status-backlog);
+  --task-column-surface: var(--forma-color-status-backlog-surface);
   border-color: var(--forma-color-glass-border);
+  border-top: 3px solid var(--task-column-color);
   background: var(--forma-color-glass);
+  box-shadow: var(--forma-shadow-glass);
   transition:
     background-color 160ms ease,
     box-shadow 160ms ease;
 }
 
-.board-column.is-drag-over {
-  background: #e1f3ed;
+.board-column[data-status='todo'] {
+  --task-column-color: var(--forma-color-status-todo);
+  --task-column-surface: var(--forma-color-status-todo-surface);
+}
+.board-column[data-status='in-progress'] {
+  --task-column-color: var(--forma-color-status-progress);
+  --task-column-surface: var(--forma-color-status-progress-surface);
+}
+.board-column[data-status='done'] {
+  --task-column-color: var(--forma-color-accent-text);
+  --task-column-surface: var(--forma-color-accent-subtle);
+}
+.board-column .column-header h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--task-column-color);
+}
+.board-column .column-header h2::before {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: var(--forma-radius-pill);
+  background: currentcolor;
+  content: '';
+}
+.board-column .column-header > span {
+  min-width: 24px;
+  padding: 4px 7px;
+  border-radius: var(--forma-radius-pill);
+  background: var(--task-column-surface);
+  color: var(--task-column-color);
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-align: center;
+}
+.board .board-column.is-drag-over {
+  background: var(--forma-color-accent-subtle);
   box-shadow: inset 0 0 0 2px var(--forma-color-accent-text);
 }
 
-.task-card {
+.board .task-card {
   position: relative;
+  border-color: var(--forma-color-accent-border);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
   transition: box-shadow 160ms ease;
 }
 
-.task-card:hover,
-.task-card:focus-within {
+.board .task-card:hover,
+.board .task-card:focus-within {
+  border-color: var(--forma-color-control-border);
   box-shadow: 0 4px 14px rgb(31 75 86 / 10%);
+}
+
+.task-card .task-meta > span:not(.priority) {
+  color: var(--forma-color-accent-text);
+}
+.task-card .task-footer > span:first-child {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+.task-card .move-task select {
+  border-color: var(--forma-color-control-border);
+  background: var(--forma-color-glass-strong);
+}
+.task-card .task-action-edit {
+  border-color: var(--forma-color-accent-border);
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+.task-card .task-action-edit:hover {
+  border-color: var(--forma-color-accent-text);
+}
+.task-card .task-action-delete:hover {
+  border-color: var(--forma-color-danger-text);
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+}
+.task-card :is(select, button):focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 2px;
+}
+.board-toolbar .button-primary {
+  border-color: var(--forma-color-accent-solid);
+  background: var(--forma-color-accent-solid);
+  color: var(--forma-color-on-accent);
+}
+.board-toolbar .button-primary:hover {
+  border-color: var(--forma-color-accent-hover);
+  background: var(--forma-color-accent-hover);
+}
+.board-toolbar .button-primary:focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 2px;
 }
 
 .task-card.is-dragging {
@@ -146,7 +232,7 @@
   padding: 1rem;
   border: 2px solid var(--forma-color-accent-text);
   border-radius: var(--forma-radius-lg);
-  background: var(--forma-color-surface);
+  background: var(--forma-color-glass-strong);
   color: var(--forma-color-text-strong);
   box-shadow: 0 12px 32px rgb(31 75 86 / 20%);
   cursor: grabbing;

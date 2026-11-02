@@ -171,8 +171,8 @@
 
 .board-filters input:focus-visible,
 .board-filters select:focus-visible {
-  border-color: var(--forma-color-text-muted);
-  outline: 2px solid rgb(39 39 42 / 15%);
+  border-color: var(--forma-color-accent-text);
+  outline: 2px solid var(--forma-color-accent-text);
   outline-offset: 1px;
 }
 
