@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { subscribeProjectTasks } from '@/entities/task/lib/task-broadcast'
 import { isDemoMode, loadAuthSession } from '@/shared/auth/auth-session'
+import { currentDemoMember } from '@/shared/demo/demo-members'
 import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 
@@ -9,7 +10,7 @@ export function useWorkData() {
   const [data, setData] = useState<ProjectBoardData | null>(null)
   const [error, setError] = useState(false)
   const [userId, setUserId] = useState<string | undefined>(() =>
-    isDemoMode() ? 'member-2' : undefined,
+    isDemoMode() ? currentDemoMember.id : undefined,
   )
   const [attempt, setAttempt] = useState(0)
 

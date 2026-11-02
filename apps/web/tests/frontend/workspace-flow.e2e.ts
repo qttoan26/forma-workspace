@@ -25,7 +25,7 @@ test('opens the approved workspace dashboard and project board', async ({
 
   await expect(page).toHaveURL(/\/workspaces\/forma\/projects\/project-1/)
   await expect(
-    page.getByRole('heading', { name: 'Product launch' }),
+    page.getByRole('heading', { name: 'Avengers Initiative' }),
   ).toBeVisible()
 })
 
@@ -33,7 +33,7 @@ test('supports a direct deep link to the project board', async ({ page }) => {
   await page.goto('/workspaces/forma/projects/project-1')
 
   await expect(
-    page.getByRole('heading', { name: 'Product launch' }),
+    page.getByRole('heading', { name: 'Avengers Initiative' }),
   ).toBeVisible()
 })
 
@@ -82,7 +82,7 @@ test('edits one live task through the shared drawer across project views', async
   await page.goto('/workspaces/forma/projects/project-1?view=list')
 
   await page
-    .getByRole('button', { name: 'Open Create board interaction model' })
+    .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
 
   await expect(page).toHaveURL(/view=list&task=FOR-18/)
@@ -110,7 +110,7 @@ test('persists task comments in the shared drawer activity tab', async ({
   await page.goto('/workspaces/forma/projects/project-1?view=list')
 
   await page
-    .getByRole('button', { name: 'Open Create board interaction model' })
+    .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
 
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
@@ -127,7 +127,7 @@ test('persists task comments in the shared drawer activity tab', async ({
   await expect(drawer).toBeHidden()
 
   await page
-    .getByRole('button', { name: 'Open Create board interaction model' })
+    .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
   await drawer.getByRole('tab', { name: 'Activity' }).click()
 
@@ -140,7 +140,7 @@ test('opens the same task drawer from the board editor action', async ({
   await page.goto('/workspaces/forma/projects/project-1')
 
   await page
-    .getByRole('button', { name: 'Edit Create board interaction model' })
+    .getByRole('button', { name: 'Edit Upgrade the Mark LXXXV armor' })
     .click()
 
   await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
@@ -169,7 +169,7 @@ test('keeps the primary flow usable on a mobile viewport', async ({ page }) => {
   await page.getByRole('link', { name: /Open project board/i }).click()
 
   await expect(
-    page.getByRole('heading', { name: 'Product launch' }),
+    page.getByRole('heading', { name: 'Avengers Initiative' }),
   ).toBeVisible()
 })
 
@@ -197,7 +197,7 @@ test('sidebar opens the selected detail and reflects edits from the project boar
     workMenu.getByRole('link', { name: 'Tasks', exact: true }),
   ).toHaveAttribute('aria-current', 'page')
   await page
-    .getByRole('link', { name: 'Create board interaction model', exact: true })
+    .getByRole('link', { name: 'Upgrade the Mark LXXXV armor', exact: true })
     .click()
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
   await drawer
@@ -395,7 +395,7 @@ test('keeps one page heading and removes redundant content breadcrumbs', async (
     page.getByRole('link', { name: '← Projects', exact: true }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Product launch' }),
+    page.getByRole('heading', { level: 1, name: 'Avengers Initiative' }),
   ).toHaveCount(1)
 })
 

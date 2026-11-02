@@ -66,7 +66,7 @@ test('registers, searches, edits and removes a shared task document reference', 
   await page.reload()
   await table
     .getByRole('link', {
-      name: 'FOR-18 Create board interaction model',
+      name: 'FOR-18 Upgrade the Mark LXXXV armor',
       exact: true,
     })
     .click()

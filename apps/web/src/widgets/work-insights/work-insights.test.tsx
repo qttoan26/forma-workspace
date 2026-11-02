@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { initialTasks, members } from '@/pages/project-board/project-board-data'
+import { initialTasks, members } from '@/test/fixtures/project-board'
 
 import { WorkInsights } from './work-insights'
 

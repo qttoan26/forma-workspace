@@ -5,7 +5,7 @@ const tasks: Task[] = [
   {
     id: 'FOR-18',
     projectId: 'project-1',
-    title: 'Create board interaction model',
+    title: 'Upgrade the Mark LXXXV armor',
     status: 'todo',
     priority: 'high',
     assigneeId: 'member-2',
@@ -13,7 +13,7 @@ const tasks: Task[] = [
   {
     id: 'FOR-21',
     projectId: 'project-1',
-    title: 'Build accessible task cards',
+    title: 'Deploy the Ultron defense firewall',
     status: 'in-progress',
     priority: 'urgent',
     assigneeId: 'member-2',
@@ -63,7 +63,7 @@ test('triages persisted read state and shares Inbox replies with the original ta
   ).toBe(true)
   await list
     .getByRole('button', {
-      name: /^Assigned to you Create board interaction model\./,
+      name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
     })
     .click()
   const conversation = page.getByRole('region', { name: 'Inbox conversation' })
@@ -80,7 +80,7 @@ test('triages persisted read state and shares Inbox replies with the original ta
   await page.getByLabel('Unread', { exact: true }).check()
   await expect(
     list.getByRole('button', {
-      name: /Assigned to you Create board interaction model/,
+      name: /Assigned to you Upgrade the Mark LXXXV armor/,
     }),
   ).toHaveCount(0)
   await page
@@ -90,7 +90,7 @@ test('triages persisted read state and shares Inbox replies with the original ta
   await page.getByLabel('Unread', { exact: true }).uncheck()
   await list
     .getByRole('button', {
-      name: /^Assigned to you Create board interaction model\./,
+      name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
     })
     .click()
   await page.getByRole('link', { name: 'Open task ↗' }).click()
@@ -116,7 +116,7 @@ test.describe('Phone inbox', () => {
       ).toBe(width)
       await list
         .getByRole('button', {
-          name: /^Assigned to you Create board interaction model\./,
+          name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
         })
         .click()
       await expect(list).toBeHidden()
@@ -136,7 +136,7 @@ test.describe('Phone inbox', () => {
       ).toBeFocused()
       await list
         .getByRole('button', {
-          name: /^Assigned to you Create board interaction model\./,
+          name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
         })
         .click()
       await expect(reply).toHaveValue('Keep this phone draft')

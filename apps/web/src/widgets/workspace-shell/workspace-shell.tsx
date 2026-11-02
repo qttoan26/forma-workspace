@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import { isDemoMode, startLogout } from '@/shared/auth/auth-session'
+import { currentDemoMember } from '@/shared/demo/demo-members'
 import {
   BellIcon,
   BuildingIcon,
@@ -357,17 +358,19 @@ export function WorkspaceShell({
             <span
               className="workspace-account"
               aria-label={
-                demoMode ? 'Demo account: Sam Lee' : 'Workspace account'
+                demoMode
+                  ? `Demo account: ${currentDemoMember.name}`
+                  : 'Workspace account'
               }
             >
               <span className="workspace-account-copy">
-                <strong>{demoMode ? 'Sam Lee' : 'Account'}</strong>
+                <strong>{demoMode ? currentDemoMember.name : 'Account'}</strong>
                 <small>
                   {demoMode ? 'Demo workspace' : 'Workspace member'}
                 </small>
               </span>
               <span className="workspace-avatar" aria-hidden="true">
-                {demoMode ? 'SL' : 'F'}
+                {demoMode ? currentDemoMember.initials : 'F'}
               </span>
             </span>
             {demoMode ? (
