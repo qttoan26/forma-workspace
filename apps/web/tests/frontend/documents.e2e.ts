@@ -38,11 +38,15 @@ test('registers, searches, edits and removes a shared task document reference', 
   await page
     .getByRole('searchbox', { name: 'Search references' })
     .fill('FOR-18')
-  await page.getByLabel('Source type', { exact: true }).selectOption('web')
+  await page
+    .getByRole('combobox', { name: 'Source type', exact: true })
+    .selectOption('web')
   await expect(
     table.getByRole('button', { name: 'Source brief.pdf', exact: true }),
   ).toBeVisible()
-  await page.getByLabel('Link scope', { exact: true }).selectOption('project')
+  await page
+    .getByRole('combobox', { name: 'Link scope', exact: true })
+    .selectOption('project')
   await expect(table.getByText('No matching references')).toBeVisible()
   await page.getByRole('button', { name: 'Clear filters', exact: true }).click()
   await table
@@ -233,7 +237,9 @@ test('contains table scrolling on a 375px phone and treats non-web sources as te
     page.getByRole('button', { name: 'Source 00.pdf', exact: true }),
   ).toBeFocused()
   await page.getByRole('button', { name: 'Clear filters', exact: true }).click()
-  await page.getByLabel('Rows per page', { exact: true }).selectOption('50')
+  await page
+    .getByRole('combobox', { name: 'Rows per page', exact: true })
+    .selectOption('50')
   await expect(page.getByText('1–50 of 60 references')).toBeVisible()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByText('51–60 of 60 references')).toBeVisible()

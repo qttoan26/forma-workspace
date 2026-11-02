@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DocumentReference } from '@/entities/document/model/document-reference'
 import { getDocumentReferenceUrl } from '@/entities/document/lib/document-location'
 import { useDocumentReferences } from '@/entities/document/lib/use-document-references'
@@ -51,6 +51,10 @@ export function DocumentsWorkspaceContent({
     reference?: DocumentReference
   } | null>(null)
   const [message, setMessage] = useState('')
+  const editReference = useCallback((reference: DocumentReference) => {
+    setMessage('')
+    setEditor({ reference })
+  }, [])
   const linked = references.filter((reference) => reference.taskId).length
   const filtered = useMemo(() => {
     const taskNames = new Map(
@@ -228,10 +232,7 @@ export function DocumentsWorkspaceContent({
           tasks={data.initialTasks}
           projectHref={`${appBaseUrl}workspaces/${encodeURIComponent(data.workspace.slug)}/projects/${encodeURIComponent(data.project.id)}`}
           disabled={error}
-          onEdit={(reference) => {
-            setMessage('')
-            setEditor({ reference })
-          }}
+          onEdit={editReference}
         />
       ) : null}
       {editor ? (
@@ -271,9 +272,11 @@ function DocumentEditorModal({
         : null
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    dialog.current?.showModal()
+    const element = dialog.current
+    element?.showModal()
     closeRef.current?.focus()
     return () => {
+      element?.close()
       document.body.style.overflow = previousOverflow
       if (trigger?.isConnected) trigger.focus()
     }
