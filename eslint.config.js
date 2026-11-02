@@ -45,6 +45,7 @@ export default tseslint.config(
     files: [
       'apps/web/src/widgets/task-board/task-board.tsx',
       'apps/web/src/widgets/task-table/task-table.tsx',
+      'apps/web/src/widgets/document-library/document-library-table.tsx',
     ],
     rules: {
       // TanStack Virtual/Table v8 expose imperative functions; React Compiler must skip memoizing these widgets.

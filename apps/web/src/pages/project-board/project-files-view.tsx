@@ -1,11 +1,7 @@
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
-import { useEffect, useMemo, useState } from 'react'
-
-import {
-  documentReferenceChangeEvent,
-  loadProjectDocumentReferences,
-} from '@/entities/document/lib/document-reference-storage'
-import type { DocumentReference } from '@/entities/document/model/document-reference'
+import { useMemo } from 'react'
+import { useDocumentReferences } from '@/entities/document/lib/use-document-references'
+import { getDocumentReferenceUrl } from '@/entities/document/lib/document-location'
 import type { Task } from '@/entities/task/model/task'
 
 import './project-files-view.css'
@@ -16,39 +12,16 @@ interface ProjectFilesViewProps {
   onOpenTask: (taskId: string) => void
 }
 
-interface DocumentReferenceChangeDetail {
-  projectId?: string
-}
-
 export function ProjectFilesView({
   projectId,
   tasks,
   onOpenTask,
 }: ProjectFilesViewProps) {
-  const [references, setReferences] = useState<DocumentReference[]>(() =>
-    loadProjectDocumentReferences(projectId),
-  )
+  const { references, error, refresh } = useDocumentReferences(projectId)
   const taskById = useMemo(
     () => new Map(tasks.map((task) => [task.id, task])),
     [tasks],
   )
-
-  useEffect(() => {
-    function handleReferenceChange(event: Event) {
-      if (!(event instanceof CustomEvent)) return
-      const detail = (event as CustomEvent<DocumentReferenceChangeDetail>)
-        .detail
-      if (detail.projectId !== projectId) return
-      setReferences(loadProjectDocumentReferences(projectId))
-    }
-
-    window.addEventListener(documentReferenceChangeEvent, handleReferenceChange)
-    return () =>
-      window.removeEventListener(
-        documentReferenceChangeEvent,
-        handleReferenceChange,
-      )
-  }, [projectId])
 
   const orderedReferences = useMemo(
     () =>
@@ -68,7 +41,10 @@ export function ProjectFilesView({
           <small>Files</small>
           <h2>Project documents</h2>
         </div>
-        <span>{references.length} references</span>
+        <a href={`${import.meta.env.BASE_URL}modules/documents/library`}>
+          Manage document references
+        </a>
+        <span>{error ? 'Unavailable' : `${references.length} references`}</span>
       </header>
 
       <div className="project-files-boundary-note">
@@ -79,7 +55,14 @@ export function ProjectFilesView({
         </span>
       </div>
 
-      {orderedReferences.length === 0 ? (
+      {error ? (
+        <p role="alert">
+          Document references could not be loaded.{' '}
+          <button type="button" onClick={refresh}>
+            Retry references
+          </button>
+        </p>
+      ) : orderedReferences.length === 0 ? (
         <div className="project-files-empty">
           <span aria-hidden="true">F</span>
           <div>
@@ -122,9 +105,9 @@ export function ProjectFilesView({
                     ) : (
                       <span>Project-level reference</span>
                     )}
-                    {isHttpLocation(reference.location) ? (
+                    {getDocumentReferenceUrl(reference.location) ? (
                       <a
-                        href={reference.location}
+                        href={getDocumentReferenceUrl(reference.location)}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -140,8 +123,4 @@ export function ProjectFilesView({
       )}
     </section>
   )
-}
-
-function isHttpLocation(location: string) {
-  return location.startsWith('https://') || location.startsWith('http://')
 }

@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import {
-  loadProjectDocumentReferences,
-  saveProjectDocumentReferences,
-} from '@/entities/document/lib/document-reference-storage'
+import { mutateProjectDocumentReference } from '@/entities/document/lib/document-reference-storage'
+import { useDocumentReferences } from '@/entities/document/lib/use-document-references'
+import { getDocumentReferenceUrl } from '@/entities/document/lib/document-location'
 import {
   createDocumentReference,
   type DocumentReference,
@@ -23,30 +22,20 @@ export function TaskLinkedFilesPanel({
   projectId,
   taskId,
 }: TaskLinkedFilesPanelProps) {
-  const [references, setReferences] = useState<DocumentReference[]>(() =>
-    loadProjectDocumentReferences(projectId),
-  )
+  const {
+    references,
+    error: loadError,
+    refresh,
+  } = useDocumentReferences(projectId)
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   const taskReferences = useMemo(
     () => references.filter((reference) => reference.taskId === taskId),
     [references, taskId],
   )
-
-  function commit(nextReferences: DocumentReference[]) {
-    setReferences(nextReferences)
-    setSaveError(null)
-
-    try {
-      saveProjectDocumentReferences(projectId, nextReferences)
-    } catch {
-      setSaveError(
-        'Linked files changed in this session but could not be saved locally.',
-      )
-    }
-  }
 
   function recordActivity(body: string) {
     const entry = createTaskActivityEntry({
@@ -57,31 +46,62 @@ export function TaskLinkedFilesPanel({
       authorLabel: 'You',
     })
 
-    void appendTaskActivityToIndexedDb(projectId, taskId, entry).catch(
-      () => undefined,
-    )
+    void appendTaskActivityToIndexedDb(projectId, taskId, entry).catch(() => {
+      setSaveError(
+        'Reference saved locally, but its task activity could not be recorded.',
+      )
+    })
   }
 
-  function addReference() {
+  async function addReference() {
     const nextName = name.trim()
     const nextLocation = location.trim()
-    if (!nextName || !nextLocation) return
+    if (!nextName || !nextLocation || busy || loadError) return
 
-    const reference = createDocumentReference({
-      projectId,
-      taskId,
-      name: nextName,
-      location: nextLocation,
-    })
-    commit([...references, reference])
-    setName('')
-    setLocation('')
-    recordActivity(`Linked file “${nextName}”.`)
+    setBusy(true)
+    setSaveError(null)
+    try {
+      const reference = createDocumentReference({
+        projectId,
+        taskId,
+        name: nextName,
+        location: nextLocation,
+      })
+      await mutateProjectDocumentReference(projectId, {
+        kind: 'add',
+        reference,
+      })
+      refresh()
+      setName('')
+      setLocation('')
+      recordActivity(`Linked file “${nextName}”.`)
+    } catch {
+      setSaveError(
+        'Could not save this reference. Your inputs are still here. Try again.',
+      )
+    } finally {
+      setBusy(false)
+    }
   }
 
-  function removeReference(reference: DocumentReference) {
-    commit(references.filter((candidate) => candidate.id !== reference.id))
-    recordActivity(`Unlinked file “${reference.name}”.`)
+  async function removeReference(reference: DocumentReference) {
+    if (busy || loadError) return
+    setBusy(true)
+    setSaveError(null)
+    try {
+      await mutateProjectDocumentReference(projectId, {
+        kind: 'remove',
+        expected: reference,
+      })
+      refresh()
+      recordActivity(`Unlinked file “${reference.name}”.`)
+    } catch {
+      setSaveError(
+        'Could not unlink this reference. Reload its latest details and try again.',
+      )
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -98,12 +118,24 @@ export function TaskLinkedFilesPanel({
         Links store document metadata only. File content remains owned by the
         Documents & Data storage layer.
       </p>
+      <a href={`${import.meta.env.BASE_URL}modules/documents/library`}>
+        Manage document references
+      </a>
+      {loadError ? (
+        <p role="alert">
+          References could not be loaded.{' '}
+          <button type="button" onClick={refresh}>
+            Retry references
+          </button>
+        </p>
+      ) : null}
 
       <div className="task-linked-files-composer">
         <label htmlFor={`task-file-name-${taskId}`}>Document name</label>
         <input
           id={`task-file-name-${taskId}`}
           value={name}
+          disabled={busy || loadError}
           maxLength={500}
           placeholder="e.g. Approved drawing.pdf"
           onChange={(event) => setName(event.target.value)}
@@ -114,13 +146,14 @@ export function TaskLinkedFilesPanel({
         <input
           id={`task-file-location-${taskId}`}
           value={location}
+          disabled={busy || loadError}
           maxLength={4000}
           placeholder="Document ID, path, or https:// link"
           onChange={(event) => setLocation(event.target.value)}
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return
             event.preventDefault()
-            addReference()
+            void addReference()
           }}
         />
         <div>
@@ -128,8 +161,10 @@ export function TaskLinkedFilesPanel({
           <Button
             variant="primary"
             type="button"
-            disabled={!name.trim() || !location.trim()}
-            onClick={addReference}
+            disabled={!name.trim() || !location.trim() || busy || loadError}
+            onClick={() => {
+              void addReference()
+            }}
           >
             Link file
           </Button>
@@ -138,7 +173,7 @@ export function TaskLinkedFilesPanel({
 
       {saveError ? <p role="alert">{saveError}</p> : null}
 
-      {taskReferences.length === 0 ? (
+      {loadError ? null : taskReferences.length === 0 ? (
         <div className="task-linked-files-empty">
           <strong>No linked files yet</strong>
           <span>Reference documents without duplicating their storage.</span>
@@ -149,8 +184,12 @@ export function TaskLinkedFilesPanel({
             <li key={reference.id}>
               <div>
                 <strong>{reference.name}</strong>
-                {isHttpLocation(reference.location) ? (
-                  <a href={reference.location} target="_blank" rel="noreferrer">
+                {getDocumentReferenceUrl(reference.location) ? (
+                  <a
+                    href={getDocumentReferenceUrl(reference.location)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Open reference
                   </a>
                 ) : (
@@ -160,7 +199,10 @@ export function TaskLinkedFilesPanel({
               <button
                 type="button"
                 aria-label={`Unlink ${reference.name}`}
-                onClick={() => removeReference(reference)}
+                disabled={busy || loadError}
+                onClick={() => {
+                  void removeReference(reference)
+                }}
               >
                 Unlink
               </button>
@@ -170,8 +212,4 @@ export function TaskLinkedFilesPanel({
       )}
     </section>
   )
-}
-
-function isHttpLocation(location: string) {
-  return location.startsWith('https://') || location.startsWith('http://')
 }

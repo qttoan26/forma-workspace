@@ -50,16 +50,18 @@ const moduleSections: Record<string, ModuleSection[]> = {
     {
       id: 'intake',
       label: 'Document intake',
-      description: 'Register source documents and intake requirements.',
-      status: 'implementation',
-      scope: ['Source files', 'Intake batches', 'Document metadata'],
+      description:
+        'Register source document references and link them to project tasks on this browser.',
+      status: 'available',
+      scope: ['Reference metadata', 'Source locations', 'Task links'],
     },
     {
       id: 'library',
       label: 'Document library',
-      description: 'Find and manage documents and their versions.',
-      status: 'implementation',
-      scope: ['Document search', 'Version history', 'Access controls'],
+      description:
+        'Search and manage the current project’s document references on this browser.',
+      status: 'available',
+      scope: ['Reference search', 'Task links', 'Reference editing'],
     },
     {
       id: 'ocr',
