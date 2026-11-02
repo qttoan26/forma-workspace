@@ -1,0 +1,534 @@
+.documents-workspace {
+  display: grid;
+  min-width: 0;
+  gap: 1.1rem;
+}
+
+.documents-workspace .button-primary,
+.document-editor-modal .button-primary {
+  border-color: var(--forma-color-accent-solid);
+  background: var(--forma-color-accent-solid);
+  color: var(--forma-color-on-accent);
+}
+
+.documents-workspace .button-primary:hover:not(:disabled),
+.document-editor-modal .button-primary:hover:not(:disabled) {
+  background: var(--forma-color-accent-hover);
+}
+
+.documents-workspace .button-secondary,
+.document-editor-modal .button-secondary {
+  border-color: var(--forma-color-control-border);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-accent-text);
+}
+
+.documents-workspace button:disabled,
+.document-editor-modal button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.documents-context,
+.document-library-heading,
+.documents-context > div,
+.documents-context nav,
+.document-form-actions,
+.document-pagination,
+.document-pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.documents-context,
+.document-library-heading,
+.document-pagination {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.documents-context {
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+  box-shadow: var(--forma-shadow-glass);
+}
+
+.documents-context > div {
+  min-width: 0;
+  color: var(--forma-color-accent-text);
+  font-weight: 650;
+}
+
+.documents-context > div > span {
+  overflow-wrap: anywhere;
+}
+
+.documents-context small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.documents-context nav a {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--forma-radius-pill);
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+
+.documents-context nav a[aria-current='page'] {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+  box-shadow: inset 0 0 0 1px var(--forma-color-accent-border);
+  font-weight: 650;
+}
+
+.document-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.document-metrics article {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.1rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+  backdrop-filter: blur(var(--forma-glass-blur));
+}
+
+.document-metrics small {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.document-metrics strong {
+  color: var(--forma-color-accent-text);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.documents-boundary-note {
+  margin: 0;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.document-library-heading h2,
+.document-intake-panel h2 {
+  margin: 0.3rem 0 0;
+  font-size: 1.1rem;
+}
+
+.document-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 1fr) minmax(150px, 0.45fr) minmax(130px, 0.4fr)
+    auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.document-toolbar label,
+.document-reference-form label {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 550;
+}
+
+.document-toolbar input,
+.document-toolbar select,
+.document-reference-form input,
+.document-reference-form select,
+.document-pagination select {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  font: inherit;
+}
+
+.documents-workspace :is(button, a, input, select):focus-visible,
+.document-editor-modal :is(button, a, input, select):focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 3px;
+}
+
+.document-toolbar button,
+.document-form-actions button {
+  min-height: 44px;
+}
+
+.document-table-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+  box-shadow: var(--forma-shadow-glass);
+}
+
+.document-table-scroll {
+  max-height: min(52dvh, 560px);
+}
+
+.document-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+.document-table th,
+.document-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--forma-color-accent-border);
+}
+
+.document-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #edf6f6;
+}
+
+.document-table th button {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.document-table th[aria-sort='ascending'],
+.document-table th[aria-sort='descending'],
+.document-table a {
+  color: var(--forma-color-accent-text);
+}
+
+.document-table tbody tr:hover {
+  background: var(--forma-color-accent-subtle);
+}
+
+.document-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 220px;
+}
+
+.document-file-icon {
+  display: grid;
+  flex: 0 0 36px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--forma-color-accent-border);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+
+.document-name {
+  display: block;
+  max-width: 320px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--forma-color-text-strong);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.document-name:hover {
+  color: var(--forma-color-accent-text);
+  text-decoration: underline;
+}
+
+.document-location {
+  display: block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.document-task-link {
+  display: grid;
+  gap: 0.3rem;
+  max-width: 240px;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.document-task-link span {
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.document-scope {
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--forma-radius-pill);
+  background: var(--forma-color-status-backlog-surface);
+  color: var(--forma-color-status-backlog);
+  white-space: nowrap;
+}
+
+.document-table td.document-table-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.document-table-empty > * {
+  display: block;
+  margin: 0 auto 0.7rem;
+}
+
+.document-pagination {
+  padding: 0.9rem 1rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.document-pagination label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.document-pagination select {
+  width: auto;
+}
+
+.document-pagination button,
+.document-editor-modal > header button {
+  min-height: 44px;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.document-pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.document-intake-panel {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.6fr) minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+  box-shadow: var(--forma-shadow-glass);
+}
+
+.document-intake-panel > div > p:last-child {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.document-reference-form {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.document-reference-form fieldset {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.document-reference-form small {
+  margin-bottom: 0.5rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.document-form-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+}
+
+.document-error,
+.document-success {
+  margin: 0;
+  padding: 1rem;
+  border-radius: var(--forma-radius-md);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.document-error,
+.document-remove-confirmation {
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+}
+
+.document-success {
+  border: 1px solid var(--forma-color-accent-border);
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+
+.document-danger {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentcolor;
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.document-remove-confirmation {
+  padding: 1rem;
+  border-radius: var(--forma-radius-md);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.document-remove-confirmation p {
+  margin-top: 0;
+}
+
+.document-remove-confirmation button + button {
+  margin-left: 0.5rem;
+}
+
+.document-editor-modal {
+  box-sizing: border-box;
+  width: min(560px, calc(100% - 2rem));
+  max-height: min(90dvh, 800px);
+  padding: 1.5rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-task-editor-background);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-overlay);
+}
+
+.document-editor-modal::backdrop {
+  background: var(--forma-color-overlay);
+  backdrop-filter: blur(5px);
+}
+
+.document-editor-modal > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.document-editor-modal > header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.document-editor-modal > header button {
+  display: grid;
+  width: 44px;
+  flex-shrink: 0;
+  place-items: center;
+}
+
+@media (max-width: 900px) {
+  .document-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .document-intake-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .document-metrics {
+    gap: 0.5rem;
+  }
+  .document-metrics article {
+    padding: 0.8rem;
+  }
+  .document-metrics small {
+    font-size: 0.7rem;
+  }
+  .document-metrics strong {
+    font-size: 1.4rem;
+  }
+  .document-toolbar label:first-child {
+    grid-column: 1 / -1;
+  }
+  .document-toolbar button {
+    grid-column: 1 / -1;
+  }
+  .document-pagination {
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .document-pagination nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .document-library-heading > button {
+    width: 100%;
+  }
+  .document-intake-panel,
+  .document-editor-modal {
+    padding: 1rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .document-toolbar input,
+  .document-toolbar select,
+  .document-reference-form input,
+  .document-reference-form select {
+    font-size: 1rem;
+  }
+}

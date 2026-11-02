@@ -1,16 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-
+import { saveProjectDocumentReferences } from '@/entities/document/lib/document-reference-storage'
 import { ProjectFilesView } from './project-files-view'
-
-const mocks = vi.hoisted(() => ({
-  loadProjectDocumentReferences: vi.fn(),
-}))
-
-vi.mock('@/entities/document/lib/document-reference-storage', () => ({
-  documentReferenceChangeEvent: 'forma:document-references-change',
-  loadProjectDocumentReferences: mocks.loadProjectDocumentReferences,
-}))
 
 const task = {
   id: 'FOR-18',
@@ -19,7 +10,6 @@ const task = {
   status: 'todo' as const,
   priority: 'high' as const,
 }
-
 const reference = {
   id: 'doc-ref-1',
   projectId: 'project-1',
@@ -28,12 +18,12 @@ const reference = {
   location: 'DOC-42',
   createdAt: '2026-10-31T07:00:00.000Z',
 }
+beforeEach(() => localStorage.clear())
 
 describe('ProjectFilesView', () => {
-  it('shows project references and opens the linked task', () => {
-    mocks.loadProjectDocumentReferences.mockReturnValue([reference])
+  it('shows shared references and opens their linked task', () => {
+    saveProjectDocumentReferences('project-1', [reference])
     const onOpenTask = vi.fn()
-
     render(
       <ProjectFilesView
         projectId="project-1"
@@ -41,19 +31,11 @@ describe('ProjectFilesView', () => {
         onOpenTask={onOpenTask}
       />,
     )
-
     expect(screen.getByText('Approved drawing.pdf')).toBeVisible()
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Review approved drawing' }),
-    )
-    expect(onOpenTask).toHaveBeenCalledWith('FOR-18')
+    fireEvent.click(screen.getByRole('button', { name: task.title }))
+    expect(onOpenTask).toHaveBeenCalledWith(task.id)
   })
-
-  it('refreshes when task linked files change for the same project', () => {
-    mocks.loadProjectDocumentReferences
-      .mockReturnValueOnce([])
-      .mockReturnValueOnce([reference])
-
+  it('refreshes when a reference changes in another view', () => {
     render(
       <ProjectFilesView
         projectId="project-1"
@@ -61,15 +43,19 @@ describe('ProjectFilesView', () => {
         onOpenTask={vi.fn()}
       />,
     )
-
+    act(() => saveProjectDocumentReferences('project-1', [reference]))
+    expect(screen.getByText('Approved drawing.pdf')).toBeVisible()
     act(() => {
+      localStorage.setItem(
+        'forma-workspace:project-document-references:v1:project-1',
+        '[]',
+      )
       window.dispatchEvent(
-        new CustomEvent('forma:document-references-change', {
-          detail: { projectId: 'project-1' },
+        new StorageEvent('storage', {
+          key: 'forma-workspace:project-document-references:v1:project-1',
         }),
       )
     })
-
-    expect(screen.getByText('Approved drawing.pdf')).toBeVisible()
+    expect(screen.queryByText('Approved drawing.pdf')).not.toBeInTheDocument()
   })
 })

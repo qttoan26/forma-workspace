@@ -1,4 +1,5 @@
 import { WorkSectionSurface } from '@/pages/module/work-section-surface'
+import { lazy, Suspense } from 'react'
 import type { WorkTaskSearch } from './work-task-filters'
 import { getWorkspaceModule } from '@/shared/workspace/module-registry'
 import {
@@ -12,6 +13,11 @@ import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
 import './module-page.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
+const DocumentsWorkspace = lazy(() =>
+  import('./documents-workspace').then((module) => ({
+    default: module.DocumentsWorkspace,
+  })),
+)
 
 export function ModulePage({
   moduleId,
@@ -95,6 +101,16 @@ export function ModulePage({
             taskSearch={taskSearch}
             onTaskSearchChange={onTaskSearchChange}
           />
+        ) : module.id === 'documents' &&
+          (!selected ||
+            selected.id === 'intake' ||
+            selected.id === 'library') ? (
+          <Suspense fallback={<p role="status">Loading document workspace…</p>}>
+            <DocumentsWorkspace
+              key={selected?.id ?? 'overview'}
+              sectionId={selected?.id}
+            />
+          </Suspense>
         ) : selected ? (
           <section
             className="module-state-card"
@@ -124,7 +140,11 @@ export function ModulePage({
                   <span aria-hidden="true">↗</span>
                 </strong>
                 <p>{section.description}</p>
-                <small>Implementation in progress</small>
+                <small>
+                  {section.status === 'available'
+                    ? 'Available'
+                    : 'Implementation in progress'}
+                </small>
               </a>
             ))}
           </section>
