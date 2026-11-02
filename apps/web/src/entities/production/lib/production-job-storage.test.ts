@@ -227,3 +227,144 @@ it('saves distinct packages when randomUUID is unavailable in a preview browser'
   expect(first?.id).not.toBe(second?.id)
   expect(readProductionJobs(projectId)).toHaveLength(2)
 })
+
+it('requires sequential execution, handoff notes and named quality decisions; preserves rework history', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  const transition = async (
+    status: typeof job.status,
+    note?: string,
+    reviewerId?: string,
+  ) => {
+    job = (await mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status, note, reviewerId },
+      getSources,
+    ))!
+  }
+  await expect(transition('approved', 'skip', 'member-1')).rejects.toThrow(
+    'not available',
+  )
+  await transition('queued')
+  await transition('processing')
+  await expect(transition('quality')).rejects.toThrow('note')
+  await transition('quality', 'Checked source completeness; ready for review')
+  await expect(transition('approved', 'All checks pass')).rejects.toThrow(
+    'reviewer',
+  )
+  await expect(
+    transition('processing', 'Correct page rotation', 'missing'),
+  ).rejects.toThrow('reviewer')
+  await transition('processing', 'Correct page rotation', 'member-1')
+  await transition('quality', 'Page rotation corrected')
+  await transition('approved', 'Source and output checked', 'member-1')
+  expect(
+    readProductionJobs(projectId)[0]?.workflowHistory?.slice(-3),
+  ).toMatchObject([
+    {
+      from: 'quality',
+      to: 'processing',
+      note: 'Correct page rotation',
+      reviewerId: 'member-1',
+    },
+    { from: 'processing', to: 'quality' },
+    { from: 'quality', to: 'approved', reviewerId: 'member-1' },
+  ])
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'update', expected: job, input },
+      getSources,
+    ),
+  ).rejects.toThrow('queue')
+  await expect(transition('processing')).rejects.toThrow('note')
+  await transition('processing', 'New source revision requires recheck')
+  expect(job.status).toBe('processing')
+})
+
+it('requires an owner to start and revalidates sources for processing and QC', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input: { ...input, ownerId: undefined } },
+    getSources,
+  ))!
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'processing' },
+      getSources,
+    ),
+  ).rejects.toThrow('owner')
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'update', expected: job, input },
+    getSources,
+  ))!
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'processing' },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'quality', note: 'Ready' },
+      () => Promise.resolve({ ...context, tasks: [] }),
+    ),
+  ).rejects.toThrow('unavailable')
+  expect(readProductionJobs(projectId)[0]?.status).toBe('processing')
+})
+
+it('allows active packages with missing sources back to the queue for plan repair', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  for (const status of ['queued', 'processing'] as const)
+    job = (await mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status },
+      getSources,
+    ))!
+  const missing = () => Promise.resolve({ ...context, documents: [] })
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    missing,
+  ))!
+  expect(job.status).toBe('queued')
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'processing' },
+      missing,
+    ),
+  ).rejects.toThrow('unavailable')
+  job = (await mutateProductionJob(
+    projectId,
+    {
+      kind: 'update',
+      expected: job,
+      input: { ...input, documentReferenceIds: [] },
+    },
+    missing,
+  ))!
+  expect(
+    (
+      await mutateProductionJob(
+        projectId,
+        { kind: 'status', expected: job, status: 'processing' },
+        missing,
+      )
+    )?.status,
+  ).toBe('processing')
+})

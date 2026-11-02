@@ -29,15 +29,17 @@ const moduleSections: Record<string, ModuleSection[]> = {
     {
       id: 'processing',
       label: 'Processing',
-      description: 'Follow scan, OCR, data entry and BPO execution.',
-      status: 'implementation',
+      description:
+        'Track manual processing and hand off packages for quality review on this browser.',
+      status: 'available',
       scope: ['Processing stages', 'Stage ownership', 'Exceptions'],
     },
     {
       id: 'quality',
       label: 'Quality control',
-      description: 'Review output and track corrections before release.',
-      status: 'implementation',
+      description:
+        'Record manual quality decisions, reviewer notes and rework on this browser.',
+      status: 'available',
       scope: ['Review checklist', 'Rejected items', 'Rework'],
     },
     {

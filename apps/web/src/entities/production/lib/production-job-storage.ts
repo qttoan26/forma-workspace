@@ -2,6 +2,7 @@ import {
   productionJobCollectionSchema,
   productionJobInputSchema,
   productionJobSchema,
+  productionTransitions,
   assertProductionSources,
   type ProductionJob,
   type ProductionJobInput,
@@ -47,7 +48,13 @@ type Expected = Pick<ProductionJob, 'id' | 'revision'>
 type JobMutation =
   | { kind: 'create'; input: ProductionJobInput }
   | { kind: 'update'; expected: Expected; input: ProductionJobInput }
-  | { kind: 'status'; expected: Expected; status: ProductionJob['status'] }
+  | {
+      kind: 'status'
+      expected: Expected
+      status: ProductionJob['status']
+      note?: string | undefined
+      reviewerId?: string | undefined
+    }
   | { kind: 'remove'; expected: Expected }
 
 export async function mutateProductionJob(
@@ -61,7 +68,7 @@ export async function mutateProductionJob(
     const needsSources =
       mutation.kind === 'create' ||
       mutation.kind === 'update' ||
-      (mutation.kind === 'status' && mutation.status === 'queued')
+      (mutation.kind === 'status' && mutation.status !== 'draft')
     const context = needsSources ? await getSources() : null
     const current = readProductionJobs(projectId)
     const now = new Date().toISOString()
@@ -86,6 +93,43 @@ export async function mutateProductionJob(
       const existing = current.find((job) => job.id === mutation.expected.id)
       if (!existing || existing.revision !== mutation.expected.revision)
         throw new ProductionJobConflict()
+      if (
+        mutation.kind === 'update' &&
+        !['draft', 'queued'].includes(existing.status)
+      )
+        throw new Error(
+          'Return this package to the queue before editing its plan.',
+        )
+      if (mutation.kind === 'status') {
+        if (!productionTransitions[existing.status].includes(mutation.status))
+          throw new Error('This workflow transition is not available.')
+        if (mutation.status !== 'draft' && !context)
+          throw new Error('Source context is unavailable.')
+        if (mutation.status === 'processing' && !existing.ownerId)
+          throw new Error('Assign a package owner before starting processing.')
+        const note = mutation.note?.trim() ?? ''
+        if (note.length > 2000)
+          throw new Error('Workflow notes must be 2000 characters or fewer.')
+        if (
+          (mutation.status === 'quality' ||
+            existing.status === 'quality' ||
+            existing.status === 'approved') &&
+          !note
+        )
+          throw new Error(
+            'Add a handoff, review or reopening note before continuing.',
+          )
+        if (
+          existing.status === 'quality' &&
+          (!mutation.reviewerId ||
+            !context?.members.some(
+              (member) => member.id === mutation.reviewerId,
+            ))
+        )
+          throw new Error(
+            'Select an available reviewer for the quality decision.',
+          )
+      }
       if (mutation.kind === 'remove') {
         result = null
         next = current.filter((job) => job.id !== existing.id)
@@ -94,7 +138,11 @@ export async function mutateProductionJob(
           mutation.kind === 'update'
             ? productionJobInputSchema.parse(mutation.input)
             : existing
-        if (needsSources) {
+        const returningToQueue =
+          mutation.kind === 'status' &&
+          mutation.status === 'queued' &&
+          existing.status !== 'draft'
+        if (needsSources && !returningToQueue) {
           if (!context) throw new Error('Source context is unavailable.')
           assertProductionSources(projectId, input, context)
         }
@@ -105,6 +153,22 @@ export async function mutateProductionJob(
           dueDate: input.dueDate,
           status:
             mutation.kind === 'status' ? mutation.status : existing.status,
+          workflowHistory:
+            mutation.kind === 'status'
+              ? [
+                  ...(existing.workflowHistory ?? []),
+                  {
+                    from: existing.status,
+                    to: mutation.status,
+                    note: mutation.note?.trim() ?? '',
+                    reviewerId:
+                      existing.status === 'quality'
+                        ? mutation.reviewerId
+                        : undefined,
+                    at: now,
+                  },
+                ]
+              : existing.workflowHistory,
           revision: existing.revision + 1,
           updatedAt: now,
         })
