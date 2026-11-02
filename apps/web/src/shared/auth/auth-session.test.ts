@@ -31,7 +31,7 @@ describe('auth session', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(loadAuthSession()).resolves.toEqual({
-      user: { id: 'demo-user' },
+      user: { id: 'member-2' },
     })
     expect(fetchMock).not.toHaveBeenCalled()
   })

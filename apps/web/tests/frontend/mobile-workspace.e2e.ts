@@ -112,7 +112,7 @@ test('contains the mobile table and keeps task editing usable in a short viewpor
     el.scrollLeft = 0
   })
   await page
-    .getByRole('button', { name: 'Open Create board interaction model' })
+    .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
   await expect(drawer).toBeVisible()

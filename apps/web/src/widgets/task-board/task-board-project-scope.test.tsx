@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import type { Task } from '@/entities/task/model/task'
-import { members } from '@/pages/project-board/project-board-data'
+import { members } from '@/test/fixtures/project-board'
 
 import { TaskBoard } from './task-board'
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { Task } from '@/entities/task/model/task'
-import { members } from '@/pages/project-board/project-board-data'
+import { members } from '@/test/fixtures/project-board'
 
 import { summarizeWork } from './work-insights'
 

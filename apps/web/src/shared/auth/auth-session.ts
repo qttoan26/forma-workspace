@@ -6,6 +6,7 @@ import {
   handleApiUnauthorizedResponse,
 } from '@/shared/api/api-auth'
 import { clearOidcSession } from '@/shared/auth/oidc-client'
+import { currentDemoMember } from '@/shared/demo/demo-members'
 
 const authReturnToKey = 'forma.auth.return-to'
 
@@ -33,7 +34,7 @@ export async function loadAuthSession(
   baseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? '',
 ): Promise<AuthSession | null> {
   if (isDemoMode()) {
-    return { user: { id: 'demo-user' } }
+    return { user: { id: currentDemoMember.id } }
   }
 
   const authorizationHeader = await getApiAuthorizationHeader()

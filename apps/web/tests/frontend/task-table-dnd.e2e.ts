@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 const projectPath = '/workspaces/forma/projects/project-1'
-const taskTitle = 'Create board interaction model'
+const taskTitle = 'Upgrade the Mark LXXXV armor'
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/auth/me', (route) =>
@@ -24,12 +24,12 @@ test('sorts the TanStack table and opens the corresponding task drawer', async (
   await header.getByRole('button').click()
   await expect(header).toHaveAttribute('aria-sort', 'ascending')
   await expect(table.getByRole('row').nth(1)).toContainText(
-    'Build accessible task cards',
+    'Analyze gamma radiation signatures',
   )
   await header.getByRole('button').click()
   await expect(header).toHaveAttribute('aria-sort', 'descending')
   await expect(table.getByRole('row').nth(1)).toContainText(
-    'Document product principles',
+    'Upgrade the Mark LXXXV armor',
   )
   await table.getByRole('button', { name: `Open ${taskTitle}` }).click()
   await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
@@ -74,10 +74,49 @@ test('moves a task with the mouse and retains it after reload', async ({
 test('supports keyboard drop into an empty column and Escape cancellation', async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'forma:tasks:v1:project-1',
+      JSON.stringify([
+        {
+          id: 'FOR-12',
+          projectId: 'project-1',
+          title: 'Map Bifrost evacuation routes',
+          status: 'backlog',
+          priority: 'medium',
+          assigneeId: 'member-3',
+        },
+        {
+          id: 'FOR-18',
+          projectId: 'project-1',
+          title: 'Upgrade the Mark LXXXV armor',
+          status: 'todo',
+          priority: 'high',
+          assigneeId: 'member-2',
+        },
+        {
+          id: 'FOR-21',
+          projectId: 'project-1',
+          title: 'Deploy the Ultron defense firewall',
+          status: 'in-progress',
+          priority: 'urgent',
+          assigneeId: 'member-2',
+        },
+        {
+          id: 'FOR-07',
+          projectId: 'project-1',
+          title: 'Approve the Avengers response protocol',
+          status: 'done',
+          priority: 'low',
+          assigneeId: 'member-1',
+        },
+      ]),
+    )
+  })
   await page.goto(projectPath)
   await page
     .getByRole('combobox', {
-      name: 'Move Define workspace navigation',
+      name: 'Move Map Bifrost evacuation routes',
       exact: true,
     })
     .selectOption('done')

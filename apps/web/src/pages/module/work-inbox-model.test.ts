@@ -9,7 +9,7 @@ import {
   members,
   project,
   workspace,
-} from '@/pages/project-board/project-board-data'
+} from '@/test/fixtures/project-board'
 import type { TaskActivityEntry } from '@/entities/task/model/task-activity'
 
 const data = { initialTasks, members, project, workspace }

@@ -33,7 +33,7 @@ describe('Workspace section navigation', () => {
       screen.getAllByRole('navigation', { name: 'Work sections' }),
     ).toHaveLength(1)
     expect(
-      await screen.findByRole('heading', { name: 'Product launch' }),
+      await screen.findByRole('heading', { name: 'Avengers Initiative' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open project' })).toHaveAttribute(
       'href',

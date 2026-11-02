@@ -202,6 +202,10 @@ VITE_OIDC_SCOPE=openid profile email
 
 ## GitHub Pages frontend demo
 
+The current sample project is **Avengers Initiative**. Steve Rogers (Captain America), Tony Stark (Iron Man), Thor, Bruce Banner (Hulk), Natasha Romanoff (Black Widow), and Clint Barton (Hawkeye) each own two role-specific tasks. The demo session, account avatar, My Tasks and Inbox consistently use Tony Stark (`member-2`). Choose an assignee in Work → Tasks to inspect another member's work.
+
+Existing browser-only demo snapshots with the original shipped sample titles are upgraded in place. Task IDs, saved workflow/assignment/date changes, custom descriptions, renamed tasks and user-created tasks remain intact. Deleted original seeds are not restored; subsequent reloads do not recreate deleted Avengers tasks. This upgrade runs only in demo mode with no configured task API. Behavior tests use a stable fixture independently of the visible demo theme.
+
 `.github/workflows/deploy-pages.yml` builds `@forma/web` with:
 
 ```text

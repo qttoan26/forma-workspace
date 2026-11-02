@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { initialTasks, members } from '@/pages/project-board/project-board-data'
+import { initialTasks, members } from '@/test/fixtures/project-board'
 
 import { TaskBoard } from './task-board'
 

@@ -159,7 +159,7 @@ function ProductPreview() {
           <span>F</span>
           <strong>Forma</strong>
         </div>
-        <div className="landing-product-avatar">SL</div>
+        <div className="landing-product-avatar">TS</div>
       </div>
 
       <div className="landing-product-body">
@@ -173,10 +173,10 @@ function ProductPreview() {
         <div className="landing-product-main">
           <div className="landing-product-heading">
             <div>
-              <small>Product launch</small>
+              <small>Avengers Initiative</small>
               <strong>Project board</strong>
             </div>
-            <span>4 tasks</span>
+            <span>4 sample tasks</span>
           </div>
 
           <div className="landing-product-columns">
@@ -185,19 +185,19 @@ function ProductPreview() {
                 Todo <span>2</span>
               </header>
               <article>
-                <small>FOR 21</small>
-                <strong>Build accessible task cards</strong>
+                <small>FOR 18</small>
+                <strong>Upgrade the Mark LXXXV armor</strong>
                 <footer>
-                  <span>Urgent</span>
-                  <span>SL</span>
+                  <span>High</span>
+                  <span>TS</span>
                 </footer>
               </article>
               <article>
-                <small>FOR 24</small>
-                <strong>Review onboarding copy</strong>
+                <small>FOR 26</small>
+                <strong>Review HYDRA intelligence reports</strong>
                 <footer>
-                  <span>Medium</span>
-                  <span>AM</span>
+                  <span>High</span>
+                  <span>NR</span>
                 </footer>
               </article>
             </section>
@@ -207,11 +207,11 @@ function ProductPreview() {
                 In progress <span>1</span>
               </header>
               <article>
-                <small>FOR 18</small>
-                <strong>Create board interaction model</strong>
+                <small>FOR 21</small>
+                <strong>Deploy the Ultron defense firewall</strong>
                 <footer>
-                  <span>High</span>
-                  <span>JL</span>
+                  <span>Urgent</span>
+                  <span>TS</span>
                 </footer>
               </article>
             </section>
@@ -221,11 +221,11 @@ function ProductPreview() {
                 Done <span>1</span>
               </header>
               <article>
-                <small>FOR 12</small>
-                <strong>Define workspace navigation</strong>
+                <small>FOR 07</small>
+                <strong>Approve the Avengers response protocol</strong>
                 <footer>
                   <span>Complete</span>
-                  <span>SL</span>
+                  <span>SR</span>
                 </footer>
               </article>
             </section>

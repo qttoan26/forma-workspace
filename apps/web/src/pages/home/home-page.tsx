@@ -103,9 +103,9 @@ export function HomePage() {
               <div className="project-overview-main">
                 <span className="project-key">FOR</span>
                 <div>
-                  <h3>{data?.project.name ?? 'Product launch'}</h3>
+                  <h3>{data?.project.name ?? 'Loading project…'}</h3>
                   <p>
-                    Ship the first production-ready Forma Workspace experience.
+                    {data?.project.description ?? 'Loading project details…'}
                   </p>
                 </div>
               </div>
