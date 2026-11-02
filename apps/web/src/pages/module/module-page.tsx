@@ -18,6 +18,11 @@ const DocumentsWorkspace = lazy(() =>
     default: module.DocumentsWorkspace,
   })),
 )
+const ProductionWorkspace = lazy(() =>
+  import('./production-workspace').then((module) => ({
+    default: module.ProductionWorkspace,
+  })),
+)
 
 export function ModulePage({
   moduleId,
@@ -107,6 +112,16 @@ export function ModulePage({
             selected.id === 'library') ? (
           <Suspense fallback={<p role="status">Loading document workspace…</p>}>
             <DocumentsWorkspace
+              key={selected?.id ?? 'overview'}
+              sectionId={selected?.id}
+            />
+          </Suspense>
+        ) : module.id === 'production' &&
+          (!selected || selected.id === 'intake' || selected.id === 'queue') ? (
+          <Suspense
+            fallback={<p role="status">Loading production workspace…</p>}
+          >
+            <ProductionWorkspace
               key={selected?.id ?? 'overview'}
               sectionId={selected?.id}
             />

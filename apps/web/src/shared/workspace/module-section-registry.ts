@@ -13,16 +13,18 @@ const moduleSections: Record<string, ModuleSection[]> = {
     {
       id: 'intake',
       label: 'Job intake',
-      description: 'Receive work packages and define processing requirements.',
-      status: 'implementation',
+      description:
+        'Prepare browser-local work packages from existing tasks and document references.',
+      status: 'available',
       scope: ['Work package', 'Processing requirements', 'Source documents'],
     },
     {
       id: 'queue',
       label: 'Production queues',
-      description: 'Prioritize batches and assign operational owners.',
-      status: 'implementation',
-      scope: ['Batch priority', 'Team assignment', 'Due dates and SLA'],
+      description:
+        'Review draft and queued packages, priorities, owners and due dates on this browser.',
+      status: 'available',
+      scope: ['Package priority', 'Operational owners', 'Due dates'],
     },
     {
       id: 'processing',
