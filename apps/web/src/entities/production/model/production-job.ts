@@ -54,6 +54,8 @@ export const productionStatuses = [
   'processing',
   'quality',
   'approved',
+  'ready',
+  'handed-off',
 ] as const
 export const productionStatusLabels: Record<
   (typeof productionStatuses)[number],
@@ -64,6 +66,8 @@ export const productionStatusLabels: Record<
   processing: 'Processing',
   quality: 'Quality review',
   approved: 'QC approved',
+  ready: 'Ready for handoff',
+  'handed-off': 'Handoff recorded',
 }
 export const productionTransitions: Record<
   (typeof productionStatuses)[number],
@@ -73,8 +77,12 @@ export const productionTransitions: Record<
   queued: ['draft', 'processing'],
   processing: ['queued', 'quality'],
   quality: ['processing', 'approved', 'queued'],
-  approved: ['processing', 'queued'],
+  approved: ['ready', 'processing', 'queued'],
+  ready: ['handed-off', 'approved'],
+  'handed-off': [],
 }
+export const productionRecipientSchema = z.string().trim().min(1).max(160)
+
 export const productionJobSchema = productionJobInputSchema.extend({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -86,6 +94,7 @@ export const productionJobSchema = productionJobInputSchema.extend({
         to: z.enum(productionStatuses),
         note: z.string().trim().max(2000),
         reviewerId: z.string().min(1).optional(),
+        recipient: productionRecipientSchema.optional(),
         at: z.iso.datetime(),
       }),
     )

@@ -118,7 +118,7 @@ export function ModulePage({
           </Suspense>
         ) : module.id === 'production' &&
           (!selected ||
-            ['intake', 'queue', 'processing', 'quality'].includes(
+            ['intake', 'queue', 'processing', 'quality', 'delivery'].includes(
               selected.id,
             )) ? (
           <Suspense

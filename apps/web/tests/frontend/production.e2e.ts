@@ -409,3 +409,91 @@ test('tracks manual processing, quality rework and approval with notes across re
     table.getByRole('button', { name: 'Armor quality cycle', exact: true }),
   ).toHaveCount(0)
 })
+
+test('records readiness and a manual handoff for a saved QC-approved package', async ({
+  page,
+}) => {
+  await page.goto('/modules/production/delivery')
+  await page.evaluate((key) => {
+    const approved = {
+      id: 'approved-armor',
+      projectId: 'project-1',
+      name: 'Armor release package',
+      workType: 'general',
+      requirements: 'Check diagnostic results',
+      taskIds: ['FOR-18'],
+      documentReferenceIds: [],
+      ownerId: 'member-2',
+      priority: 'high',
+      status: 'approved',
+      revision: 4,
+      createdAt: '2026-11-02T00:00:00.000Z',
+      updatedAt: '2026-11-02T00:00:00.000Z',
+    }
+    localStorage.setItem(
+      key,
+      JSON.stringify([
+        approved,
+        {
+          ...approved,
+          id: 'draft-armor',
+          name: 'Draft armor package',
+          status: 'draft',
+          revision: 0,
+        },
+      ]),
+    )
+  }, productionKey)
+  await page.reload()
+  const table = page.getByRole('table', { name: 'Work packages', exact: true })
+  const editor = page.getByRole('dialog', { name: 'Work package editor' })
+  const packageButton = table.getByRole('button', {
+    name: 'Armor release package',
+    exact: true,
+  })
+  await expect(
+    table.getByRole('button', { name: 'Draft armor package', exact: true }),
+  ).toHaveCount(0)
+  await packageButton.click()
+  await expect(editor.getByText('Check diagnostic results')).toBeVisible()
+  const note = editor.getByLabel('Workflow note', { exact: true })
+  await note.fill('Validated the diagnostics and handoff instructions')
+  const ready = editor.getByRole('button', {
+    name: 'Mark ready for handoff',
+    exact: true,
+  })
+  await ready.click()
+  await expect(editor.getByRole('alert')).toContainText('Confirm the output')
+  await editor
+    .getByRole('checkbox', {
+      name: 'I checked the output and handoff instructions.',
+    })
+    .check()
+  await ready.click()
+  await expect(editor).toHaveCount(0)
+  await expect(
+    table.getByText('Ready for handoff', { exact: true }),
+  ).toBeVisible()
+  await packageButton.click()
+  await editor
+    .getByLabel('Handoff recipient', { exact: true })
+    .fill('Avengers Operations')
+  await note.fill('Diagnostics passed to the receiving team')
+  await editor
+    .getByRole('button', { name: 'Record handoff', exact: true })
+    .click()
+  await expect(editor).toHaveCount(0)
+  await page.reload()
+  await expect(
+    table.getByText('Handoff recorded', { exact: true }),
+  ).toBeVisible()
+  await packageButton.click()
+  const history = editor.getByRole('region', { name: 'Local workflow history' })
+  await expect(history).toContainText('Recipient: Avengers Operations')
+  await expect(history).toContainText(
+    'Diagnostics passed to the receiving team',
+  )
+  await expect(
+    editor.getByRole('button', { name: 'Record handoff', exact: true }),
+  ).toHaveCount(0)
+})

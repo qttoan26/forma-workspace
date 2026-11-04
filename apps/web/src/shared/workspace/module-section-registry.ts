@@ -45,9 +45,10 @@ const moduleSections: Record<string, ModuleSection[]> = {
     {
       id: 'delivery',
       label: 'Delivery',
-      description: 'Review release readiness and hand off approved output.',
-      status: 'implementation',
-      scope: ['Release checklist', 'Delivery milestones', 'Customer handoff'],
+      description:
+        'Confirm release readiness and record manual handoffs for QC-approved packages.',
+      status: 'available',
+      scope: ['Release confirmation', 'Handoff recipient', 'Local history'],
     },
   ],
   documents: [
