@@ -462,6 +462,11 @@ export function ProductionWorkspaceContent({
           members={data.members}
           context={context}
           projectHref={`${appBaseUrl}workspaces/${encodeURIComponent(data.workspace.slug)}/projects/${encodeURIComponent(data.project.id)}`}
+          emptyDescription={
+            sectionId === 'delivery'
+              ? 'QC-approved packages appear here. Clear the filters or review packages in Quality Control.'
+              : undefined
+          }
           onEdit={editJob}
         />
       ) : null}
