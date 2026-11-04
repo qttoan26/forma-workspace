@@ -368,3 +368,97 @@ it('allows active packages with missing sources back to the queue for plan repai
     )?.status,
   ).toBe('processing')
 })
+
+it('gates release and handoff for existing approved packages and allows source repair', async () => {
+  const approved = {
+    ...input,
+    id: 'legacy-approved',
+    projectId,
+    status: 'approved' as const,
+    revision: 4,
+    createdAt: '2026-11-02T00:00:00.000Z',
+    updatedAt: '2026-11-02T00:00:00.000Z',
+  }
+  localStorage.setItem(key, JSON.stringify([approved]))
+  const markReady = {
+    kind: 'status',
+    expected: approved,
+    status: 'ready',
+    note: 'Output checked against requirements',
+  } as const
+  await expect(
+    mutateProductionJob(projectId, markReady, getSources),
+  ).rejects.toThrow('Confirm the output')
+  await expect(
+    mutateProductionJob(
+      projectId,
+      {
+        kind: 'status',
+        expected: approved,
+        status: 'handed-off',
+        note: 'Delivered',
+        recipient: 'Ops',
+      },
+      getSources,
+    ),
+  ).rejects.toThrow('transition is not available')
+  const ready = (await mutateProductionJob(
+    projectId,
+    { ...markReady, releaseConfirmed: true },
+    getSources,
+  ))!
+  const handoff = {
+    kind: 'status',
+    expected: ready,
+    status: 'handed-off',
+    note: 'Output shared in operations channel',
+  } as const
+  await expect(
+    mutateProductionJob(projectId, { ...handoff, recipient: '  ' }, getSources),
+  ).rejects.toThrow('recipient')
+  const missingSources = () => Promise.resolve({ ...context, documents: [] })
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { ...handoff, recipient: 'Operations' },
+      missingSources,
+    ),
+  ).rejects.toThrow('unavailable')
+  const withdrawn = (await mutateProductionJob(
+    projectId,
+    {
+      kind: 'status',
+      expected: ready,
+      status: 'approved',
+      note: 'Source needs repair',
+    },
+    missingSources,
+  ))!
+  expect(withdrawn.status).toBe('approved')
+  const readyAgain = (await mutateProductionJob(
+    projectId,
+    { ...markReady, expected: withdrawn, releaseConfirmed: true },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { ...handoff, recipient: 'Operations' },
+      getSources,
+    ),
+  ).rejects.toBeInstanceOf(ProductionJobConflict)
+  const recorded = await mutateProductionJob(
+    projectId,
+    { ...handoff, expected: readyAgain, recipient: ' Operations ' },
+    getSources,
+  )
+  expect(recorded?.status).toBe('handed-off')
+  expect(
+    readProductionJobs(projectId)[0]?.workflowHistory?.at(-1),
+  ).toMatchObject({
+    from: 'ready',
+    to: 'handed-off',
+    recipient: 'Operations',
+    note: handoff.note,
+  })
+})

@@ -26,6 +26,7 @@ export function ProductionQueueTable({
   members,
   context,
   projectHref,
+  emptyDescription = 'Create a draft from existing tasks or clear the queue filters.',
   onEdit,
 }: {
   jobs: ProductionJob[]
@@ -33,6 +34,7 @@ export function ProductionQueueTable({
   members: Member[]
   context: ProductionSourceContext
   projectHref: string
+  emptyDescription?: string | undefined
   onEdit: (job: ProductionJob) => void
 }) {
   const [sorting, setSorting] = useState<SortingState>([
@@ -229,10 +231,7 @@ export function ProductionQueueTable({
               <tr>
                 <td className="production-empty" colSpan={columns.length}>
                   <strong>No matching work packages</strong>
-                  <p>
-                    Create a draft from existing tasks or clear the queue
-                    filters.
-                  </p>
+                  <p>{emptyDescription}</p>
                 </td>
               </tr>
             )}

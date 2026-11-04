@@ -30,6 +30,45 @@ import { FactoryIcon, XIcon } from '@/shared/ui/workspace-icons'
 import './production-workspace.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
+const deliveryStatuses: readonly ProductionJob['status'][] = [
+  'approved',
+  'ready',
+  'handed-off',
+]
+const sectionStatuses: Record<string, readonly ProductionJob['status'][]> = {
+  processing: ['queued', 'processing'],
+  quality: ['quality', 'approved'],
+  delivery: deliveryStatuses,
+}
+const stageLinks = {
+  processing: 'Processing',
+  quality: 'Quality control',
+  delivery: 'Delivery',
+}
+
+function transitionLabel(
+  from: ProductionJob['status'],
+  to: ProductionJob['status'],
+) {
+  switch (to) {
+    case 'draft':
+      return 'Return to draft'
+    case 'queued':
+      return from === 'draft' ? 'Queue package' : 'Return to queue'
+    case 'processing':
+      if (from === 'queued') return 'Start processing'
+      if (from === 'quality') return 'Request rework'
+      return 'Reopen processing'
+    case 'quality':
+      return 'Submit for quality review'
+    case 'approved':
+      return from === 'ready' ? 'Withdraw readiness' : 'Approve quality'
+    case 'ready':
+      return 'Mark ready for handoff'
+    case 'handed-off':
+      return 'Record handoff'
+  }
+}
 
 export function ProductionWorkspace({
   sectionId,
@@ -70,6 +109,8 @@ export function ProductionWorkspaceContent({
   } = useDocumentReferences(data.project.id)
   const [workflowNote, setWorkflowNote] = useState('')
   const [reviewerId, setReviewerId] = useState('')
+  const [releaseConfirmed, setReleaseConfirmed] = useState(false)
+  const [recipient, setRecipient] = useState('')
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all')
   const [owner, setOwner] = useState('all')
@@ -112,6 +153,8 @@ export function ProductionWorkspaceContent({
     setEditor(job)
     setWorkflowNote('')
     setReviewerId('')
+    setReleaseConfirmed(false)
+    setRecipient('')
     setMessage('')
     setActionError('')
     setRemoveConfirmation(false)
@@ -126,6 +169,7 @@ export function ProductionWorkspaceContent({
   function closeEditor() {
     if (!busy) setEditor(null)
   }
+  const visibleStatuses = sectionStatuses[sectionId ?? ''] ?? productionStatuses
   const filtered = useMemo(() => {
     const taskTitles = new Map(
       data.initialTasks.map((task) => [task.id, task.title]),
@@ -136,10 +180,7 @@ export function ProductionWorkspaceContent({
     const term = query.trim().toLocaleLowerCase()
     return jobs.filter(
       (job) =>
-        (sectionId !== 'processing' ||
-          ['queued', 'processing'].includes(job.status)) &&
-        (sectionId !== 'quality' ||
-          ['quality', 'approved'].includes(job.status)) &&
+        visibleStatuses.includes(job.status) &&
         (status === 'all' || job.status === status) &&
         (owner === 'all' ||
           (owner === 'unassigned' ? !job.ownerId : job.ownerId === owner)) &&
@@ -149,7 +190,7 @@ export function ProductionWorkspaceContent({
           .toLocaleLowerCase()
           .includes(term),
     )
-  }, [jobs, data, query, status, owner, type, priority, sectionId])
+  }, [jobs, data, query, status, owner, type, priority, visibleStatuses])
   async function changeJob(
     kind: 'status' | 'remove',
     targetStatus?: ProductionJob['status'],
@@ -170,6 +211,8 @@ export function ProductionWorkspaceContent({
               status: nextStatus,
               note: workflowNote,
               reviewerId,
+              releaseConfirmed,
+              recipient,
             },
         getSources,
       )
@@ -194,10 +237,7 @@ export function ProductionWorkspaceContent({
   }
   const unavailable = editor ? missingProductionSources(editor, context) : []
   return (
-    <section
-      className="production-workspace"
-      aria-label="Production intake and queue"
-    >
+    <section className="production-workspace" aria-label="Production workspace">
       <div className="production-context">
         <div>
           <FactoryIcon />
@@ -221,13 +261,13 @@ export function ProductionWorkspaceContent({
           >
             Queue
           </a>
-          {['processing', 'quality'].map((id) => (
+          {Object.entries(stageLinks).map(([id, label]) => (
             <a
               key={id}
               href={`${appBaseUrl}modules/production/${id}`}
               aria-current={sectionId === id ? 'page' : undefined}
             >
-              {id === 'processing' ? 'Processing' : 'Quality control'}
+              {label}
             </a>
           ))}
         </nav>
@@ -236,23 +276,29 @@ export function ProductionWorkspaceContent({
         className="production-metrics"
         aria-label="Production package summary"
       >
-        {[
-          ['Drafts', jobs.filter((job) => job.status === 'draft').length],
-          ['Queued', jobs.filter((job) => job.status === 'queued').length],
-          [
-            'Processing',
-            jobs.filter((job) => job.status === 'processing').length,
-          ],
-          [
-            'Quality review',
-            jobs.filter((job) => job.status === 'quality').length,
-          ],
-          [
-            'QC approved',
-            jobs.filter((job) => job.status === 'approved').length,
-          ],
-          ['Unassigned', jobs.filter((job) => !job.ownerId).length],
-        ].map(([label, count]) => (
+        {(sectionId === 'delivery'
+          ? deliveryStatuses.map((value) => [
+              productionStatusLabels[value],
+              jobs.filter((job) => job.status === value).length,
+            ])
+          : [
+              ['Drafts', jobs.filter((job) => job.status === 'draft').length],
+              ['Queued', jobs.filter((job) => job.status === 'queued').length],
+              [
+                'Processing',
+                jobs.filter((job) => job.status === 'processing').length,
+              ],
+              [
+                'Quality review',
+                jobs.filter((job) => job.status === 'quality').length,
+              ],
+              [
+                'QC approved',
+                jobs.filter((job) => job.status === 'approved').length,
+              ],
+              ['Unassigned', jobs.filter((job) => !job.ownerId).length],
+            ]
+        ).map(([label, count]) => (
           <article key={label}>
             <small>{label}</small>
             <strong>{error ? '—' : count}</strong>
@@ -260,9 +306,9 @@ export function ProductionWorkspaceContent({
         ))}
       </div>
       <p className="production-boundary">
-        Track manual processing and quality decisions for existing work
-        packages. No automated processing runs here. QC approval records a local
-        review; delivery is still in progress.
+        {sectionId === 'delivery'
+          ? 'Confirm readiness after QC. After handing off the output separately, record the recipient and a handoff note here.'
+          : 'Track manual processing, quality decisions and handoffs for work packages on this browser.'}
       </p>
       {message ? (
         <p className="production-success" role="status">
@@ -310,7 +356,9 @@ export function ProductionWorkspaceContent({
               ? 'Processing · queued and active'
               : sectionId === 'quality'
                 ? 'Quality · review and approved'
-                : 'Production queue'}
+                : sectionId === 'delivery'
+                  ? 'Delivery · readiness and handoff'
+                  : 'Production queue'}
           </p>
           <h2>Work packages</h2>
         </div>
@@ -338,7 +386,7 @@ export function ProductionWorkspaceContent({
             onChange={(event) => setStatus(event.target.value)}
           >
             <option value="all">All statuses</option>
-            {productionStatuses.map((value) => (
+            {visibleStatuses.map((value) => (
               <option key={value} value={value}>
                 {productionStatusLabels[value]}
               </option>
@@ -414,6 +462,11 @@ export function ProductionWorkspaceContent({
           members={data.members}
           context={context}
           projectHref={`${appBaseUrl}workspaces/${encodeURIComponent(data.workspace.slug)}/projects/${encodeURIComponent(data.project.id)}`}
+          emptyDescription={
+            sectionId === 'delivery'
+              ? 'QC-approved packages appear here. Clear the filters or review packages in Quality Control.'
+              : undefined
+          }
           onEdit={editJob}
         />
       ) : null}
@@ -447,42 +500,85 @@ export function ProductionWorkspaceContent({
                   onBusyChange={setBusy}
                   onEdited={() => setDirty(true)}
                 />
-              ) : (
-                <p>
-                  Return the package to the queue before editing its plan.
-                  Source tasks and documents remain unchanged.
-                </p>
-              )}
-              <div className="production-workflow-fields">
-                <label>
-                  Workflow note
-                  <textarea
-                    value={workflowNote}
-                    maxLength={2000}
-                    onChange={(event) => setWorkflowNote(event.target.value)}
-                    disabled={busy}
-                    placeholder="Handoff summary, review findings, corrections or reason to reopen…"
-                  />
-                </label>
-                {editor.status === 'quality' ? (
+              ) : editor.status !== 'handed-off' ? (
+                <p>Return the package to the queue before editing its plan.</p>
+              ) : null}
+              {deliveryStatuses.includes(editor.status) ? (
+                <dl className="production-release-details">
+                  <dt>Requirements</dt>
+                  <dd>{editor.requirements || 'No requirements recorded'}</dd>
+                  <dt>Source tasks</dt>
+                  <dd>{editor.taskIds.join(', ')}</dd>
+                  <dt>Document references</dt>
+                  <dd>
+                    {editor.documentReferenceIds
+                      .map(
+                        (id) =>
+                          references.find((reference) => reference.id === id)
+                            ?.name ?? id,
+                      )
+                      .join(', ') || 'None'}
+                  </dd>
+                </dl>
+              ) : null}
+              {editor.status !== 'handed-off' ? (
+                <div className="production-workflow-fields">
+                  {editor.status === 'approved' ? (
+                    <label className="production-release-confirmation">
+                      <input
+                        type="checkbox"
+                        checked={releaseConfirmed}
+                        onChange={(event) =>
+                          setReleaseConfirmed(event.target.checked)
+                        }
+                        disabled={busy}
+                      />
+                      I checked the output and handoff instructions.
+                    </label>
+                  ) : null}
+                  {editor.status === 'ready' ? (
+                    <label>
+                      Handoff recipient
+                      <input
+                        type="text"
+                        value={recipient}
+                        maxLength={160}
+                        onChange={(event) => setRecipient(event.target.value)}
+                        disabled={busy}
+                        placeholder="Receiving team or person"
+                      />
+                    </label>
+                  ) : null}
                   <label>
-                    Quality reviewer
-                    <select
-                      aria-label="Quality reviewer"
-                      value={reviewerId}
-                      onChange={(event) => setReviewerId(event.target.value)}
+                    Workflow note
+                    <textarea
+                      value={workflowNote}
+                      maxLength={2000}
+                      onChange={(event) => setWorkflowNote(event.target.value)}
                       disabled={busy}
-                    >
-                      <option value="">Select reviewer</option>
-                      {data.members.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.name}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="Handoff summary, review findings, corrections or reason to reopen…"
+                    />
                   </label>
-                ) : null}
-              </div>
+                  {editor.status === 'quality' ? (
+                    <label>
+                      Quality reviewer
+                      <select
+                        aria-label="Quality reviewer"
+                        value={reviewerId}
+                        onChange={(event) => setReviewerId(event.target.value)}
+                        disabled={busy}
+                      >
+                        <option value="">Select reviewer</option>
+                        {data.members.map((member) => (
+                          <option key={member.id} value={member.id}>
+                            {member.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+                </div>
+              ) : null}
               {(editor.workflowHistory ?? []).length ? (
                 <section
                   className="production-workflow-history"
@@ -513,6 +609,9 @@ export function ProductionWorkspaceContent({
                               )?.name ?? 'Unavailable reviewer'}
                             </span>
                           ) : null}
+                          {entry.recipient ? (
+                            <span>Recipient: {entry.recipient}</span>
+                          ) : null}
                           {entry.note ? <p>{entry.note}</p> : null}
                         </li>
                       ))}
@@ -534,27 +633,14 @@ export function ProductionWorkspaceContent({
                       dirty ||
                       (target !== 'draft' &&
                         !(target === 'queued' && editor.status !== 'draft') &&
+                        !(target === 'approved' && editor.status === 'ready') &&
                         unavailable.length > 0)
                     }
                     onClick={() => {
                       void changeJob('status', target)
                     }}
                   >
-                    {target === 'queued'
-                      ? editor.status === 'draft'
-                        ? 'Queue package'
-                        : 'Return to queue'
-                      : target === 'draft'
-                        ? 'Return to draft'
-                        : target === 'quality'
-                          ? 'Submit for quality review'
-                          : target === 'approved'
-                            ? 'Approve quality'
-                            : editor.status === 'queued'
-                              ? 'Start processing'
-                              : editor.status === 'quality'
-                                ? 'Request rework'
-                                : 'Reopen processing'}
+                    {transitionLabel(editor.status, target)}
                   </Button>
                 ))}
                 <button

@@ -3,6 +3,7 @@ import {
   productionJobInputSchema,
   productionJobSchema,
   productionTransitions,
+  productionRecipientSchema,
   assertProductionSources,
   type ProductionJob,
   type ProductionJobInput,
@@ -54,6 +55,8 @@ type JobMutation =
       status: ProductionJob['status']
       note?: string | undefined
       reviewerId?: string | undefined
+      releaseConfirmed?: boolean
+      recipient?: string
     }
   | { kind: 'remove'; expected: Expected }
 
@@ -100,6 +103,7 @@ export async function mutateProductionJob(
         throw new Error(
           'Return this package to the queue before editing its plan.',
         )
+      let recipient: string | undefined
       if (mutation.kind === 'status') {
         if (!productionTransitions[existing.status].includes(mutation.status))
           throw new Error('This workflow transition is not available.')
@@ -113,12 +117,23 @@ export async function mutateProductionJob(
         if (
           (mutation.status === 'quality' ||
             existing.status === 'quality' ||
-            existing.status === 'approved') &&
+            existing.status === 'approved' ||
+            existing.status === 'ready') &&
           !note
         )
+          throw new Error('Add a workflow note before continuing.')
+        if (mutation.status === 'ready' && mutation.releaseConfirmed !== true)
           throw new Error(
-            'Add a handoff, review or reopening note before continuing.',
+            'Confirm the output and handoff instructions before marking this package ready.',
           )
+        if (mutation.status === 'handed-off') {
+          const parsedRecipient = productionRecipientSchema.safeParse(
+            mutation.recipient,
+          )
+          if (!parsedRecipient.success)
+            throw new Error('Enter a handoff recipient of 1 to 160 characters.')
+          recipient = parsedRecipient.data
+        }
         if (
           existing.status === 'quality' &&
           (!mutation.reviewerId ||
@@ -142,7 +157,13 @@ export async function mutateProductionJob(
           mutation.kind === 'status' &&
           mutation.status === 'queued' &&
           existing.status !== 'draft'
-        if (needsSources && !returningToQueue) {
+        const withdrawingReadiness =
+          mutation.kind === 'status' &&
+          existing.status === 'ready' &&
+          mutation.status === 'approved'
+        if (context && context.projectId !== projectId)
+          throw new Error('Source context does not match this project.')
+        if (needsSources && !returningToQueue && !withdrawingReadiness) {
           if (!context) throw new Error('Source context is unavailable.')
           assertProductionSources(projectId, input, context)
         }
@@ -165,6 +186,7 @@ export async function mutateProductionJob(
                       existing.status === 'quality'
                         ? mutation.reviewerId
                         : undefined,
+                    recipient,
                     at: now,
                   },
                 ]
