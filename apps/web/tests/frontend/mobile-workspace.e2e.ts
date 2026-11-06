@@ -52,11 +52,12 @@ test('opens all modules from the dock and returns focus after dismissal', async 
   await page.goto('/modules/work/overview')
   const browse = page.getByRole('button', { name: 'Browse modules' })
   await browse.click()
-  const sidebar = page.getByRole('complementary', { name: 'Main navigation' })
+  const sidebar = page.getByRole('dialog', { name: 'Main navigation' })
   await expect(
     sidebar.getByRole('button', { name: 'Close navigation' }),
   ).toBeFocused()
   await expect(page.locator('body')).toHaveCSS('overflow', 'hidden')
+  await expect(sidebar).toHaveCSS('bottom', '0px')
   await page.keyboard.press('Shift+Tab')
   await expect(
     sidebar.getByRole('link', { name: 'Forma Workspace home' }),
@@ -116,6 +117,7 @@ test('contains the mobile table and keeps task editing usable in a short viewpor
     .click()
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
   await expect(drawer).toBeVisible()
+  await expect(drawer).toHaveCSS('animation-name', 'forma-overlay-rise')
   await page.setViewportSize({ width: 393, height: 500 })
   await drawer.getByLabel('Title', { exact: true }).fill('Mobile task update')
   expect(

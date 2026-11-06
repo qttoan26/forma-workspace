@@ -51,13 +51,9 @@
   }
 
   .workspace-shell .workspace-sidebar {
-    padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    width: calc(
-      var(--workspace-sidebar-panel-size) + env(safe-area-inset-left, 0px)
-    );
-    border-radius: 0 28px 28px 0;
+    padding-inline: env(safe-area-inset-left, 0px)
+      env(safe-area-inset-right, 0px);
   }
 
   .workspace-shell .workspace-sidebar-inner {
@@ -239,20 +235,9 @@
     height: 44px;
     border-radius: 50%;
   }
-
-  .task-editor-backdrop .task-editor-drawer {
-    overscroll-behavior: contain;
-    scroll-padding-block: 100px 24px;
-  }
 }
 
 @media (max-width: 700px), (max-width: 1024px) and (pointer: coarse) {
-  .task-editor-backdrop .task-editor-drawer {
-    height: min(calc(100dvh - env(safe-area-inset-top, 0px) - 12px), 46rem);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    border-radius: 28px 28px 0 0;
-  }
-
   .task-editor-drawer .task-form-heading {
     position: sticky;
     top: -20px;

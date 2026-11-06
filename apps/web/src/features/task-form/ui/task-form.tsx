@@ -154,7 +154,7 @@ export function TaskForm({
           aria-labelledby={task ? `task-details-tab-${task.id}` : undefined}
         >
           <Field label="Title" error={errors.title?.message}>
-            <input autoFocus {...register('title')} />
+            <input data-modal-autofocus {...register('title')} />
           </Field>
 
           <Field label="Description" error={errors.description?.message}>

@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useWorkData } from './use-work-data'
 import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
@@ -26,6 +19,7 @@ import {
 import { ProductionJobForm } from '@/features/production-intake/ui/production-job-form'
 import { ProductionQueueTable } from '@/widgets/production-queue/production-queue-table'
 import { Button } from '@/shared/ui'
+import { Modal } from '@/shared/ui/modal/modal'
 import { FactoryIcon, XIcon } from '@/shared/ui/workspace-icons'
 import './production-workspace.css'
 
@@ -702,39 +696,16 @@ function ProductionEditorModal({
   onClose: () => void
   children: ReactNode
 }) {
-  const dialog = useRef<HTMLDialogElement>(null)
-  const closeButton = useRef<HTMLButtonElement>(null)
-  useEffect(() => {
-    const trigger =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const element = dialog.current
-    element?.showModal()
-    closeButton.current?.focus()
-    return () => {
-      element?.close()
-      document.body.style.overflow = previous
-      if (trigger?.isConnected) trigger.focus()
-    }
-  }, [])
   return (
-    <dialog
+    <Modal
       className="production-editor-modal"
-      ref={dialog}
       aria-label="Work package editor"
-      onCancel={(event) => {
-        event.preventDefault()
-        if (!busy) onClose()
-      }}
+      onDismiss={onClose}
     >
       <header>
         <h2>Work package details</h2>
         <button
           type="button"
-          ref={closeButton}
           disabled={busy}
           aria-label="Close package editor"
           onClick={onClose}
@@ -743,6 +714,6 @@ function ProductionEditorModal({
         </button>
       </header>
       {children}
-    </dialog>
+    </Modal>
   )
 }

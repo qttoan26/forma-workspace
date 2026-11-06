@@ -520,3 +520,31 @@ test('honors reduced motion and restores the sidebar preference after reload', a
     page.getByRole('heading', { level: 1, name: 'Tasks' }),
   ).toBeVisible()
 })
+
+test('confirms Kanban deletion in a dialog and keeps Undo available', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/workspaces/forma/projects/project-1')
+  const trigger = page.getByRole('button', {
+    name: 'Delete Upgrade the Mark LXXXV armor',
+  })
+  const dialog = page.getByRole('alertdialog', { name: 'Delete task?' })
+  await trigger.click()
+  await expect(dialog).toHaveCSS('animation-name', 'none')
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused()
+  await page.keyboard.press('n')
+  await expect(page.getByRole('dialog', { name: 'Create task' })).toBeHidden()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  await expect(trigger).toBeFocused()
+
+  await trigger.click()
+  await dialog.getByRole('button', { name: 'Delete task' }).click()
+  await expect(dialog).toBeHidden()
+  await expect(trigger).toHaveCount(0)
+  const undo = page.getByRole('button', { name: 'Undo' })
+  await expect(undo).toBeFocused()
+  await undo.click()
+  await expect(trigger).toBeVisible()
+})

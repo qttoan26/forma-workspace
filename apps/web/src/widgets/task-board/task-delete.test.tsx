@@ -27,12 +27,7 @@ describe('TaskBoard task deletion', () => {
     window.localStorage.clear()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('deletes a task after confirmation and persists the deletion', () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
     const { unmount } = render(
       <TaskBoard initialTasks={initialTasks} members={members} />,
     )
@@ -48,9 +43,12 @@ describe('TaskBoard task deletion', () => {
       }),
     )
 
-    expect(confirm).toHaveBeenCalledWith(
-      'Delete "Create board interaction model"?',
-    )
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete task?' })
+    expect(dialog).toHaveAccessibleDescription(/Create board interaction model/)
+    expect(
+      screen.getByText('Create board interaction model'),
+    ).toBeInTheDocument()
+    confirmDeletion()
     expect(
       screen.queryByText('Create board interaction model'),
     ).not.toBeInTheDocument()
@@ -64,7 +62,6 @@ describe('TaskBoard task deletion', () => {
   })
 
   it('moves focus to Undo after deleting a task', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     const task = screen
@@ -77,12 +74,12 @@ describe('TaskBoard task deletion', () => {
     })
     deleteButton.focus()
     fireEvent.click(deleteButton)
+    confirmDeletion()
 
     expect(screen.getByRole('button', { name: 'Undo' })).toHaveFocus()
   })
 
   it('restores a deleted task with undo and persists the restoration', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     const { unmount } = render(
       <TaskBoard initialTasks={initialTasks} members={members} />,
     )
@@ -97,6 +94,8 @@ describe('TaskBoard task deletion', () => {
         name: 'Delete Create board interaction model',
       }),
     )
+
+    confirmDeletion()
 
     expect(
       screen.getByText('Deleted Create board interaction model.'),
@@ -119,7 +118,6 @@ describe('TaskBoard task deletion', () => {
   })
 
   it('keeps a task when deletion is cancelled', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false)
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     const task = screen
@@ -127,11 +125,17 @@ describe('TaskBoard task deletion', () => {
       .closest('article')
     expect(task).not.toBeNull()
 
-    fireEvent.click(
-      within(task as HTMLElement).getByRole('button', {
-        name: 'Delete Create board interaction model',
-      }),
-    )
+    const deleteButton = within(task as HTMLElement).getByRole('button', {
+      name: 'Delete Create board interaction model',
+    })
+    deleteButton.focus()
+    fireEvent.click(deleteButton)
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete task?' })
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' })
+    expect(cancel).toHaveFocus()
+    fireEvent.click(cancel)
+    expect(dialog).not.toBeInTheDocument()
+    expect(deleteButton).toHaveFocus()
 
     expect(
       screen.getByText('Create board interaction model'),
@@ -139,7 +143,6 @@ describe('TaskBoard task deletion', () => {
   })
 
   it('closes the edit form when the edited task is deleted', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     const task = screen
@@ -162,8 +165,15 @@ describe('TaskBoard task deletion', () => {
       }),
     )
 
+    confirmDeletion()
+
     expect(
       screen.queryByRole('button', { name: 'Save changes' }),
     ).not.toBeInTheDocument()
   })
 })
+
+function confirmDeletion() {
+  const dialog = screen.getByRole('alertdialog', { name: 'Delete task?' })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Delete task' }))
+}

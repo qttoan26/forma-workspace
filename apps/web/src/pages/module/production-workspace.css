@@ -591,3 +591,19 @@
     font-size: 1rem;
   }
 }
+
+@media (max-width: 700px), (max-width: 1024px) and (pointer: coarse) {
+  .production-editor-modal {
+    --forma-overlay-travel: 100%;
+    --forma-overlay-start-opacity: 1;
+    --forma-overlay-duration: 260ms;
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
+    margin: 0;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+    border-radius: var(--forma-radius-xl) var(--forma-radius-xl) 0 0;
+  }
+}

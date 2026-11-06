@@ -309,6 +309,8 @@ test.describe('Phone production queue', () => {
       .getByRole('button', { name: 'Phone package 00', exact: true })
       .click()
     const editor = page.getByRole('dialog', { name: 'Work package editor' })
+    await expect(editor).toHaveCSS('bottom', '0px')
+    await expect(editor).toHaveCSS('animation-name', 'forma-overlay-rise')
     await expect(editor.getByLabel('Package name', { exact: true })).toHaveCSS(
       'font-size',
       '16px',
