@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import {
   Chart,
   ArcElement,
@@ -7,6 +7,7 @@ import {
   CategoryScale,
   DoughnutController,
   LinearScale,
+  PieController,
   Tooltip,
 } from 'chart.js'
 
@@ -24,11 +25,15 @@ Chart.register(
   CategoryScale,
   DoughnutController,
   LinearScale,
+  PieController,
   Tooltip,
 )
 
 const statusColors = ['#8295a7', '#4078bc', '#cc8a26', '#19816b']
 const workloadColors = ['#4078bc', '#19816b']
+
+type StatusChartKind = 'doughnut' | 'pie' | 'bar'
+type WorkloadChartMode = 'stacked' | 'grouped'
 
 export function WorkInsights({
   tasks,
@@ -39,6 +44,8 @@ export function WorkInsights({
   members: Member[]
   projectName: string
 }) {
+  const [statusKind, setStatusKind] = useState<StatusChartKind>('doughnut')
+  const [workloadMode, setWorkloadMode] = useState<WorkloadChartMode>('stacked')
   const summary = useMemo(() => summarizeWork(tasks, members), [tasks, members])
   const statusSeries = useMemo(
     () => [
@@ -82,19 +89,38 @@ export function WorkInsights({
         </p>
         {summary.total ? (
           <>
-            <div className="work-insight-status-layout">
-              <div className="work-insight-doughnut">
+            <label className="work-insight-chart-type">
+              Chart type
+              <select
+                aria-label="Task status chart type"
+                value={statusKind}
+                onChange={(event) =>
+                  setStatusKind(event.target.value as StatusChartKind)
+                }
+              >
+                <option value="doughnut">Doughnut</option>
+                <option value="pie">Pie</option>
+                <option value="bar">Horizontal bars</option>
+              </select>
+            </label>
+            <div
+              className="work-insight-status-layout"
+              data-chart-kind={statusKind}
+            >
+              <div className="work-insight-status-chart">
                 <InsightChart
-                  kind="doughnut"
+                  kind={statusKind}
                   label="Task status distribution"
                   labels={statusLabels}
                   series={statusSeries}
                   colors={statusColors}
                 />
-                <div className="work-insight-completion" aria-hidden="true">
-                  <strong>{summary.completion}%</strong>
-                  <span>complete</span>
-                </div>
+                {statusKind === 'doughnut' ? (
+                  <div className="work-insight-completion" aria-hidden="true">
+                    <strong>{summary.completion}%</strong>
+                    <span>complete</span>
+                  </div>
+                ) : null}
               </div>
               <dl className="work-insight-status-data">
                 {summary.statuses.map((item, index) => (
@@ -135,21 +161,36 @@ export function WorkInsights({
         </p>
         {summary.total ? (
           <>
-            <div className="work-insight-legend">
-              <span>
-                <i
-                  style={{ backgroundColor: workloadColors[0] }}
-                  aria-hidden="true"
-                />
-                Open
-              </span>
-              <span>
-                <i
-                  style={{ backgroundColor: workloadColors[1] }}
-                  aria-hidden="true"
-                />
-                Completed
-              </span>
+            <div className="work-insight-workload-controls">
+              <label className="work-insight-chart-type">
+                Chart type
+                <select
+                  aria-label="Owner workload chart type"
+                  value={workloadMode}
+                  onChange={(event) =>
+                    setWorkloadMode(event.target.value as WorkloadChartMode)
+                  }
+                >
+                  <option value="stacked">Stacked bars</option>
+                  <option value="grouped">Grouped bars</option>
+                </select>
+              </label>
+              <div className="work-insight-legend">
+                <span>
+                  <i
+                    style={{ backgroundColor: workloadColors[0] }}
+                    aria-hidden="true"
+                  />
+                  Open
+                </span>
+                <span>
+                  <i
+                    style={{ backgroundColor: workloadColors[1] }}
+                    aria-hidden="true"
+                  />
+                  Completed
+                </span>
+              </div>
             </div>
             <ScrollRegion
               label="Owner workload chart"
@@ -157,10 +198,17 @@ export function WorkInsights({
             >
               <div
                 className="work-insight-bar"
-                style={{ height: Math.max(170, summary.owners.length * 38) }}
+                style={{
+                  height: `${Math.max(
+                    10.625,
+                    summary.owners.length *
+                      (workloadMode === 'stacked' ? 2.375 : 3),
+                  )}rem`,
+                }}
               >
                 <InsightChart
                   kind="bar"
+                  stacked={workloadMode === 'stacked'}
                   label="Open and completed tasks by owner"
                   labels={ownerLabels}
                   series={workloadSeries}
@@ -204,7 +252,8 @@ export function WorkInsights({
 }
 
 interface InsightChartProps {
-  kind: 'doughnut' | 'bar'
+  kind: StatusChartKind
+  stacked?: boolean
   label: string
   labels: string[]
   series: { label: string; values: number[] }[]
@@ -213,6 +262,7 @@ interface InsightChartProps {
 
 function InsightChart({
   kind,
+  stacked = false,
   label,
   labels,
   series,
@@ -230,7 +280,7 @@ function InsightChart({
         datasets: series.map((item, index) => ({
           label: item.label,
           data: item.values,
-          backgroundColor: kind === 'doughnut' ? colors : colors[index],
+          backgroundColor: series.length === 1 ? colors : colors[index],
           borderWidth: 0,
           ...(kind === 'bar' ? { borderRadius: 4, maxBarThickness: 24 } : {}),
         })),
@@ -241,24 +291,24 @@ function InsightChart({
         maintainAspectRatio: false,
         animation: false,
         resizeDelay: 80,
-        ...(kind === 'doughnut'
-          ? { cutout: '74%' }
-          : {
+        ...(kind === 'bar'
+          ? {
               indexAxis: 'y' as const,
               scales: {
                 x: {
-                  stacked: true,
+                  stacked,
                   beginAtZero: true,
                   ticks: { precision: 0, color: '#52646f' },
                   grid: { color: '#e8eef0' },
                 },
                 y: {
-                  stacked: true,
+                  stacked,
                   ticks: { color: '#344b57' },
                   grid: { display: false },
                 },
               },
-            }),
+            }
+          : { cutout: kind === 'doughnut' ? '74%' : 0 }),
         plugins: {
           tooltip: { enabled: true, bodyFont: font, titleFont: font },
         },
@@ -273,7 +323,7 @@ function InsightChart({
       disposed = true
       chart.destroy()
     }
-  }, [kind, labels, series, colors])
+  }, [kind, stacked, labels, series, colors])
   return (
     <canvas ref={canvasRef} role="img" aria-label={label}>
       Chart data is also available in the adjacent labels or workload data
