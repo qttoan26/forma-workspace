@@ -194,6 +194,7 @@ for (const { path, heading } of [
 
     await page.keyboard.press('Enter')
     await expect(page.getByRole('main')).toBeFocused()
+    await expect(page).toHaveURL(new URL(path, page.url()).href)
   })
 }
 
