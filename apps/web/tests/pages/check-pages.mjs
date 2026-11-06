@@ -76,6 +76,32 @@ try {
     await page.getByRole('link', { name: 'Back to workspace home' }).click()
     await page.getByRole('heading', { name: 'Keep the work moving.' }).waitFor()
     assert.equal(page.url(), home)
+
+    const vendors = home + 'modules/vendors'
+    assert.equal((await page.goto(vendors)).status(), 404)
+    await page
+      .getByRole('heading', { name: 'Vendor collaboration flow' })
+      .waitFor()
+    await page
+      .getByRole('region', { name: 'Vendors areas' })
+      .getByRole('link', { name: /Vendor deliveries/ })
+      .click()
+    await page.getByRole('heading', { name: 'Vendor deliveries' }).waitFor()
+
+    const access = home + 'modules/admin/access'
+    assert.equal((await page.goto(access)).status(), 404)
+    await page
+      .getByRole('heading', { name: 'Delivery milestone access' })
+      .waitFor()
+    assert.equal((await page.reload()).status(), 404)
+    await page
+      .getByText(/Access management is available in a connected workspace/)
+      .waitFor()
+    assert.equal(
+      await page.getByRole('button', { name: 'Look up access' }).count(),
+      0,
+    )
+
     assert.deepEqual(failures, [])
     console.log(
       'Pages static fallback passed on mobile: dashboard, prefixed navigation, task deep link + reload, project not found and return home.',

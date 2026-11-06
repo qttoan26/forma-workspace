@@ -1,0 +1,51 @@
+.admin-delivery-access fieldset {
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.admin-delivery-access legend {
+  margin-bottom: 0.75rem;
+  font-weight: 650;
+}
+
+.admin-access-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem;
+}
+
+.admin-access-fields label {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+  font-weight: 550;
+}
+
+.admin-access-fields :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text);
+  font: inherit;
+}
+
+.admin-access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-delivery-access [role='alert'] {
+  color: var(--forma-color-error-text);
+}
+
+.admin-delivery-access button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

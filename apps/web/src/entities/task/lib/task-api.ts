@@ -1,5 +1,6 @@
 import { taskCollectionSchema, type Task } from '@/entities/task/model/task'
 import {
+  getApiBaseUrl,
   getApiAuthorizationHeader,
   handleApiUnauthorizedResponse,
 } from '@/shared/api/api-auth'
@@ -26,7 +27,7 @@ export class ProjectTaskApiConflictError extends Error {
 }
 
 export function getTaskApiBaseUrl(): string {
-  return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
+  return getApiBaseUrl()
 }
 
 export async function loadProjectTasksFromApi(
