@@ -57,7 +57,7 @@ export const workSections: WorkSection[] = [
   {
     id: 'timeline',
     label: 'Timeline',
-    description: 'Tasks ordered by delivery date',
+    description: 'Weekly timeline of project task deadlines',
     status: 'available',
   },
   {

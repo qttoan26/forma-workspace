@@ -4,6 +4,7 @@ import {
   taskStatuses,
   type Task,
 } from '@/entities/task/model/task'
+import { localDateKey } from '@/shared/lib/local-date-key'
 
 export const workTaskScopes = ['all', 'open', 'overdue', 'completed'] as const
 export const workDueFilters = ['all', 'today', 'week', 'none'] as const
@@ -32,10 +33,6 @@ export function compactWorkTaskSearch(search: WorkTaskSearch) {
         value !== defaultWorkTaskSearch[key as keyof WorkTaskSearch],
     ),
   )
-}
-
-export function localDateKey(date = new Date()) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 export function isTaskOverdue(task: Task, today: string) {
