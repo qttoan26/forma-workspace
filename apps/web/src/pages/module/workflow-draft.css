@@ -6,6 +6,7 @@
 }
 
 .workflow-draft-form,
+.workflow-draft-field,
 .workflow-draft-form label,
 .workflow-draft-preview ol {
   display: grid;

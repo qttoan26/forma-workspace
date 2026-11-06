@@ -18,11 +18,37 @@ vi.mock('@/shared/auth/auth-session', () => ({
 
 beforeEach(() => {
   localStorage.clear()
+  sessionStorage.clear()
   localStorage.setItem('forma-workspace:sidebar-expanded:v1', 'true')
 })
 afterEach(cleanup)
 
 describe('Workspace section navigation', () => {
+  it('restores the workflow draft for the selected account only', async () => {
+    const showDraft = (accountId: string) => (
+      <ModulePage
+        moduleId="automation"
+        sectionId="workflows"
+        accountId={accountId}
+      />
+    )
+    const { rerender } = render(showDraft('account-1'))
+    const nameField = () =>
+      screen.findByRole('textbox', { name: 'Workflow name' })
+    fireEvent.change(await nameField(), {
+      target: { value: 'Account one draft' },
+    })
+
+    rerender(showDraft('account-2'))
+    expect(await nameField()).toHaveValue('')
+    fireEvent.change(await nameField(), {
+      target: { value: 'Account two draft' },
+    })
+
+    rerender(showDraft('account-1'))
+    expect(await nameField()).toHaveValue('Account one draft')
+  })
+
   it('keeps the active Work group and its current detail together in one sidebar', async () => {
     render(<ModulePage moduleId="work" sectionId="projects" />)
     const navigation = screen.getByRole('navigation', { name: 'Work sections' })
