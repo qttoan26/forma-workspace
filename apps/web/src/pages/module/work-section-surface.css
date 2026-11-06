@@ -402,11 +402,13 @@
 }
 @media (max-width: 600px) {
   .work-task-filters {
-    grid-template-columns: minmax(0, 1fr) auto;
     padding: 0.875rem;
     gap: 0.625rem;
   }
-  .work-task-search {
+  .work-task-explorer .work-task-filters {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .work-task-explorer .work-task-search {
     grid-column: 1;
   }
   .work-task-filters .work-task-filter-toggle {
