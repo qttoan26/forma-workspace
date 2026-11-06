@@ -9,10 +9,13 @@ export interface OrganizationScope {
   audience: 'customer' | 'vendor'
 }
 
-interface OrganizationMembership {
+export interface OrganizationMembership {
   _id: string
   state: 'inactive' | 'active' | 'revoked'
   deliveryRead: boolean
+  revision?: number
+  updatedBy?: string
+  updatedAt?: Date
 }
 
 export const organizationMembershipCollection = 'organization_memberships'

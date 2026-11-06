@@ -38,6 +38,12 @@ Use the existing NestJS authentication guard and MongoDB service. The guard esta
 
 Build and test the membership lookup before adding publication or external reads. Include active membership, missing permission, revoked membership, the same account in an unrelated organization, and a matching organization in a different workspace. Keep existing task owner authorization in place. Provisioning, relationship records and the publication workflow each need their own authorization checks before their endpoints are exposed.
 
+### Membership administration
+
+The authenticated Admin API uses `GET` and `PUT` on `/api/admin/workspaces/:workspaceId/organizations/:organizationId/:audience/memberships/:accountId/delivery-access`. The server uses the authenticated subject as the actor. The caller must have an active record in `organization_membership_admins` for the exact workspace, organization and `customer` or `vendor` audience. A deployment operator provisions that authority in MongoDB with the key `JSON.stringify([workspaceId, organizationId, audience, actorAccountId])` and `active: true`. Project ownership and delivery-read membership do not grant administration.
+
+`GET` returns `{ deliveryRead, revision }`. A missing membership starts with delivery access disabled and revision zero. Legacy records retain their existing access and start at revision zero. To grant or revoke delivery access, send `{ deliveryRead, expectedRevision }` with the revision from the last read. A stale write returns HTTP 409. Each successful write records the actor, time and new revision on the membership.
+
 ### Acceptance cases
 
 - A permitted customer sees only publications for its linked requests. A permitted vendor sees only publications for its linked assignments. Verify isolation with unrelated organizations in the same workspace and with another workspace.
