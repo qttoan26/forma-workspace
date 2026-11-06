@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { z } from 'zod'
 
 import { Button, Field } from '@/shared/ui'
@@ -55,6 +55,7 @@ export function WorkflowDraft({
 }: {
   accountId?: string | undefined
 }) {
+  const formId = useId()
   const draftKey = accountId
     ? `forma:automation-draft:v1:${import.meta.env.BASE_URL}:${accountId}`
     : undefined
@@ -161,8 +162,10 @@ export function WorkflowDraft({
               ))}
             </select>
           </Field>
-          <Field label="Condition (optional)">
+          <div className="workflow-draft-field">
+            <label htmlFor={`${formId}-condition`}>Condition (optional)</label>
             <textarea
+              id={`${formId}-condition`}
               name="condition"
               value={draft.condition}
               onChange={(event) =>
@@ -171,9 +174,11 @@ export function WorkflowDraft({
               rows={2}
               maxLength={500}
             />
-          </Field>
-          <Field label="Action">
+          </div>
+          <div className="workflow-draft-field">
+            <label htmlFor={`${formId}-action`}>Action</label>
             <textarea
+              id={`${formId}-action`}
               name="action"
               value={draft.action}
               onChange={(event) => updateDraft({ action: event.target.value })}
@@ -181,7 +186,7 @@ export function WorkflowDraft({
               maxLength={1000}
               required
             />
-          </Field>
+          </div>
           <label className="workflow-draft-approval">
             <input
               name="approval"
