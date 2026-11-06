@@ -136,6 +136,9 @@ jobs:
             http://127.0.0.1:3001/api/projects/project-smoke/tasks)
           test "$cross_user_status" = '404'
 
+      - name: Verify MongoDB organization membership isolation
+        run: docker exec -i -w /app/apps/api forma-api node < apps/api/scripts/verify-organization-membership.cjs
+
       - name: Verify readiness fails when MongoDB is unavailable
         run: |
           docker stop forma-mongo
