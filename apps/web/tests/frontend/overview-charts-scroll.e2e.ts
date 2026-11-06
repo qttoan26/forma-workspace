@@ -33,19 +33,34 @@ test('renders real Chart.js charts and updates overview after a saved task move'
   await expect(
     page.getByRole('img', { name: 'Task status distribution' }),
   ).toBeVisible()
-  await expect
-    .poll(() =>
-      page.locator('canvas').evaluateAll((canvases) =>
-        canvases.map((canvas) => {
-          if (!(canvas instanceof HTMLCanvasElement)) return false
-          const context = canvas.getContext('2d')!
-          return context
-            .getImageData(0, 0, canvas.width, canvas.height)
-            .data.some((value, index) => index % 4 === 3 && value > 0)
-        }),
-      ),
+  const canvases = page.locator('canvas')
+  const chartsHavePaint = () =>
+    canvases.evaluateAll((items) =>
+      items.map((canvas) => {
+        if (!(canvas instanceof HTMLCanvasElement)) return false
+        const context = canvas.getContext('2d')!
+        return context
+          .getImageData(0, 0, canvas.width, canvas.height)
+          .data.some((value, index) => index % 4 === 3 && value > 0)
+      }),
     )
-    .toEqual([true, true])
+  await expect.poll(chartsHavePaint).toEqual([true, true])
+  const chartImages = () =>
+    canvases.evaluateAll((items) =>
+      items.map((item) => (item as HTMLCanvasElement).toDataURL()),
+    )
+  const initialCharts = await chartImages()
+  await page
+    .getByRole('combobox', { name: 'Task status chart type' })
+    .selectOption('pie')
+  await page
+    .getByRole('combobox', { name: 'Owner workload chart type' })
+    .selectOption('grouped')
+  await expect.poll(chartsHavePaint).toEqual([true, true])
+  const updatedCharts = await chartImages()
+  expect(updatedCharts[0]).not.toBe(initialCharts[0])
+  expect(updatedCharts[1]).not.toBe(initialCharts[1])
+  await expect(page.getByText('10 of 70 tasks completed (14%).')).toBeVisible()
   await page.goto('/workspaces/forma/projects/project-1')
   await page
     .getByRole('combobox', { name: 'Move Analytics task 11', exact: true })
@@ -112,6 +127,12 @@ test('contains list and board column scrolling, with mobile chart responsiveness
   await expect(
     page.getByRole('img', { name: 'Task status distribution' }),
   ).toBeVisible()
+  await page
+    .getByRole('combobox', { name: 'Task status chart type' })
+    .selectOption('bar')
+  await page
+    .getByRole('combobox', { name: 'Owner workload chart type' })
+    .selectOption('grouped')
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     375,
   )
