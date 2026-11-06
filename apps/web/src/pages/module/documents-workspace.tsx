@@ -11,6 +11,7 @@ import type { ProjectBoardData } from '@/pages/project-board/project-board-data-
 import './documents-workspace.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
+const intakeHref = `${appBaseUrl}modules/documents/intake`
 
 export function DocumentsWorkspace({
   sectionId,
@@ -44,16 +45,15 @@ export function DocumentsWorkspaceContent({
   sectionId?: string | undefined
 }) {
   const { references, error, refresh } = useDocumentReferences(data.project.id)
+  const isIntake = sectionId === 'intake'
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState('all')
   const [source, setSource] = useState('all')
-  const [editor, setEditor] = useState<{
-    reference?: DocumentReference
-  } | null>(null)
+  const [editor, setEditor] = useState<DocumentReference | null>(null)
   const [message, setMessage] = useState('')
   const editReference = useCallback((reference: DocumentReference) => {
     setMessage('')
-    setEditor({ reference })
+    setEditor(reference)
   }, [])
   const taskNames = useMemo(
     () => new Map(data.initialTasks.map((task) => [task.id, task.title])),
@@ -96,10 +96,7 @@ export function DocumentsWorkspaceContent({
           </span>
         </div>
         <nav aria-label="Document workspace views">
-          <a
-            href={`${appBaseUrl}modules/documents/intake`}
-            aria-current={sectionId === 'intake' ? 'page' : undefined}
-          >
+          <a href={intakeHref} aria-current={isIntake ? 'page' : undefined}>
             Intake
           </a>
           <a
@@ -112,24 +109,29 @@ export function DocumentsWorkspaceContent({
           </a>
         </nav>
       </div>
-      <div className="document-metrics" aria-label="Document reference summary">
-        <article>
-          <small>All references</small>
-          <strong>{error ? '—' : references.length}</strong>
-        </article>
-        <article>
-          <small>Linked to tasks</small>
-          <strong>{error ? '—' : counts.linked}</strong>
-        </article>
-        <article>
-          <small>Project-level</small>
-          <strong>{error ? '—' : counts.project}</strong>
-        </article>
-        <article>
-          <small>Unavailable task links</small>
-          <strong>{error ? '—' : counts.unavailable}</strong>
-        </article>
-      </div>
+      {!isIntake ? (
+        <div
+          className="document-metrics"
+          aria-label="Document reference summary"
+        >
+          <article>
+            <small>All references</small>
+            <strong>{error ? '—' : references.length}</strong>
+          </article>
+          <article>
+            <small>Linked to tasks</small>
+            <strong>{error ? '—' : counts.linked}</strong>
+          </article>
+          <article>
+            <small>Project-level</small>
+            <strong>{error ? '—' : counts.project}</strong>
+          </article>
+          <article>
+            <small>Unavailable task links</small>
+            <strong>{error ? '—' : counts.unavailable}</strong>
+          </article>
+        </div>
+      ) : null}
       <p className="documents-boundary-note">
         Register links, IDs and paths here. File upload, versions, OCR and
         approval workflows are still in progress.
@@ -149,7 +151,7 @@ export function DocumentsWorkspaceContent({
           <Button onClick={refresh}>Retry references</Button>
         </div>
       ) : null}
-      {sectionId === 'intake' ? (
+      {isIntake ? (
         <section className="document-intake-panel">
           <div>
             <p className="eyebrow">Document intake</p>
@@ -167,97 +169,93 @@ export function DocumentsWorkspaceContent({
             />
           ) : null}
         </section>
-      ) : null}
-      <div className="document-library-heading">
-        <div>
-          <p className="eyebrow">
-            {sectionId === 'intake' ? 'Saved references' : 'Document library'}
-          </p>
-          <h2>Your project documents</h2>
-        </div>
-        {sectionId !== 'intake' ? (
-          <Button
-            variant="primary"
-            disabled={error}
-            onClick={() => {
-              setMessage('')
-              setEditor({})
-            }}
-          >
-            + Register reference
-          </Button>
-        ) : null}
-      </div>
-      <div className="document-toolbar">
-        <label>
-          Search references
-          <input
-            type="search"
-            value={query}
-            placeholder="Document, location, or task…"
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-        <label>
-          Link scope
-          <select
-            value={scope}
-            onChange={(event) => setScope(event.target.value)}
-          >
-            <option value="all">All references</option>
-            <option value="linked">Linked to tasks</option>
-            <option value="project">Project-level</option>
-            <option value="unavailable">Unavailable task links</option>
-          </select>
-        </label>
-        <label>
-          Source type
-          <select
-            value={source}
-            onChange={(event) => setSource(event.target.value)}
-          >
-            <option value="all">All sources</option>
-            <option value="web">Web links</option>
-            <option value="id">IDs / paths</option>
-          </select>
-        </label>
-        <Button
-          disabled={!query && scope === 'all' && source === 'all'}
-          onClick={() => {
-            setQuery('')
-            setScope('all')
-            setSource('all')
-          }}
-        >
-          Clear filters
-        </Button>
-      </div>
-      {!error ? (
-        <DocumentLibraryTable
-          references={filtered}
-          tasks={data.initialTasks}
-          projectHref={`${appBaseUrl}workspaces/${encodeURIComponent(data.workspace.slug)}/projects/${encodeURIComponent(data.project.id)}`}
-          disabled={error}
-          onEdit={editReference}
-        />
-      ) : null}
-      {editor ? (
-        <DocumentEditorModal onClose={() => setEditor(null)}>
-          {error ? (
-            <p role="alert">
-              References are unavailable. Close the editor and retry loading.
-            </p>
-          ) : (
-            <DocumentReferenceForm
-              projectId={data.project.id}
+      ) : (
+        <>
+          <div className="document-library-heading">
+            <div>
+              <p className="eyebrow">Document library</p>
+              <h2>Your project documents</h2>
+            </div>
+            <a
+              className="button-primary document-register-link"
+              href={intakeHref}
+            >
+              + Register reference
+            </a>
+          </div>
+          <div className="document-toolbar">
+            <label>
+              Search references
+              <input
+                type="search"
+                value={query}
+                placeholder="Document, location, or task…"
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </label>
+            <label>
+              Link scope
+              <select
+                value={scope}
+                onChange={(event) => setScope(event.target.value)}
+              >
+                <option value="all">All references</option>
+                <option value="linked">Linked to tasks</option>
+                <option value="project">Project-level</option>
+                <option value="unavailable">Unavailable task links</option>
+              </select>
+            </label>
+            <label>
+              Source type
+              <select
+                value={source}
+                onChange={(event) => setSource(event.target.value)}
+              >
+                <option value="all">All sources</option>
+                <option value="web">Web links</option>
+                <option value="id">IDs / paths</option>
+              </select>
+            </label>
+            <Button
+              disabled={!query && scope === 'all' && source === 'all'}
+              onClick={() => {
+                setQuery('')
+                setScope('all')
+                setSource('all')
+              }}
+            >
+              Clear filters
+            </Button>
+          </div>
+          {!error ? (
+            <DocumentLibraryTable
+              references={filtered}
               tasks={data.initialTasks}
-              reference={editor.reference}
-              onSaved={saved}
-              onCancel={() => setEditor(null)}
+              projectHref={`${appBaseUrl}workspaces/${encodeURIComponent(data.workspace.slug)}/projects/${encodeURIComponent(data.project.id)}`}
+              disabled={error}
+              onEdit={editReference}
             />
-          )}
-        </DocumentEditorModal>
-      ) : null}
+          ) : null}
+          {editor ? (
+            <DocumentEditorModal onClose={() => setEditor(null)}>
+              {error ? (
+                <p role="alert">
+                  References are unavailable. Close the editor and retry
+                  loading.
+                </p>
+              ) : (
+                <DocumentReferenceForm
+                  projectId={data.project.id}
+                  tasks={data.initialTasks}
+                  reference={editor}
+                  onSaved={saved}
+                  onCancel={() => setEditor(null)}
+                />
+              )}
+            </DocumentEditorModal>
+          ) : null}
+        </>
+      )}
     </section>
   )
 }
