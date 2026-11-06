@@ -1,49 +1,121 @@
 import { useState, type FormEvent } from 'react'
+import { z } from 'zod'
 
 import { Button, Field } from '@/shared/ui'
+import {
+  resolveBrowserStorage,
+  safeStorageRemoveItem,
+  safeStorageSetItem,
+} from '@/shared/lib/browser-storage-health'
 
 import './workflow-draft.css'
 
-const triggers = {
+const triggerSchema = z.enum(['manual', 'work', 'documents', 'production'])
+const triggers: Record<z.infer<typeof triggerSchema>, string> = {
   manual: 'Manual start',
   work: 'Work task status changes',
   documents: 'Document reference added',
   production: 'Production package ready for handoff',
-} as const
-
-interface WorkflowDraftPreview {
-  name: string
-  trigger: string
-  condition: string
-  action: string
-  requiresApproval: boolean
 }
 
-export function WorkflowDraft() {
-  const [preview, setPreview] = useState<WorkflowDraftPreview | null>(null)
+const draftSchema = z.object({
+  name: z.string().max(120),
+  trigger: triggerSchema,
+  condition: z.string().max(500),
+  action: z.string().max(1000),
+  requiresApproval: z.boolean(),
+})
+
+type Draft = z.infer<typeof draftSchema>
+
+const emptyDraft: Draft = {
+  name: '',
+  trigger: 'manual',
+  condition: '',
+  action: '',
+  requiresApproval: false,
+}
+
+const storageArea = 'session-storage'
+
+function loadDraft(key: string | undefined) {
+  if (!key) return emptyDraft
+  try {
+    const saved = sessionStorage.getItem(key)
+    if (saved === null) return emptyDraft
+    const result = draftSchema.safeParse(JSON.parse(saved) as unknown)
+    return result.success ? result.data : emptyDraft
+  } catch {
+    return emptyDraft
+  }
+}
+
+export function WorkflowDraft({
+  accountId,
+}: {
+  accountId?: string | undefined
+}) {
+  const draftKey = accountId
+    ? `forma:automation-draft:v1:${import.meta.env.BASE_URL}:${accountId}`
+    : undefined
+  const [draft, setDraft] = useState(() => loadDraft(draftKey))
+  const [preview, setPreview] = useState<Draft | null>(null)
   const [error, setError] = useState('')
+  const [storageError, setStorageError] = useState('')
+
+  function updateDraft(change: Partial<Draft>) {
+    const next = { ...draft, ...change }
+    setDraft(next)
+    setError('')
+    if (!draftKey) return
+    const saved = safeStorageSetItem(
+      storageArea,
+      resolveBrowserStorage(storageArea),
+      draftKey,
+      JSON.stringify(next),
+    )
+    setStorageError(
+      saved
+        ? ''
+        : 'This tab could not save the draft. Keep this page open to continue editing.',
+    )
+  }
+
+  function clearDraft(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (
+      draftKey &&
+      !safeStorageRemoveItem(
+        storageArea,
+        resolveBrowserStorage(storageArea),
+        draftKey,
+      )
+    ) {
+      setStorageError(
+        'This tab could not clear the saved draft. Try again before reloading.',
+      )
+      return
+    }
+    setDraft(emptyDraft)
+    setPreview(null)
+    setError('')
+    setStorageError('')
+  }
 
   function previewDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const values = new FormData(event.currentTarget)
-    const read = (key: string) => {
-      const value = values.get(key)
-      return typeof value === 'string' ? value.trim() : ''
-    }
-    const name = read('name')
-    const action = read('action')
-    const triggerKey = read('trigger')
-    if (!name || !action || !Object.hasOwn(triggers, triggerKey)) {
-      setError('Enter a workflow name and action, and choose a trigger.')
+    const name = draft.name.trim()
+    const action = draft.action.trim()
+    if (!name || !action) {
+      setError('Enter a workflow name and action.')
       return
     }
 
     setPreview({
+      ...draft,
       name,
-      trigger: triggers[triggerKey as keyof typeof triggers],
-      condition: read('condition'),
+      condition: draft.condition.trim(),
       action,
-      requiresApproval: values.has('approval'),
     })
     setError('')
   }
@@ -56,23 +128,32 @@ export function WorkflowDraft() {
       >
         <h2 id="draft-editor-title">Workflow draft</h2>
         <p>
-          Outline one workflow and preview its steps. The draft is kept on this
-          page while you edit.
+          Outline one workflow and preview its steps. This tab keeps the draft
+          for your account.
         </p>
         <form
           className="workflow-draft-form"
           onSubmit={previewDraft}
-          onChange={() => setError('')}
-          onReset={() => {
-            setPreview(null)
-            setError('')
-          }}
+          onReset={clearDraft}
         >
           <Field label="Workflow name">
-            <input name="name" maxLength={120} required />
+            <input
+              name="name"
+              value={draft.name}
+              onChange={(event) => updateDraft({ name: event.target.value })}
+              maxLength={120}
+              required
+            />
           </Field>
           <Field label="Trigger">
-            <select name="trigger" defaultValue="manual">
+            <select
+              name="trigger"
+              value={draft.trigger}
+              onChange={(event) => {
+                const trigger = triggerSchema.safeParse(event.target.value)
+                if (trigger.success) updateDraft({ trigger: trigger.data })
+              }}
+            >
               {Object.entries(triggers).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -81,16 +162,39 @@ export function WorkflowDraft() {
             </select>
           </Field>
           <Field label="Condition (optional)">
-            <textarea name="condition" rows={2} maxLength={500} />
+            <textarea
+              name="condition"
+              value={draft.condition}
+              onChange={(event) =>
+                updateDraft({ condition: event.target.value })
+              }
+              rows={2}
+              maxLength={500}
+            />
           </Field>
           <Field label="Action">
-            <textarea name="action" rows={3} maxLength={1000} required />
+            <textarea
+              name="action"
+              value={draft.action}
+              onChange={(event) => updateDraft({ action: event.target.value })}
+              rows={3}
+              maxLength={1000}
+              required
+            />
           </Field>
           <label className="workflow-draft-approval">
-            <input name="approval" type="checkbox" />
+            <input
+              name="approval"
+              type="checkbox"
+              checked={draft.requiresApproval}
+              onChange={(event) =>
+                updateDraft({ requiresApproval: event.target.checked })
+              }
+            />
             Require manual approval before the action
           </label>
           {error ? <p role="alert">{error}</p> : null}
+          {storageError ? <p role="alert">{storageError}</p> : null}
           <div className="workflow-draft-actions">
             <Button variant="primary" type="submit">
               Preview draft
@@ -113,7 +217,7 @@ export function WorkflowDraft() {
           <ol>
             <li>
               <strong>Trigger</strong>
-              <span>{preview.trigger}</span>
+              <span>{triggers[preview.trigger]}</span>
             </li>
             {preview.condition ? (
               <li>

@@ -52,11 +52,13 @@ const AdminDeliveryAccess = lazy(() =>
 export function ModulePage({
   moduleId,
   sectionId,
+  accountId,
   taskSearch,
   onTaskSearchChange,
 }: {
   moduleId: string
   sectionId?: string | undefined
+  accountId?: string | undefined
   taskSearch?: WorkTaskSearch | undefined
   onTaskSearchChange?: ((search: WorkTaskSearch) => void) | undefined
 }) {
@@ -156,7 +158,7 @@ export function ModulePage({
           </Suspense>
         ) : module.id === 'automation' && selected?.id === 'workflows' ? (
           <Suspense fallback={<p role="status">Loading workflow draft…</p>}>
-            <WorkflowDraft />
+            <WorkflowDraft key={accountId} accountId={accountId} />
           </Suspense>
         ) : selected ? (
           <section

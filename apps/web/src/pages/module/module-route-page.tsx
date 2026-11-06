@@ -1,4 +1,9 @@
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
+import {
+  useNavigate,
+  useParams,
+  useRouteContext,
+  useSearch,
+} from '@tanstack/react-router'
 
 import { ModulePage } from '@/pages/module/module-page'
 import {
@@ -13,6 +18,10 @@ export function ModuleRoutePage() {
   const sectionId = params.sectionId
   const search = useSearch({ strict: false })
   const navigate = useNavigate()
+  const accountId = useRouteContext({
+    strict: false,
+    select: (context) => context.user?.id,
+  })
 
   function updateSearch(next: WorkTaskSearch) {
     void navigate({
@@ -26,6 +35,7 @@ export function ModuleRoutePage() {
     <ModulePage
       moduleId={moduleId}
       sectionId={sectionId}
+      accountId={accountId}
       taskSearch={parseWorkTaskSearch(search)}
       onTaskSearchChange={updateSearch}
     />

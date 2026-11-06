@@ -118,6 +118,26 @@ try {
       .getByLabel('Action', { exact: true })
       .fill('Prepare the delivery notice.')
     await page.getByLabel('Require manual approval before the action').check()
+    assert.equal((await page.reload()).status(), 404)
+    assert.equal(
+      await page.getByLabel('Workflow name').inputValue(),
+      'Review handoff',
+    )
+    assert.equal(await page.getByLabel('Trigger').inputValue(), 'production')
+    assert.equal(
+      await page.getByLabel('Condition (optional)').inputValue(),
+      'QC has approved the package.',
+    )
+    assert.equal(
+      await page.getByLabel('Action', { exact: true }).inputValue(),
+      'Prepare the delivery notice.',
+    )
+    assert.equal(
+      await page
+        .getByLabel('Require manual approval before the action')
+        .isChecked(),
+      true,
+    )
     await page.getByRole('button', { name: 'Preview draft' }).click()
     const preview = page.getByRole('region', { name: 'Draft preview' })
     await preview.getByText('Previewing Review handoff').waitFor()
@@ -131,6 +151,9 @@ try {
     await page.getByRole('button', { name: 'Clear draft' }).click()
     assert.equal(await preview.getByRole('listitem').count(), 0)
     assert.equal(await page.getByLabel('Workflow name').inputValue(), '')
+    assert.equal((await page.reload()).status(), 404)
+    assert.equal(await page.getByLabel('Workflow name').inputValue(), '')
+    assert.equal(await page.getByLabel('Trigger').inputValue(), 'manual')
 
     assert.equal((await page.goto(automation + '/runs')).status(), 404)
     await page
