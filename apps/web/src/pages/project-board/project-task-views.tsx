@@ -8,6 +8,7 @@ import {
   type Task,
 } from '@/entities/task/model/task'
 import { filterTasks } from '@/widgets/task-board/model/task-board-view'
+import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 
 import { ProjectFilesView } from './project-files-view'
 import {
@@ -49,6 +50,7 @@ function ProjectReadOnlyTaskView({
   initialTasks,
   members,
   filters,
+  selectedTaskId,
   onSelectedTaskChange,
 }: ProjectTaskViewsProps) {
   const snapshot = useProjectLiveTasks(projectId, initialTasks)
@@ -82,11 +84,22 @@ function ProjectReadOnlyTaskView({
       )
     case 'timeline':
       return (
-        <ProjectTimelineView
-          tasks={tasks}
-          members={members}
-          onOpenTask={onOpenTask}
-        />
+        <section className="project-view-surface" aria-label="Project timeline">
+          <ProjectViewHeading
+            eyebrow="Timeline"
+            title="Delivery sequence"
+            meta={`${tasks.length} tasks`}
+          />
+          <TaskTimeline
+            key={projectId}
+            tasks={tasks}
+            members={members}
+            initialDate={
+              snapshot.tasks.find((task) => task.id === selectedTaskId)?.dueDate
+            }
+            onOpenTask={onOpenTask}
+          />
+        </section>
       )
     case 'files':
       return (
@@ -209,48 +222,6 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
                 task.assigneeId ? memberById.get(task.assigneeId) : undefined
               }
             />
-          </article>
-        ))}
-      </ScrollRegion>
-    </section>
-  )
-}
-
-function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
-  const memberById = createMemberMap(members)
-  const orderedTasks = [...tasks].sort(compareTaskDueDate)
-
-  return (
-    <section className="project-view-surface" aria-label="Project timeline">
-      <ProjectViewHeading
-        eyebrow="Timeline"
-        title="Delivery sequence"
-        meta={`${tasks.length} tasks`}
-      />
-      <ScrollRegion
-        label="Project timeline content"
-        className="project-timeline-list"
-      >
-        {orderedTasks.map((task, index) => (
-          <article className="project-timeline-item" key={task.id}>
-            <span className="project-timeline-marker" aria-hidden="true">
-              {index + 1}
-            </span>
-            <div className="project-timeline-copy">
-              <span className="project-task-key">{task.id}</span>
-              <TaskOpenButton task={task} onOpenTask={onOpenTask} />
-              <small>
-                {taskStatusLabels[task.status]} · {task.priority} priority
-              </small>
-            </div>
-            <div className="project-timeline-meta">
-              <strong>{task.dueDate ?? 'No due date'}</strong>
-              <small>
-                {task.assigneeId
-                  ? (memberById.get(task.assigneeId)?.name ?? 'Unassigned')
-                  : 'Unassigned'}
-              </small>
-            </div>
           </article>
         ))}
       </ScrollRegion>

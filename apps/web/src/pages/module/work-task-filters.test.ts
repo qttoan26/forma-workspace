@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { localDateKey } from '@/shared/lib/local-date-key'
 import type { Task } from '@/entities/task/model/task'
 import {
   compactWorkTaskSearch,
   defaultWorkTaskSearch,
   filterWorkTasks,
-  localDateKey,
   parseWorkTaskSearch,
 } from './work-task-filters'
 

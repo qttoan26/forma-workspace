@@ -1,16 +1,17 @@
 import { lazy, Suspense, useState } from 'react'
+import { localDateKey } from '@/shared/lib/local-date-key'
 import { WorkTaskExplorer } from './work-task-explorer'
 import { WorkActivityFeed } from './work-activity-feed'
 import {
   defaultWorkTaskSearch,
   isTaskOverdue,
-  localDateKey,
   type WorkTaskSearch,
 } from './work-task-filters'
 import {
   projectViews,
   projectViewLabels,
 } from '@/pages/project-board/project-view'
+import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
@@ -111,9 +112,12 @@ function WorkSectionDataSurface({
   const completion = tasks.length
     ? Math.round((completed / tasks.length) * 100)
     : 0
-  const datedTasks = tasks
-    .filter((task) => task.dueDate)
-    .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+  const datedTasks =
+    section.id === 'calendar'
+      ? tasks
+          .filter((task) => task.dueDate)
+          .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+      : []
 
   return (
     <section className="work-surface" aria-label={`${section.label} details`}>
@@ -248,17 +252,26 @@ function WorkSectionDataSurface({
           </article>
         </section>
       ) : null}
-      {section.id === 'calendar' || section.id === 'timeline' ? (
+      {section.id === 'timeline' ? (
         <section className="work-panel">
           <div className="work-panel-heading">
-            <h2>
-              {section.id === 'calendar'
-                ? 'Task deadlines'
-                : 'Delivery sequence'}
-            </h2>
-            <a href={`${projectHref}?view=${section.id}`}>
-              Open project {section.id}
-            </a>
+            <h2>Delivery sequence</h2>
+            <a href={`${projectHref}?view=timeline`}>Open project timeline</a>
+          </div>
+          <TaskTimeline
+            tasks={tasks}
+            members={data.members}
+            getTaskHref={(taskId) =>
+              `${projectHref}?view=timeline&task=${encodeURIComponent(taskId)}`
+            }
+          />
+        </section>
+      ) : null}
+      {section.id === 'calendar' ? (
+        <section className="work-panel">
+          <div className="work-panel-heading">
+            <h2>Task deadlines</h2>
+            <a href={`${projectHref}?view=calendar`}>Open project calendar</a>
           </div>
           <p className="work-data-context">
             Scheduled by task due date. {tasks.length - datedTasks.length} tasks
@@ -273,7 +286,7 @@ function WorkSectionDataSurface({
                 <article key={task.id}>
                   <span>{task.dueDate}</span>
                   <a
-                    href={`${projectHref}?view=${section.id}&task=${encodeURIComponent(task.id)}`}
+                    href={`${projectHref}?view=calendar&task=${encodeURIComponent(task.id)}`}
                   >
                     {task.title}
                   </a>

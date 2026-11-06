@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { localDateKey } from '@/shared/lib/local-date-key'
 
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import {
@@ -10,7 +11,6 @@ import {
   defaultWorkTaskSearch,
   filterWorkTasks,
   isTaskOverdue,
-  localDateKey,
   workTaskScopes,
   type WorkTaskSearch,
 } from './work-task-filters'
