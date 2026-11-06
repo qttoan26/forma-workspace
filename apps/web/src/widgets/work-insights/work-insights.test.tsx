@@ -1,3 +1,4 @@
+import type { ChartConfiguration } from 'chart.js'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -5,12 +6,16 @@ import { initialTasks, members } from '@/test/fixtures/project-board'
 
 import { WorkInsights } from './work-insights'
 
-const chartMocks = vi.hoisted(() => ({ create: vi.fn(), destroy: vi.fn() }))
+const chartMocks = vi.hoisted(() => ({
+  create:
+    vi.fn<(canvas: HTMLCanvasElement, config: ChartConfiguration) => void>(),
+  destroy: vi.fn(),
+}))
 vi.mock('chart.js', () => ({
   Chart: class {
     static register() {}
 
-    constructor(canvas: HTMLCanvasElement, config: unknown) {
+    constructor(canvas: HTMLCanvasElement, config: ChartConfiguration) {
       chartMocks.create(canvas, config)
     }
 
@@ -83,34 +88,31 @@ describe('WorkInsights', () => {
     const workloadData = chartMocks.create.mock.calls[1]?.[1].data
 
     fireEvent.change(status, { target: { value: 'pie' } })
-    expect(chartMocks.create).toHaveBeenLastCalledWith(
-      statusCanvas,
-      expect.objectContaining({ type: 'pie', data: statusData }),
-    )
+    expect(chartMocks.create.mock.lastCall?.[0]).toBe(statusCanvas)
+    expect(chartMocks.create.mock.lastCall?.[1]).toMatchObject({
+      type: 'pie',
+      data: statusData,
+    })
     fireEvent.change(status, { target: { value: 'bar' } })
-    expect(chartMocks.create).toHaveBeenLastCalledWith(
-      statusCanvas,
-      expect.objectContaining({
-        type: 'bar',
-        data: expect.objectContaining({ labels: statusData.labels }),
-        options: expect.objectContaining({ indexAxis: 'y' }),
-      }),
+    const statusBars = chartMocks.create.mock.lastCall?.[1]
+    expect(statusBars).toMatchObject({
+      type: 'bar',
+      options: { indexAxis: 'y' },
+    })
+    expect(statusBars?.data.labels).toEqual(statusData?.labels)
+    expect(statusBars?.data.datasets[0]?.data).toEqual(
+      statusData?.datasets[0]?.data,
     )
 
     fireEvent.change(workload, { target: { value: 'grouped' } })
-    expect(chartMocks.create).toHaveBeenLastCalledWith(
-      workloadCanvas,
-      expect.objectContaining({
-        type: 'bar',
-        data: expect.objectContaining({ labels: workloadData.labels }),
-        options: expect.objectContaining({
-          scales: {
-            x: expect.objectContaining({ stacked: false }),
-            y: expect.objectContaining({ stacked: false }),
-          },
-        }),
-      }),
-    )
+    expect(chartMocks.create.mock.lastCall?.[0]).toBe(workloadCanvas)
+    expect(chartMocks.create.mock.lastCall?.[1]).toMatchObject({
+      type: 'bar',
+      data: workloadData,
+      options: {
+        scales: { x: { stacked: false }, y: { stacked: false } },
+      },
+    })
     expect(chartMocks.create).toHaveBeenCalledTimes(5)
     expect(chartMocks.destroy).toHaveBeenCalledTimes(3)
     expect(status).toHaveValue('bar')
