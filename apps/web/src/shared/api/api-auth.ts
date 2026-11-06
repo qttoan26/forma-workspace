@@ -6,6 +6,10 @@ export type ApiAccessTokenProvider = () =>
 
 export type ApiUnauthorizedHandler = () => void
 
+export function getApiBaseUrl(): string {
+  return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
+}
+
 const anonymousAccessTokenProvider: ApiAccessTokenProvider = () => null
 const noopUnauthorizedHandler: ApiUnauthorizedHandler = () => undefined
 

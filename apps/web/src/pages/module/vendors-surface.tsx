@@ -113,11 +113,11 @@ export function VendorsSurface() {
 
       <section className="vendors-boundary-card">
         <p className="eyebrow">Domain boundary</p>
-        <h3>Vendor context, not duplicate execution state</h3>
+        <h3>Vendor and internal records</h3>
         <p>
-          Vendors will reference Work projects/tasks, Production jobs, and
-          Documents & Data records through stable contracts. It will not create
-          parallel project, queue, or document models for outsourced work.
+          Work projects and tasks, Production jobs, and Documents & Data records
+          stay in their respective modules. Vendor deliveries will show
+          milestones explicitly shared for a linked assignment.
         </p>
       </section>
     </section>

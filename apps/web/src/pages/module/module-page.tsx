@@ -28,6 +28,16 @@ const CustomersSurface = lazy(() =>
     default: module.CustomersSurface,
   })),
 )
+const VendorsSurface = lazy(() =>
+  import('./vendors-surface').then((module) => ({
+    default: module.VendorsSurface,
+  })),
+)
+const AdminDeliveryAccess = lazy(() =>
+  import('./admin-delivery-access').then((module) => ({
+    default: module.AdminDeliveryAccess,
+  })),
+)
 
 export function ModulePage({
   moduleId,
@@ -175,6 +185,16 @@ export function ModulePage({
         {module.id === 'customers' && !selected ? (
           <Suspense fallback={<p role="status">Loading customer overview…</p>}>
             <CustomersSurface />
+          </Suspense>
+        ) : null}
+        {module.id === 'vendors' && !selected ? (
+          <Suspense fallback={<p role="status">Loading vendor overview…</p>}>
+            <VendorsSurface />
+          </Suspense>
+        ) : null}
+        {module.id === 'admin' && selected?.id === 'access' ? (
+          <Suspense fallback={<p role="status">Loading delivery access…</p>}>
+            <AdminDeliveryAccess />
           </Suspense>
         ) : null}
       </section>
