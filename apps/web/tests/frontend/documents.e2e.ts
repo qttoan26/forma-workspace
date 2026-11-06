@@ -19,7 +19,14 @@ async function fillReference(page: Page, name: string, location = 'DOC-100') {
 test('registers, searches, edits and removes a shared task document reference', async ({
   page,
 }) => {
-  await page.goto('/modules/documents/intake')
+  await page.goto('/modules/documents/library')
+  await expect(
+    page.getByRole('form', { name: 'Register document reference' }),
+  ).toHaveCount(0)
+  await page
+    .getByRole('link', { name: '+ Register reference', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/modules\/documents\/intake$/)
   await fillReference(
     page,
     'Source brief.pdf',
@@ -30,6 +37,12 @@ test('registers, searches, edits and removes a shared task document reference', 
     .getByRole('button', { name: 'Register reference', exact: true })
     .click()
   await expect(page.getByText('Reference registered locally.')).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'Document references' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('searchbox', { name: 'Search references' }),
+  ).toHaveCount(0)
   await page.getByRole('link', { name: 'Library', exact: true }).click()
   const table = page.getByRole('table', { name: 'Document references' })
   await expect(
@@ -107,10 +120,10 @@ test('merges concurrent registrations and rejects a stale editor across tabs', a
   await page.goto('/modules/documents/library')
   await other.goto('/modules/documents/library')
   await page
-    .getByRole('button', { name: '+ Register reference', exact: true })
+    .getByRole('link', { name: '+ Register reference', exact: true })
     .click()
   await other
-    .getByRole('button', { name: '+ Register reference', exact: true })
+    .getByRole('link', { name: '+ Register reference', exact: true })
     .click()
   await fillReference(page, 'First source.pdf')
   await fillReference(other, 'Second source.pdf')
@@ -123,6 +136,7 @@ test('merges concurrent registrations and rejects a stale editor across tabs', a
       .click(),
   ])
   for (const current of [page, other]) {
+    await current.getByRole('link', { name: 'Library', exact: true }).click()
     await expect(
       current.getByRole('button', { name: 'First source.pdf', exact: true }),
     ).toBeVisible()
@@ -172,10 +186,16 @@ test('blocks editing unreadable data and keeps the original storage', async ({
   await expect(page.getByRole('alert')).toContainText(
     'References could not be loaded',
   )
-  await expect(
-    page.getByRole('button', { name: '+ Register reference', exact: true }),
-  ).toBeDisabled()
   await expect(page.getByText('No matching references')).toHaveCount(0)
+  await page
+    .getByRole('link', { name: '+ Register reference', exact: true })
+    .click()
+  await expect(page.getByRole('alert')).toContainText(
+    'References could not be loaded',
+  )
+  await expect(
+    page.getByRole('form', { name: 'Register document reference' }),
+  ).toHaveCount(0)
   expect(
     await page.evaluate((key) => localStorage.getItem(key), storageKey),
   ).toBe('{invalid')

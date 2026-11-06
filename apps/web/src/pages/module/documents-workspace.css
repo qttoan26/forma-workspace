@@ -29,6 +29,11 @@
   cursor: default;
 }
 
+.document-register-link {
+  text-align: center;
+  text-decoration: none;
+}
+
 .documents-context,
 .document-library-heading,
 .documents-context > div,
@@ -516,7 +521,7 @@
     width: 100%;
     justify-content: space-between;
   }
-  .document-library-heading > button {
+  .document-register-link {
     width: 100%;
   }
   .document-intake-panel,
