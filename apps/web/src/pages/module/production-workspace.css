@@ -1,0 +1,593 @@
+.production-workspace {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.production-context,
+.production-queue-heading,
+.production-pagination,
+.production-form-actions,
+.production-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.production-context,
+.production-metrics article,
+.production-intake-panel,
+.production-table-panel {
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+  box-shadow: var(--forma-shadow-glass);
+}
+.production-context {
+  padding: 1rem 1.2rem;
+}
+.production-context > div,
+.production-context nav,
+.production-pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.production-context > div {
+  min-width: 0;
+  color: var(--forma-color-accent-text);
+  font-weight: 650;
+}
+.production-context > div > span {
+  overflow-wrap: anywhere;
+}
+.production-context small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.production-context nav {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.production-context nav a {
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--forma-radius-pill);
+  color: var(--forma-color-text-secondary);
+  text-decoration: none;
+  font-size: 0.8125rem;
+}
+.production-context nav a[aria-current='page'] {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+  box-shadow: inset 0 0 0 1px var(--forma-color-accent-border);
+  font-weight: 650;
+}
+.production-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.production-metrics article {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.1rem;
+  backdrop-filter: blur(var(--forma-glass-blur));
+}
+.production-metrics small,
+.production-boundary,
+.production-job-form small,
+.production-intake-panel p:last-child,
+.production-editor-meta {
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.production-metrics strong {
+  color: var(--forma-color-accent-text);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.production-boundary {
+  margin: 0;
+}
+.production-intake-panel {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem;
+}
+.production-intake-panel h2,
+.production-queue-heading h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.1rem;
+}
+.production-new-link {
+  padding: 0.7rem 1rem;
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-accent-solid);
+  color: var(--forma-color-on-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.production-workspace .button-primary,
+.production-editor-modal .button-primary {
+  border-color: var(--forma-color-accent-solid);
+  background: var(--forma-color-accent-solid);
+  color: var(--forma-color-on-accent);
+}
+.production-workspace .button-secondary,
+.production-editor-modal .button-secondary {
+  border-color: var(--forma-color-control-border);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-accent-text);
+}
+.production-workspace button:disabled,
+.production-editor-modal button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.production-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(120px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+.production-toolbar label,
+.production-job-form label {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 550;
+}
+.production-toolbar input,
+.production-toolbar select,
+.production-job-form input:not([type='checkbox']),
+.production-job-form select,
+.production-job-form textarea,
+.production-pagination select {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  font: inherit;
+}
+.production-job-form textarea {
+  resize: vertical;
+}
+.production-job-form,
+.production-job-form > fieldset {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.production-job-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.production-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.production-source-fieldset legend {
+  margin: 0.75rem 0 0.25rem;
+  color: var(--forma-color-text-strong);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.production-source-list {
+  max-height: 190px;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--forma-color-accent-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-glass-strong);
+}
+.production-source-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.3rem 0;
+  cursor: pointer;
+}
+.production-source-list label span {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.production-source-list input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--forma-color-accent-solid);
+}
+.production-source-list p {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.production-source-list a,
+.production-table a {
+  color: var(--forma-color-accent-text);
+}
+.production-form-actions {
+  margin-top: 0.75rem;
+}
+.production-form-actions button,
+.production-toolbar button,
+.production-editor-actions button {
+  min-height: 44px;
+}
+.production-table-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+.production-table-scroll {
+  max-height: min(52dvh, 560px);
+}
+.production-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  color: var(--forma-color-text-secondary);
+  text-align: left;
+  font-size: 0.8125rem;
+}
+.production-table th,
+.production-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--forma-color-accent-border);
+}
+.production-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #edf6f6;
+}
+.production-table th button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.production-table th[aria-sort='ascending'],
+.production-table th[aria-sort='descending'] {
+  color: var(--forma-color-accent-text);
+}
+.production-table tbody tr:hover {
+  background: var(--forma-color-accent-subtle);
+}
+.production-package-cell {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 200px;
+  max-width: 280px;
+}
+.production-open {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--forma-color-text-strong);
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.production-open:hover {
+  color: var(--forma-color-accent-text);
+  text-decoration: underline;
+}
+.production-table-sources {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 240px;
+}
+.production-table-sources > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.production-badge {
+  display: inline-block;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--forma-radius-pill);
+  white-space: nowrap;
+}
+.production-badge.is-draft {
+  background: var(--forma-color-status-todo-surface);
+  color: var(--forma-color-status-todo);
+}
+.production-badge.is-queued {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+.production-table .production-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+.production-pagination {
+  padding: 0.9rem 1rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+}
+.production-pagination label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.production-pagination select {
+  width: auto;
+}
+.production-pagination button,
+.production-editor-modal > header button {
+  min-height: 44px;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+.production-error,
+.production-success,
+.production-remove-confirmation {
+  margin: 0;
+  padding: 1rem;
+  border-radius: var(--forma-radius-md);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.production-error,
+.production-remove-confirmation {
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+}
+.production-success {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+  border: 1px solid var(--forma-color-accent-border);
+}
+.production-warning {
+  color: var(--forma-color-warning-text);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.production-danger {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentcolor;
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+  font: inherit;
+  cursor: pointer;
+}
+.production-editor-modal {
+  box-sizing: border-box;
+  width: min(680px, calc(100% - 2rem));
+  max-height: 90dvh;
+  padding: 1.5rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-task-editor-background);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-overlay);
+}
+.production-editor-modal::backdrop {
+  background: var(--forma-color-overlay);
+  backdrop-filter: blur(5px);
+}
+.production-editor-modal > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.production-editor-modal > header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.production-editor-modal > header button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  flex-shrink: 0;
+}
+.production-editor-modal h3 {
+  overflow-wrap: anywhere;
+}
+.production-editor-actions {
+  justify-content: flex-start;
+  margin: 1.25rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--forma-color-accent-border);
+}
+.production-remove-confirmation {
+  margin-top: 1rem;
+}
+.production-remove-confirmation p {
+  margin-top: 0;
+}
+.production-remove-confirmation button + button {
+  margin-left: 0.5rem;
+}
+.production-workspace :is(button, a, input, select, textarea):focus-visible,
+.production-editor-modal :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .production-intake-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .production-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .production-toolbar label:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 600px) {
+  .production-metrics {
+    gap: 0.5rem;
+  }
+  .production-metrics article {
+    padding: 0.8rem;
+  }
+  .production-metrics strong {
+    font-size: 1.4rem;
+  }
+  .production-intake-panel,
+  .production-editor-modal {
+    padding: 1rem;
+  }
+  .production-pagination nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .production-toolbar button {
+    min-height: 44px;
+  }
+}
+@media (pointer: coarse) {
+  .production-job-form :is(input, select, textarea),
+  .production-toolbar :is(input, select) {
+    font-size: 1rem;
+  }
+}
+
+.production-workflow-fields {
+  display: grid;
+  gap: 12px;
+  margin-block: 18px;
+}
+.production-workflow-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.production-workflow-fields textarea,
+.production-workflow-fields select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: 10px;
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  padding: 10px;
+  font: inherit;
+}
+.production-workflow-fields textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.production-workflow-history {
+  margin-block: 18px;
+}
+.production-workflow-history ol {
+  max-height: 220px;
+  overflow: auto;
+  padding-left: 24px;
+}
+.production-workflow-history li {
+  padding: 8px;
+  border-bottom: 1px solid var(--forma-color-accent-border);
+  overflow-wrap: anywhere;
+}
+.production-workflow-history time,
+.production-workflow-history li > span {
+  display: block;
+  font-size: 12px;
+  color: var(--forma-color-text-secondary);
+}
+.production-workflow-history p {
+  white-space: pre-wrap;
+}
+.production-badge.is-processing {
+  background: #e0f4ff;
+  color: #126187;
+}
+.production-badge.is-quality {
+  background: #fff0d4;
+  color: #81530a;
+}
+.production-badge.is-approved {
+  background: #dcf6e9;
+  color: #186045;
+}
+@media (pointer: coarse) {
+  .production-workflow-fields textarea,
+  .production-workflow-fields select {
+    font-size: 16px;
+  }
+}
+
+.production-release-details {
+  display: grid;
+  gap: 0.375rem;
+  margin-block: 1rem;
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+}
+.production-release-details dt {
+  font-weight: 650;
+}
+.production-release-details dd {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+  color: var(--forma-color-text-secondary);
+}
+.production-workflow-fields .production-release-confirmation {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-height: 2.75rem;
+}
+.production-workflow-fields input[type='text'] {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  font: inherit;
+}
+.production-badge.is-ready,
+.production-badge.is-handed-off {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+@media (pointer: coarse) {
+  .production-workflow-fields input[type='text'] {
+    font-size: 1rem;
+  }
+}

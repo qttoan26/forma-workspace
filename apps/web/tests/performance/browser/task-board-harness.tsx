@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 
 import type { Member } from '@/entities/member/model/member'
 import { TaskBoard } from '@/widgets/task-board/task-board'
+import '@fontsource-variable/inter'
+import '@/app/styles/tokens.css'
 import '@/app/styles/global.css'
 
 import { createBenchmarkTasks } from '../task-fixtures'

@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: #f7f7f5;
   color: #181818;
-  font-family: Geist, Manrope, system-ui, sans-serif;
+  font-family: var(--forma-font-family);
 }
 
 .landing-page *,

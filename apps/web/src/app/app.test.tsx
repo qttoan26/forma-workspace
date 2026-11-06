@@ -5,7 +5,7 @@ import { HomePage } from '@/pages/home/home-page'
 // The router owns route resolution. Keep this test focused on the rendered
 // dashboard foundation so it stays deterministic in jsdom.
 describe('HomePage', () => {
-  it('renders the workspace dashboard and primary project entry point', () => {
+  it('renders the workspace dashboard and primary project entry point', async () => {
     render(<HomePage />)
 
     expect(
@@ -16,7 +16,7 @@ describe('HomePage', () => {
       screen.getByRole('link', { name: /open project board/i }),
     ).toHaveAttribute('href', '/workspaces/forma/projects/project-1')
     expect(
-      screen.getByRole('heading', { name: /product launch/i }),
+      await screen.findByRole('heading', { name: /avengers initiative/i }),
     ).toBeInTheDocument()
   })
 })

@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
 
 import type { Member } from '@/entities/member/model/member'
 import type { TaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
@@ -30,6 +42,11 @@ import {
   groupTasksByStatus,
   type TaskBoardFilters,
 } from './model/task-board-view'
+import {
+  boardCollisionDetection,
+  boardKeyboardCoordinates,
+  readTaskStatus,
+} from './model/task-board-dnd'
 import './task-board.css'
 
 const VIRTUALIZATION_THRESHOLD = 100
@@ -72,6 +89,25 @@ export function TaskBoard({
     explicitTaskIdPrefix ?? inferTaskIdPrefix(initialTasks) ?? 'TASK'
 
   const [tasks, setTasks] = useState(initialTasks)
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
+  const dragFocusTaskRef = useRef<string | null>(null)
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: boardKeyboardCoordinates }),
+  )
+  const draggedTask = tasks.find((task) => task.id === draggedTaskId)
+
+  useEffect(() => {
+    if (draggedTaskId || !dragFocusTaskRef.current) return
+    const handle = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-task-drag-id]'),
+    ).find((button) => button.dataset.taskDragId === dragFocusTaskRef.current)
+    handle?.focus()
+    dragFocusTaskRef.current = null
+  }, [draggedTaskId, tasks])
 
   useEffect(() => {
     if (!mutationAdapter) return
@@ -146,6 +182,14 @@ export function TaskBoard({
 
   function moveTask(taskId: string, status: TaskStatus) {
     setTasks((current) => moveTaskToStatus(current, taskId, status))
+  }
+
+  function finishDrag({ active, over, activatorEvent }: DragEndEvent) {
+    if (activatorEvent.type === 'keydown')
+      dragFocusTaskRef.current = String(active.id)
+    setDraggedTaskId(null)
+    const status = readTaskStatus(over?.data.current?.status)
+    if (status) moveTask(String(active.id), status)
   }
 
   function editTask(taskId: string) {
@@ -243,6 +287,9 @@ export function TaskBoard({
       {editor}
       <section aria-label="Project task board">
         <div className="board-toolbar">
+          <p aria-live="polite" role="status" aria-label="Task count">
+            {visibleTasks.length} of {tasks.length} tasks shown
+          </p>
           <Button
             variant="primary"
             type="button"
@@ -267,27 +314,63 @@ export function TaskBoard({
           </div>
         ) : null}
 
-        <p aria-live="polite" role="status">
-          {visibleTasks.length} of {tasks.length} tasks shown
-        </p>
         {visibleTasks.length === 0 && tasks.length > 0 ? (
           <p role="note">
             Try clearing filters or using a different search term.
           </p>
         ) : null}
-        <div className="board">
-          {taskStatuses.map((status) => (
-            <TaskColumn
-              key={status}
-              status={status}
-              tasks={columns[status]}
-              membersById={membersById}
-              onMove={moveTask}
-              onEdit={editTask}
-              onDelete={deleteTask}
-            />
-          ))}
-        </div>
+        <p className="board-drag-hint">
+          Drag a task by its handle to change status, or use Move to.
+        </p>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={boardCollisionDetection}
+          onDragStart={({ active }) => setDraggedTaskId(String(active.id))}
+          onDragEnd={finishDrag}
+          onDragCancel={() => setDraggedTaskId(null)}
+          accessibility={{
+            screenReaderInstructions: {
+              draggable:
+                'Press Space or Enter to pick up a task. Use Left and Right arrows to choose a status. Press Space or Enter to drop, or Escape to cancel. You can also use the Move to menu.',
+            },
+            announcements: {
+              onDragStart: ({ active }) =>
+                `Picked up ${active.data.current?.title}.`,
+              onDragOver: ({ over }) =>
+                over
+                  ? `Move to ${taskStatusLabels[over.data.current?.status as TaskStatus]}.`
+                  : 'Outside the board. Drop here to cancel.',
+              onDragEnd: ({ over }) =>
+                over
+                  ? `Task moved to ${taskStatusLabels[over.data.current?.status as TaskStatus]}.`
+                  : 'Move cancelled.',
+              onDragCancel: () => 'Move cancelled.',
+            },
+          }}
+        >
+          <div className="board">
+            {taskStatuses.map((status) => (
+              <TaskColumn
+                key={status}
+                status={status}
+                tasks={columns[status]}
+                membersById={membersById}
+                onMove={moveTask}
+                onEdit={editTask}
+                onDelete={deleteTask}
+              />
+            ))}
+          </div>
+          <DragOverlay dropAnimation={null}>
+            {draggedTask ? (
+              <div className="task-drag-preview" aria-hidden="true">
+                <small>{draggedTask.id}</small>
+                <strong>{draggedTask.title}</strong>
+                <span>{taskStatusLabels[draggedTask.status]}</span>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </section>
     </>
   )
@@ -322,10 +405,16 @@ function TaskColumn({
   onDelete,
 }: TaskColumnProps) {
   const shouldVirtualize = tasks.length > VIRTUALIZATION_THRESHOLD
+  const { setNodeRef, isOver } = useDroppable({
+    id: `status-${status}`,
+    data: { status },
+  })
 
   return (
     <section
-      className="board-column"
+      ref={setNodeRef}
+      className={`board-column${isOver ? ' is-drag-over' : ''}`}
+      data-status={status}
       aria-labelledby={`column-${status}`}
       data-virtualized={shouldVirtualize ? 'true' : 'false'}
     >
@@ -351,6 +440,7 @@ function TaskColumn({
           className="task-list"
           role="list"
           aria-label={`${taskStatusLabels[status]} tasks`}
+          tabIndex={0}
         >
           {tasks.map((task, index) => (
             <TaskCard
@@ -458,18 +548,48 @@ function TaskCard({
   position,
   setSize,
 }: TaskCardProps) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } =
+    useDraggable({
+      id: task.id,
+      data: { status: task.status, title: task.title },
+    })
   const assignee = task.assigneeId
     ? membersById.get(task.assigneeId)
     : undefined
 
   return (
     <article
-      className="task-card"
+      ref={setNodeRef}
+      className={`task-card${isDragging ? ' is-dragging' : ''}`}
       role="listitem"
       aria-posinset={position}
       aria-setsize={setSize}
     >
       <div className="task-meta">
+        <button
+          ref={setActivatorNodeRef}
+          className="task-drag-handle"
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label={`Drag ${task.title}`}
+          data-task-drag-id={task.id}
+        >
+          <svg
+            aria-hidden="true"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <circle cx="8" cy="5" r="1.6" />
+            <circle cx="16" cy="5" r="1.6" />
+            <circle cx="8" cy="12" r="1.6" />
+            <circle cx="16" cy="12" r="1.6" />
+            <circle cx="8" cy="19" r="1.6" />
+            <circle cx="16" cy="19" r="1.6" />
+          </svg>
+        </button>
         <span aria-label={`Task ID: ${task.id}`}>{task.id}</span>
         <span
           className={`priority priority-${task.priority}`}
@@ -519,6 +639,7 @@ function TaskCard({
         </label>
         <Button
           type="button"
+          className="task-action-edit"
           aria-label={`Edit ${task.title}`}
           onClick={() => onEdit(task.id)}
         >
@@ -526,6 +647,7 @@ function TaskCard({
         </Button>
         <Button
           type="button"
+          className="task-action-delete"
           aria-label={`Delete ${task.title}`}
           onClick={() => onDelete(task)}
         >

@@ -1,3 +1,6 @@
+import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
+import { lazy, Suspense } from 'react'
+
 import type { Member } from '@/entities/member/model/member'
 import {
   taskStatuses,
@@ -14,6 +17,12 @@ import {
 import type { ProjectView } from './project-view'
 import { useProjectLiveTasks } from './use-project-live-tasks'
 import './project-task-views.css'
+
+const TaskTable = lazy(() =>
+  import('@/widgets/task-table/task-table').then((module) => ({
+    default: module.TaskTable,
+  })),
+)
 
 interface ProjectTaskViewsProps extends ProjectLiveTaskBoardProps {
   view: ProjectView
@@ -102,7 +111,10 @@ function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Work grouped by status"
         meta={`${tasks.length} tasks`}
       />
-      <div className="project-list-groups">
+      <ScrollRegion
+        label="Project task list content"
+        className="project-list-groups"
+      >
         {taskStatuses.map((status) => {
           const statusTasks = tasks.filter((task) => task.status === status)
 
@@ -140,14 +152,12 @@ function ProjectListView({ tasks, members, onOpenTask }: TaskViewProps) {
             </section>
           )
         })}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }
 
 function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
-  const memberById = createMemberMap(members)
-
   return (
     <section className="project-view-surface" aria-label="Project task table">
       <ProjectViewHeading
@@ -155,36 +165,15 @@ function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Dense project inventory"
         meta={`${tasks.length} rows`}
       />
-      <div className="project-table-wrap">
-        <div className="project-task-table" role="table" aria-label="Tasks">
-          <div className="project-task-table-row is-header" role="row">
-            <span role="columnheader">ID</span>
-            <span role="columnheader">Task</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Priority</span>
-            <span role="columnheader">Assignee</span>
-            <span role="columnheader">Due</span>
-          </div>
-          {tasks.map((task) => (
-            <div className="project-task-table-row" role="row" key={task.id}>
-              <span className="project-task-key" role="cell">
-                {task.id}
-              </span>
-              <span role="cell">
-                <TaskOpenButton task={task} onOpenTask={onOpenTask} />
-              </span>
-              <span role="cell">{taskStatusLabels[task.status]}</span>
-              <span role="cell">{task.priority}</span>
-              <span role="cell">
-                {task.assigneeId
-                  ? (memberById.get(task.assigneeId)?.name ?? 'Unassigned')
-                  : 'Unassigned'}
-              </span>
-              <span role="cell">{task.dueDate ?? '—'}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Suspense
+        fallback={
+          <p className="project-view-empty-row" role="status">
+            Loading task table…
+          </p>
+        }
+      >
+        <TaskTable tasks={tasks} members={members} onOpenTask={onOpenTask} />
+      </Suspense>
     </section>
   )
 }
@@ -200,7 +189,10 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Due-date schedule"
         meta={`${tasks.filter((task) => task.dueDate).length} scheduled`}
       />
-      <div className="project-calendar-list">
+      <ScrollRegion
+        label="Project calendar content"
+        className="project-calendar-list"
+      >
         {orderedTasks.map((task) => (
           <article className="project-calendar-item" key={task.id}>
             <div className="project-calendar-date">
@@ -219,7 +211,7 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
             />
           </article>
         ))}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }
@@ -235,7 +227,10 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
         title="Delivery sequence"
         meta={`${tasks.length} tasks`}
       />
-      <div className="project-timeline-list">
+      <ScrollRegion
+        label="Project timeline content"
+        className="project-timeline-list"
+      >
         {orderedTasks.map((task, index) => (
           <article className="project-timeline-item" key={task.id}>
             <span className="project-timeline-marker" aria-hidden="true">
@@ -258,7 +253,7 @@ function ProjectTimelineView({ tasks, members, onOpenTask }: TaskViewProps) {
             </div>
           </article>
         ))}
-      </div>
+      </ScrollRegion>
     </section>
   )
 }

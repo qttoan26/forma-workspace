@@ -1,0 +1,464 @@
+import { vi } from 'vitest'
+import {
+  mutateProductionJob,
+  ProductionJobConflict,
+  readProductionJobs,
+  subscribeProductionJobs,
+} from './production-job-storage'
+import {
+  productionJobInputSchema,
+  type ProductionJobInput,
+  type ProductionSourceContext,
+} from '../model/production-job'
+
+const projectId = 'production-test'
+const key = `forma-workspace:production-jobs:v1:${projectId}`
+const input: ProductionJobInput = {
+  name: 'Prepare source batch',
+  requirements: 'Review source quality',
+  workType: 'scan',
+  taskIds: ['TASK-1'],
+  documentReferenceIds: ['doc-1'],
+  priority: 'high',
+  ownerId: 'member-1',
+}
+const context: ProductionSourceContext = {
+  projectId,
+  tasks: [{ id: 'TASK-1', projectId }],
+  documents: [{ id: 'doc-1', projectId }],
+  members: [{ id: 'member-1' }],
+}
+const getSources = () => Promise.resolve(context)
+beforeEach(() => localStorage.clear())
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+it('creates drafts and persists explicit queue and return-to-draft transitions without changing source data', async () => {
+  const job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  expect(job.status).toBe('draft')
+  const queued = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    getSources,
+  ))!
+  expect(queued).toMatchObject({
+    id: job.id,
+    status: 'queued',
+    revision: 1,
+    createdAt: job.createdAt,
+  })
+  const draft = await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: queued, status: 'draft' },
+    getSources,
+  )
+  expect(draft).toMatchObject({ status: 'draft', revision: 2 })
+  expect(context.tasks).toEqual([{ id: 'TASK-1', projectId }])
+})
+
+it('preserves concurrent new packages and rejects stale edits, transitions and removals', async () => {
+  const [first, second] = await Promise.all([
+    mutateProductionJob(projectId, { kind: 'create', input }, getSources),
+    mutateProductionJob(
+      projectId,
+      { kind: 'create', input: { ...input, name: 'Other batch' } },
+      getSources,
+    ),
+  ])
+  expect(readProductionJobs(projectId)).toHaveLength(2)
+  await mutateProductionJob(
+    projectId,
+    {
+      kind: 'update',
+      expected: first!,
+      input: { ...input, name: 'Updated batch' },
+    },
+    getSources,
+  )
+  for (const mutation of [
+    { kind: 'remove' as const, expected: first! },
+    { kind: 'status' as const, expected: first!, status: 'queued' as const },
+    { kind: 'update' as const, expected: first!, input },
+  ])
+    await expect(
+      mutateProductionJob(projectId, mutation, getSources),
+    ).rejects.toBeInstanceOf(ProductionJobConflict)
+  await mutateProductionJob(
+    projectId,
+    { kind: 'remove', expected: second! },
+    getSources,
+  )
+  expect(readProductionJobs(projectId).map((job) => job.name)).toEqual([
+    'Updated batch',
+  ])
+})
+
+it('blocks missing tasks, documents, owners and foreign project contexts', async () => {
+  for (const broken of [
+    { ...context, tasks: [] },
+    { ...context, documents: [] },
+    { ...context, members: [] },
+    { ...context, projectId: 'another-project' },
+    { ...context, tasks: [{ id: 'TASK-1', projectId: 'another-project' }] },
+  ])
+    await expect(
+      mutateProductionJob(projectId, { kind: 'create', input }, () =>
+        Promise.resolve(broken),
+      ),
+    ).rejects.toThrow()
+  expect(readProductionJobs(projectId)).toEqual([])
+})
+
+it('rechecks sources before queuing and allows returning an orphaned package to draft', async () => {
+  const job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'queued' },
+      () => Promise.resolve({ ...context, documents: [] }),
+    ),
+  ).rejects.toThrow('unavailable')
+  const queued = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    getSources,
+  ))!
+  const sourceFailure = vi
+    .fn()
+    .mockRejectedValue(new Error('sources unavailable'))
+  expect(
+    await mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: queued, status: 'draft' },
+      sourceFailure,
+    ),
+  ).toMatchObject({ status: 'draft' })
+  expect(sourceFailure).not.toHaveBeenCalled()
+})
+
+it('does not overwrite unreadable, duplicate or incorrectly scoped stored packages', async () => {
+  const job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  for (const raw of [
+    '{invalid',
+    JSON.stringify([job, job]),
+    JSON.stringify([{ ...job, projectId: 'foreign' }]),
+  ]) {
+    localStorage.setItem(key, raw)
+    expect(() => readProductionJobs(projectId)).toThrow()
+    await expect(
+      mutateProductionJob(projectId, { kind: 'create', input }, getSources),
+    ).rejects.toThrow()
+    expect(localStorage.getItem(key)).toBe(raw)
+  }
+})
+
+it('announces no successful change when the browser write fails', async () => {
+  const changed = vi.fn()
+  const unsubscribe = subscribeProductionJobs(projectId, changed)
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('full', 'QuotaExceededError')
+  })
+  await expect(
+    mutateProductionJob(projectId, { kind: 'create', input }, getSources),
+  ).rejects.toThrow()
+  expect(changed).not.toHaveBeenCalled()
+  expect(readProductionJobs(projectId)).toEqual([])
+  unsubscribe()
+})
+
+it('requires task sources and rejects duplicate references', () => {
+  expect(
+    productionJobInputSchema.safeParse({ ...input, taskIds: [] }).success,
+  ).toBe(false)
+  expect(
+    productionJobInputSchema.safeParse({
+      ...input,
+      taskIds: ['TASK-1', 'TASK-1'],
+    }).success,
+  ).toBe(false)
+  expect(
+    productionJobInputSchema.safeParse({ ...input, dueDate: 'not-a-date' })
+      .success,
+  ).toBe(false)
+})
+
+it('clears owner and due date when the edited plan omits them', async () => {
+  const job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input: { ...input, dueDate: '2026-11-15' } },
+    getSources,
+  ))!
+  const cleared = { ...input, ownerId: undefined, dueDate: undefined }
+  await mutateProductionJob(
+    projectId,
+    { kind: 'update', expected: job, input: cleared },
+    getSources,
+  )
+  expect(readProductionJobs(projectId)[0]?.ownerId).toBeUndefined()
+  expect(readProductionJobs(projectId)[0]?.dueDate).toBeUndefined()
+})
+
+it('saves distinct packages when randomUUID is unavailable in a preview browser', async () => {
+  vi.stubGlobal('crypto', {})
+  const first = await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  )
+  const second = await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  )
+  expect(first?.id).not.toBe(second?.id)
+  expect(readProductionJobs(projectId)).toHaveLength(2)
+})
+
+it('requires sequential execution, handoff notes and named quality decisions; preserves rework history', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  const transition = async (
+    status: typeof job.status,
+    note?: string,
+    reviewerId?: string,
+  ) => {
+    job = (await mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status, note, reviewerId },
+      getSources,
+    ))!
+  }
+  await expect(transition('approved', 'skip', 'member-1')).rejects.toThrow(
+    'not available',
+  )
+  await transition('queued')
+  await transition('processing')
+  await expect(transition('quality')).rejects.toThrow('note')
+  await transition('quality', 'Checked source completeness; ready for review')
+  await expect(transition('approved', 'All checks pass')).rejects.toThrow(
+    'reviewer',
+  )
+  await expect(
+    transition('processing', 'Correct page rotation', 'missing'),
+  ).rejects.toThrow('reviewer')
+  await transition('processing', 'Correct page rotation', 'member-1')
+  await transition('quality', 'Page rotation corrected')
+  await transition('approved', 'Source and output checked', 'member-1')
+  expect(
+    readProductionJobs(projectId)[0]?.workflowHistory?.slice(-3),
+  ).toMatchObject([
+    {
+      from: 'quality',
+      to: 'processing',
+      note: 'Correct page rotation',
+      reviewerId: 'member-1',
+    },
+    { from: 'processing', to: 'quality' },
+    { from: 'quality', to: 'approved', reviewerId: 'member-1' },
+  ])
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'update', expected: job, input },
+      getSources,
+    ),
+  ).rejects.toThrow('queue')
+  await expect(transition('processing')).rejects.toThrow('note')
+  await transition('processing', 'New source revision requires recheck')
+  expect(job.status).toBe('processing')
+})
+
+it('requires an owner to start and revalidates sources for processing and QC', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input: { ...input, ownerId: undefined } },
+    getSources,
+  ))!
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'processing' },
+      getSources,
+    ),
+  ).rejects.toThrow('owner')
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'update', expected: job, input },
+    getSources,
+  ))!
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'processing' },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'quality', note: 'Ready' },
+      () => Promise.resolve({ ...context, tasks: [] }),
+    ),
+  ).rejects.toThrow('unavailable')
+  expect(readProductionJobs(projectId)[0]?.status).toBe('processing')
+})
+
+it('allows active packages with missing sources back to the queue for plan repair', async () => {
+  let job = (await mutateProductionJob(
+    projectId,
+    { kind: 'create', input },
+    getSources,
+  ))!
+  for (const status of ['queued', 'processing'] as const)
+    job = (await mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status },
+      getSources,
+    ))!
+  const missing = () => Promise.resolve({ ...context, documents: [] })
+  job = (await mutateProductionJob(
+    projectId,
+    { kind: 'status', expected: job, status: 'queued' },
+    missing,
+  ))!
+  expect(job.status).toBe('queued')
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { kind: 'status', expected: job, status: 'processing' },
+      missing,
+    ),
+  ).rejects.toThrow('unavailable')
+  job = (await mutateProductionJob(
+    projectId,
+    {
+      kind: 'update',
+      expected: job,
+      input: { ...input, documentReferenceIds: [] },
+    },
+    missing,
+  ))!
+  expect(
+    (
+      await mutateProductionJob(
+        projectId,
+        { kind: 'status', expected: job, status: 'processing' },
+        missing,
+      )
+    )?.status,
+  ).toBe('processing')
+})
+
+it('gates release and handoff for existing approved packages and allows source repair', async () => {
+  const approved = {
+    ...input,
+    id: 'legacy-approved',
+    projectId,
+    status: 'approved' as const,
+    revision: 4,
+    createdAt: '2026-11-02T00:00:00.000Z',
+    updatedAt: '2026-11-02T00:00:00.000Z',
+  }
+  localStorage.setItem(key, JSON.stringify([approved]))
+  const markReady = {
+    kind: 'status',
+    expected: approved,
+    status: 'ready',
+    note: 'Output checked against requirements',
+  } as const
+  await expect(
+    mutateProductionJob(projectId, markReady, getSources),
+  ).rejects.toThrow('Confirm the output')
+  await expect(
+    mutateProductionJob(
+      projectId,
+      {
+        kind: 'status',
+        expected: approved,
+        status: 'handed-off',
+        note: 'Delivered',
+        recipient: 'Ops',
+      },
+      getSources,
+    ),
+  ).rejects.toThrow('transition is not available')
+  const ready = (await mutateProductionJob(
+    projectId,
+    { ...markReady, releaseConfirmed: true },
+    getSources,
+  ))!
+  const handoff = {
+    kind: 'status',
+    expected: ready,
+    status: 'handed-off',
+    note: 'Output shared in operations channel',
+  } as const
+  await expect(
+    mutateProductionJob(projectId, { ...handoff, recipient: '  ' }, getSources),
+  ).rejects.toThrow('recipient')
+  const missingSources = () => Promise.resolve({ ...context, documents: [] })
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { ...handoff, recipient: 'Operations' },
+      missingSources,
+    ),
+  ).rejects.toThrow('unavailable')
+  const withdrawn = (await mutateProductionJob(
+    projectId,
+    {
+      kind: 'status',
+      expected: ready,
+      status: 'approved',
+      note: 'Source needs repair',
+    },
+    missingSources,
+  ))!
+  expect(withdrawn.status).toBe('approved')
+  const readyAgain = (await mutateProductionJob(
+    projectId,
+    { ...markReady, expected: withdrawn, releaseConfirmed: true },
+    getSources,
+  ))!
+  await expect(
+    mutateProductionJob(
+      projectId,
+      { ...handoff, recipient: 'Operations' },
+      getSources,
+    ),
+  ).rejects.toBeInstanceOf(ProductionJobConflict)
+  const recorded = await mutateProductionJob(
+    projectId,
+    { ...handoff, expected: readyAgain, recipient: ' Operations ' },
+    getSources,
+  )
+  expect(recorded?.status).toBe('handed-off')
+  expect(
+    readProductionJobs(projectId)[0]?.workflowHistory?.at(-1),
+  ).toMatchObject({
+    from: 'ready',
+    to: 'handed-off',
+    recipient: 'Operations',
+    note: handoff.note,
+  })
+})

@@ -1,4 +1,9 @@
 import { loadConfiguredProjectTasks } from '@/entities/task/lib/task-persistence'
+import { getTaskApiBaseUrl } from '@/entities/task/lib/task-api'
+import { saveProjectTasksToIndexedDb } from '@/entities/task/lib/task-indexed-db'
+import { saveProjectTasks } from '@/entities/task/lib/task-storage'
+import { isDemoMode } from '@/shared/auth/auth-session'
+import { upgradeDemoTasks } from './upgrade-demo-tasks'
 
 import { initialTasks, members, project, workspace } from './project-board-data'
 import {
@@ -33,7 +38,14 @@ export const projectBoardRepository: ProjectBoardRepository = {
       throw new ProjectBoardNotFoundError(input)
     }
 
-    const tasks = await loadConfiguredProjectTasks(project.id, initialTasks)
+    const saved = await loadConfiguredProjectTasks(project.id, initialTasks)
+    const tasks =
+      isDemoMode() && !getTaskApiBaseUrl() ? upgradeDemoTasks(saved) : saved
+    if (tasks !== saved) {
+      await saveProjectTasksToIndexedDb(project.id, tasks).catch(() =>
+        saveProjectTasks(project.id, tasks),
+      )
+    }
 
     return parseProjectBoardData({
       workspace,

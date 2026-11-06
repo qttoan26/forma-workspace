@@ -4,10 +4,6 @@
   padding: 1.25rem 0 3rem;
 }
 
-.project-detail-page .project-board-nav {
-  margin-bottom: 1rem;
-}
-
 .project-detail-page .project-board-header {
   margin-bottom: 0.75rem;
   border-radius: 0.7rem;
@@ -20,9 +16,11 @@
   overflow-x: auto;
   margin-bottom: 1rem;
   padding: 0.3rem;
-  border: 1px solid #e0e4e6;
+  border: 1px solid var(--forma-color-glass-border);
   border-radius: 0.65rem;
-  background: #fff;
+  background: var(--forma-color-glass);
+  -webkit-backdrop-filter: blur(var(--forma-glass-blur));
+  backdrop-filter: blur(var(--forma-glass-blur));
   overscroll-behavior-inline: contain;
 }
 

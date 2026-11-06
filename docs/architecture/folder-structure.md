@@ -45,6 +45,10 @@ Owns route-level composition. Pages connect URL state and route parameters to lo
 
 Owns substantial reusable UI compositions. The task board is the first active widget because it coordinates task domain data and task-management features into a stable workspace region.
 
+`widgets/task-table` owns the TanStack Table composition for project inventory. It consumes task/member entities and emits task-open actions; project pages retain filter, route and editor ownership. `widgets/task-board/model/task-board-dnd.ts` defines typed collision/keyboard behavior for dnd-kit status moves.
+
+`widgets/work-insights` derives status and owner totals from task/member props and owns lazy-loaded Chart.js canvases. It does not fetch or persist another copy of project data. The generic `shared/ui/scroll-region` primitive owns accessible bounded scrolling without importing domain modules.
+
 ### features
 
 Owns meaningful user actions and workflows. Task creation/editing is the first active feature because its validation and form behavior form an independently testable product capability.

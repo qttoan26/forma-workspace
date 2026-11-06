@@ -1,0 +1,106 @@
+.task-form {
+  display: grid;
+  gap: var(--forma-space-4);
+  width: min(100%, 44rem);
+  margin: 0 0 1.5rem auto;
+  padding: var(--forma-space-5);
+  border: 1px solid var(--forma-color-accent-border);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-glass);
+}
+
+.task-form-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--forma-space-4);
+  padding-bottom: var(--forma-space-4);
+  border-bottom: 1px solid var(--forma-color-accent-border);
+}
+
+.task-form-heading > div {
+  min-width: 0;
+}
+.task-form-heading h2 {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.task-form-heading .eyebrow {
+  margin-top: 0;
+  color: var(--forma-color-accent-text);
+}
+
+.task-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.task-form input:not([type='checkbox']),
+.task-form select,
+.task-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-text);
+}
+.task-form textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+.task-form input[type='checkbox'] {
+  accent-color: var(--forma-color-accent-solid);
+}
+.task-form :is(input, select, textarea, button, a):focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: 2px;
+}
+.task-form :is(input, select, textarea):focus-visible {
+  border-color: var(--forma-color-accent-text);
+}
+.task-form small[role='alert'] {
+  color: var(--forma-color-error-text);
+}
+.task-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--forma-space-4);
+}
+
+.task-form .button-primary {
+  border-color: var(--forma-color-accent-solid);
+  background: var(--forma-color-accent-solid);
+  color: var(--forma-color-on-accent);
+}
+.task-form .button-primary:hover:not(:disabled) {
+  background: var(--forma-color-accent-hover);
+  border-color: var(--forma-color-accent-hover);
+}
+.task-form .button-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.task-form .button-secondary {
+  border-color: var(--forma-color-accent-border);
+  background: var(--forma-color-glass-strong);
+  color: var(--forma-color-accent-text);
+}
+.task-form .button-secondary:hover:not(:disabled) {
+  background: var(--forma-color-accent-subtle);
+}
+
+@media (max-width: 700px) {
+  .task-form-heading {
+    flex-direction: column;
+  }
+  .task-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

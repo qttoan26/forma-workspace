@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, vi } from 'vitest'
 
-import { members } from '@/pages/project-board/project-board-data'
+import { members } from '@/test/fixtures/project-board'
 
 import { createTaskFormDraftKey } from '../lib/task-form-draft'
 import { TaskForm } from './task-form'

@@ -12,6 +12,7 @@ import {
   loadProjectTaskSnapshotFromIndexedDb,
   loadQueuedProjectTaskSync,
   loadTaskActivityFromIndexedDb,
+  loadProjectActivityFromIndexedDb,
   saveProjectTasksToIndexedDb,
 } from './task-indexed-db'
 
@@ -44,6 +45,9 @@ describe('task IndexedDB fallback', () => {
   })
 
   it('rejects writes without crashing the fallback path', async () => {
+    await expect(
+      loadProjectActivityFromIndexedDb('project-1', ['FOR-18']),
+    ).rejects.toThrow('IndexedDB is unavailable')
     await expect(saveProjectTasksToIndexedDb('project-1', [])).rejects.toThrow(
       'IndexedDB is unavailable',
     )

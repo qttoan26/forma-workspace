@@ -1,0 +1,154 @@
+.task-table-scroll {
+  position: relative;
+}
+
+.task-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+.task-table th,
+.task-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--forma-color-border);
+}
+
+.task-table th {
+  padding-block: 0.25rem;
+  background: var(--forma-color-surface-subtle);
+  color: var(--forma-color-text-secondary);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.task-table th button {
+  display: flex;
+  min-height: 44px;
+  width: 100%;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.task-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--forma-color-border);
+}
+
+.task-table th[aria-sort='ascending'],
+.task-table th[aria-sort='descending'] {
+  color: var(--forma-color-accent-text);
+}
+
+.task-table td:nth-child(2) {
+  min-width: 240px;
+  width: 40%;
+}
+
+.task-table td:first-child,
+.task-table td:last-child {
+  white-space: nowrap;
+}
+
+.task-table tbody tr:hover {
+  background: var(--forma-color-accent-subtle);
+}
+
+.task-table-open {
+  padding: 0.25rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--forma-color-text-strong);
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.task-table-open:hover {
+  color: var(--forma-color-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.task-table-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.task-table-status::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: '';
+}
+
+.task-table-status.is-done {
+  color: var(--forma-color-accent-text);
+}
+
+.task-table-empty {
+  height: 8rem;
+  text-align: center;
+}
+
+.task-table-pagination,
+.task-table-pagination label,
+.task-table-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.task-table-pagination {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.task-table-pagination button,
+.task-table-pagination select {
+  min-height: 36px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--forma-color-border-strong);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-secondary);
+  cursor: pointer;
+}
+
+.task-table-pagination button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.task-table-scroll:focus-visible,
+.task-table :is(button, a):focus-visible,
+.task-table-pagination :is(button, select):focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: -2px;
+}
+
+@media (pointer: coarse) {
+  .task-table-pagination button,
+  .task-table-pagination select,
+  .task-table-open {
+    min-height: 44px;
+  }
+}

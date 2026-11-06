@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { configureApiAccessTokenProvider } from '@/shared/api/api-auth'
 
@@ -11,6 +11,10 @@ import {
 } from './auth-session'
 
 let resetAccessTokenProvider: (() => void) | undefined
+
+beforeEach(() => {
+  vi.stubEnv('VITE_DEMO_MODE', 'false')
+})
 
 afterEach(() => {
   resetAccessTokenProvider?.()
@@ -27,7 +31,7 @@ describe('auth session', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(loadAuthSession()).resolves.toEqual({
-      user: { id: 'demo-user' },
+      user: { id: 'member-2' },
     })
     expect(fetchMock).not.toHaveBeenCalled()
   })

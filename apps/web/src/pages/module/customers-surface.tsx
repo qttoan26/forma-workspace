@@ -12,31 +12,35 @@ const customerStages = [
   {
     id: 'request',
     label: 'Request',
-    description: 'Capture customer requests, context, and service expectations.',
+    description:
+      'Capture customer requests, context, and service expectations.',
     icon: UserIcon,
   },
   {
     id: 'triage',
     label: 'Triage',
-    description: 'Classify requests and route internal work to the right owner.',
+    description:
+      'Classify requests and route internal work to the right owner.',
     icon: ClipboardIcon,
   },
   {
     id: 'delivery-context',
     label: 'Delivery Context',
-    description: 'Expose approved milestones and execution context to customers.',
+    description: 'Show approved delivery milestones for the linked request.',
     icon: CalendarIcon,
   },
   {
     id: 'service-visibility',
     label: 'Service Visibility',
-    description: 'Present customer-facing status without duplicating internal state.',
+    description:
+      'Present customer-facing status without duplicating internal state.',
     icon: CheckSquareIcon,
   },
   {
     id: 'follow-up',
     label: 'Follow-up',
-    description: 'Track handoff, feedback, and the next customer-facing action.',
+    description:
+      'Track handoff, feedback, and the next customer-facing action.',
     icon: UsersIcon,
   },
 ] as const
@@ -106,10 +110,7 @@ export function CustomersSurface() {
 
       <div className="customers-capability-grid">
         {customerCapabilities.map((capability) => (
-          <article
-            className="customers-capability-card"
-            key={capability.title}
-          >
+          <article className="customers-capability-card" key={capability.title}>
             <p className="eyebrow">{capability.eyebrow}</p>
             <h3>{capability.title}</h3>
             <p>{capability.description}</p>
@@ -119,11 +120,11 @@ export function CustomersSurface() {
 
       <section className="customers-boundary-card">
         <p className="eyebrow">Domain boundary</p>
-        <h3>Customer context, not duplicate internal execution</h3>
+        <h3>Customer and internal records</h3>
         <p>
-          Customers will reference Work projects/tasks, Production jobs, and
-          Documents & Data records through stable contracts. It will not create
-          parallel project, queue, or document models for customer-facing views.
+          Work projects and tasks, Production jobs, and Documents & Data records
+          stay in their respective modules. Customer service visibility will
+          show delivery milestones explicitly shared for a linked request.
         </p>
       </section>
     </section>

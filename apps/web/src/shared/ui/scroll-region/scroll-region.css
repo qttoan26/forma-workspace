@@ -1,0 +1,14 @@
+.content-scroll-region {
+  min-width: 0;
+  min-height: 0;
+  max-block-size: var(--forma-scroll-region-height, min(60dvh, 36rem));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 3.5rem 1rem;
+}
+
+.content-scroll-region:focus-visible {
+  outline: 2px solid var(--forma-color-accent-text);
+  outline-offset: -2px;
+}

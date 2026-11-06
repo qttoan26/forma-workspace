@@ -9,7 +9,7 @@ import {
 
 import { createBrowserTaskMutationAdapter } from '@/entities/task/lib/task-mutation-adapter'
 import { loadProjectTasks } from '@/entities/task/lib/task-storage'
-import { initialTasks, members } from '@/pages/project-board/project-board-data'
+import { initialTasks, members } from '@/test/fixtures/project-board'
 
 import { TaskBoard as BaseTaskBoard } from './task-board'
 
@@ -197,9 +197,9 @@ describe('TaskBoard', () => {
       />,
     )
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      `0 of ${initialTasks.length} tasks shown`,
-    )
+    expect(
+      screen.getByRole('status', { name: 'Task count' }),
+    ).toHaveTextContent(`0 of ${initialTasks.length} tasks shown`)
   })
 
   it('suggests clearing filters when no tasks match', () => {

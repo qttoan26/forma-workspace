@@ -1,42 +1,41 @@
 .project-board-shell {
-  background: #f7f7f8;
+  background: transparent;
 }
 
-.project-board-nav {
-  display: flex;
+.project-back-link {
+  display: inline-flex;
+  min-height: 32px;
   align-items: center;
-  gap: var(--forma-space-2);
-  margin-bottom: var(--forma-space-8);
-  color: var(--forma-color-text-muted);
-  font-size: 0.8rem;
-}
-
-.project-board-nav a {
-  margin-right: var(--forma-space-2);
-  color: var(--forma-color-text-strong);
-  font-weight: 700;
+  color: #347a68;
+  font-size: 0.78rem;
   text-decoration: none;
 }
-
-.project-board-nav a:hover,
-.project-board-nav a:focus-visible {
+.project-back-link:hover {
   text-decoration: underline;
 }
-
-.project-board-nav strong {
-  color: var(--forma-color-text-strong);
+.project-back-link:focus-visible {
+  outline: 2px solid #28b99a;
+  outline-offset: 3px;
 }
 
 .project-board-header {
   padding: var(--forma-space-6);
   border: 1px solid var(--forma-color-border);
   border-radius: 1.2rem;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+  background: var(--forma-color-glass-strong);
+  box-shadow: var(--forma-shadow-glass);
 }
 
-.project-board-header h1 {
-  margin-bottom: var(--forma-space-3);
+.workspace-header.project-board-header h1 {
+  margin: 0 0 var(--forma-space-2);
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.project-board-header .project-description {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
 .project-board-members {
@@ -146,7 +145,7 @@
   padding: var(--forma-space-4);
   border: 1px solid var(--forma-color-border);
   border-radius: var(--forma-radius-xl);
-  background: rgb(255 255 255 / 94%);
+  background: var(--forma-color-glass-strong);
 }
 
 .board-filters label {
@@ -172,8 +171,8 @@
 
 .board-filters input:focus-visible,
 .board-filters select:focus-visible {
-  border-color: var(--forma-color-text-muted);
-  outline: 2px solid rgb(39 39 42 / 15%);
+  border-color: var(--forma-color-accent-text);
+  outline: 2px solid var(--forma-color-accent-text);
   outline-offset: 1px;
 }
 
@@ -217,10 +216,6 @@
 @media (max-width: 700px) {
   .project-board-shell {
     padding: var(--forma-space-4);
-  }
-
-  .project-board-nav {
-    margin-bottom: var(--forma-space-4);
   }
 
   .project-board-header {

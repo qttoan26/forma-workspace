@@ -19,6 +19,8 @@ Forma Workspace classifies state by ownership before selecting a library.
 | Route/search/filter state  | TanStack Router              |
 | Form state                 | React Hook Form + Zod        |
 | Local interaction state    | React state                  |
+| Table row models           | TanStack Table               |
+| Drag interaction state     | dnd-kit + React state        |
 | Persisted preferences      | Dedicated preference adapter |
 | Cross-feature client state | Zustand only when justified  |
 

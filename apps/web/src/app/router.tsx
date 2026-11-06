@@ -11,6 +11,10 @@ import { HomePage } from '@/pages/home/home-page'
 import { LandingPage } from '@/pages/landing/landing-page'
 import { LoginPage } from '@/pages/login/login-page'
 import { ModuleRoutePage } from '@/pages/module/module-route-page'
+import {
+  compactWorkTaskSearch,
+  parseWorkTaskSearch,
+} from '@/pages/module/work-task-filters'
 import { loadProjectBoard } from '@/pages/project-board/project-board-loader'
 import { ProjectBoardLoading } from '@/pages/project-board/project-board-loading'
 import { ProjectBoardNotFound } from '@/pages/project-board/project-board-not-found'
@@ -21,7 +25,19 @@ import { requireAuthSession } from '@/shared/auth/auth-session'
 const rootRoute = createRootRoute({
   component: () => (
     <>
-      <a className="skip-link" href="#main-content">
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={(event) => {
+          const main = document.getElementById('main-content')
+          if (!main) return
+
+          // A fragment navigation can reload route state and replace the focus target.
+          event.preventDefault()
+          main.focus()
+          main.scrollIntoView()
+        }}
+      >
         Skip to content
       </a>
       <Outlet />
@@ -57,6 +73,8 @@ const authCallbackRoute = createRoute({
 const moduleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId',
+  validateSearch: (search) =>
+    compactWorkTaskSearch(parseWorkTaskSearch(search)),
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })
@@ -64,6 +82,8 @@ const moduleRoute = createRoute({
 const moduleSectionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId/$sectionId',
+  validateSearch: (search) =>
+    compactWorkTaskSearch(parseWorkTaskSearch(search)),
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })

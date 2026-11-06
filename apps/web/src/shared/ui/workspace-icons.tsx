@@ -2,6 +2,29 @@ import type { SVGProps } from 'react'
 
 type IconProps = SVGProps<SVGSVGElement>
 
+export function MailIcon({
+  open = false,
+  ...props
+}: IconProps & { open?: boolean }) {
+  return (
+    <IconBase {...props}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" {...strokeProps} />
+      <path
+        d={open ? 'm4 17 5.5-5M20 17l-5.5-5M4 6l8 6 8-6' : 'm4 6 8 6 8-6'}
+        {...strokeProps}
+      />
+    </IconBase>
+  )
+}
+
+export function DoubleCheckIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m3 12 4 4L17 6M12 16l9-10" {...strokeProps} />
+    </IconBase>
+  )
+}
+
 function IconBase({ children, ...props }: IconProps) {
   return (
     <svg

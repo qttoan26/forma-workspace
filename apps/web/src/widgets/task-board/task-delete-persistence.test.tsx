@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react'
 
 import type { Task } from '@/entities/task/model/task'
-import { initialTasks, members } from '@/pages/project-board/project-board-data'
+import { initialTasks, members } from '@/test/fixtures/project-board'
 
 import { TaskBoard } from './task-board'
 

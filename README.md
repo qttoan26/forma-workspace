@@ -12,6 +12,8 @@ Frontend demo: https://qttoan26.github.io/forma-workspace/
 
 > The GitHub Pages deployment is an explicit browser/demo build. It does not connect to the production API or OIDC provider. Production authentication remains enabled when `VITE_DEMO_MODE` is not set.
 
+Module rollout: [priorities and current Work scope](docs/module-priorities.md). Work Tasks/My Tasks provide URL-backed filters; Projects exposes progress and view links; Activity shows locally saved task comments and updates. Inbox provides a split-view conversation, category/search/unread filters, per-account local read status, current assignments and replies through the same task activity store. Its scope is the current project on this browser; remote notification delivery remains unconnected.
+
 ## Engineering principles
 
 - Pages-first architecture with earned complexity.
@@ -80,25 +82,35 @@ See [`docs/architecture`](docs/architecture/README.md) for the architecture cont
 
 ### Frontend — `@forma/web`
 
-| Package                       | Current role                                        |
-| ----------------------------- | --------------------------------------------------- |
-| React `19.2.x`                | UI runtime                                          |
-| React DOM `19.2.x`            | browser renderer                                    |
-| Vite `7.1.x`                  | dev server and production build                     |
-| TanStack Router `1.132.x`     | typed routing, protected routes, loaders            |
-| TanStack Virtual `3.14.x`     | scalable virtualized UI surfaces                    |
-| React Hook Form `7.65.x`      | form state                                          |
-| `@hookform/resolvers` `5.2.x` | form/schema integration                             |
-| Zod `4.1.x`                   | runtime validation                                  |
-| Playwright `1.56.x`           | browser smoke and performance tests                 |
-| Testing Library               | component behavior and accessibility-oriented tests |
-| jsdom `27.x`                  | browser-like unit-test environment                  |
+| Package                              | Current role                                             |
+| ------------------------------------ | -------------------------------------------------------- |
+| React `19.2.x`                       | UI runtime                                               |
+| React DOM `19.2.x`                   | browser renderer                                         |
+| Vite `7.1.x`                         | dev server and production build                          |
+| TanStack Router `1.132.x`            | typed routing, protected routes, loaders                 |
+| TanStack Virtual `3.14.x`            | scalable virtualized UI surfaces                         |
+| TanStack Table `8.21.x`              | semantic task tables, sorting and pagination             |
+| dnd-kit Core `6.3.x`                 | mouse, touch and keyboard task status moves              |
+| Chart.js `4.6.x`                     | status and owner workload charts in Home / Work Overview |
+| `@fontsource-variable/inter` `5.3.x` | self-hosted variable fallback for Apple-style typography |
+| React Hook Form `7.65.x`             | form state                                               |
+| `@hookform/resolvers` `5.2.x`        | form/schema integration                                  |
+| Zod `4.1.x`                          | runtime validation                                       |
+| Playwright `1.56.x`                  | browser smoke and performance tests                      |
+| Testing Library                      | component behavior and accessibility-oriented tests      |
+| jsdom `27.x`                         | browser-like unit-test environment                       |
 
 The frontend uses browser storage intentionally:
 
 - **IndexedDB** for durable task/project data and offline-capable persistence.
 - **sessionStorage** for short-lived OIDC PKCE transaction/session state.
 - **localStorage/sessionStorage** only when the lifetime of the data justifies it; access tokens are not stored long-term in localStorage.
+
+TanStack is preferred for matching frontend concerns; Router and Virtual remain in use, with Table powering the project inventory. Drag and drop uses dnd-kit and the existing task mutation/persistence path. The Bitrix-inspired shell uses shared glass tokens with opaque fallbacks, reduced-transparency support and readable content surfaces. See [ADR-001](docs/decisions/001-tanstack-dnd-glass-ui.md).
+
+Home and Work Overview share lazy-loaded Chart.js analytics derived from the current project's saved tasks. Work Tasks, My Tasks and project inventory share TanStack Table. Tables, task lists, schedules, file references, attention lists and Kanban columns scroll inside bounded content areas; table headers and pagination remain available. See [ADR-002](docs/decisions/002-chartjs-overview-contained-scroll.md).
+
+Typography uses the shared `--forma-font-family` token: native San Francisco on iOS/macOS via `-apple-system` / `BlinkMacSystemFont`, then self-hosted Inter Variable on other platforms. Fontsource bundles normal variable weights 100–900, including Vietnamese, with `font-display: swap` and Unicode subsets; no font CDN is required. Workspace, landing, form controls and Chart.js labels/tooltips use the same stack. Charts re-measure labels when font loading completes. The browser performance harness imports the same font and style tokens as the application.
 
 ### API — `@forma/api`
 
@@ -189,6 +201,10 @@ VITE_OIDC_SCOPE=openid profile email
 `VITE_DEMO_MODE=true` is reserved for the GitHub Pages demo build. It creates a local demo session and deliberately skips `/api/auth/me`. Do not enable it for a real production deployment.
 
 ## GitHub Pages frontend demo
+
+The current sample project is **Avengers Initiative**. Steve Rogers (Captain America), Tony Stark (Iron Man), Thor, Bruce Banner (Hulk), Natasha Romanoff (Black Widow), and Clint Barton (Hawkeye) each own two role-specific tasks. The demo session, account avatar, My Tasks and Inbox consistently use Tony Stark (`member-2`). Choose an assignee in Work → Tasks to inspect another member's work.
+
+Existing browser-only demo snapshots with the original shipped sample titles are upgraded in place. Task IDs, saved workflow/assignment/date changes, custom descriptions, renamed tasks and user-created tasks remain intact. Deleted original seeds are not restored; subsequent reloads do not recreate deleted Avengers tasks. This upgrade runs only in demo mode with no configured task API. Behavior tests use a stable fixture independently of the visible demo theme.
 
 `.github/workflows/deploy-pages.yml` builds `@forma/web` with:
 

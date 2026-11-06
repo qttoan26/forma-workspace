@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 
 import {
@@ -32,12 +32,15 @@ const appBaseUrl = import.meta.env.BASE_URL
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
-  const { workspace, project, members, initialTasks } = useLoaderData({
+  const { project, members, initialTasks } = useLoaderData({
     from: projectRoutePath,
   })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [hasPersistenceFailure, setHasPersistenceFailure] = useState(false)
   const activeView = search.view ?? 'board'
+  const handlePersistenceFailure = useCallback(() => {
+    setHasPersistenceFailure(true)
+  }, [])
 
   useEffect(() => {
     function syncAndRefresh() {
@@ -170,16 +173,14 @@ export function ProjectBoardPage() {
       pageLabel={`Work / ${project.name}`}
     >
       <div className="project-board-shell project-detail-page">
-        <nav className="project-board-nav" aria-label="Project navigation">
-          <a href={`${appBaseUrl}modules/work/projects`}>← Projects</a>
-          <span>{workspace.name}</span>
-          <span aria-hidden="true">/</span>
-          <strong>{project.key}</strong>
-        </nav>
-
         <header className="workspace-header project-board-header">
           <div>
-            <p className="eyebrow">Active project</p>
+            <a
+              className="project-back-link"
+              href={`${appBaseUrl}modules/work/projects`}
+            >
+              ← Projects
+            </a>
             <h1>{project.name}</h1>
             <p className="project-description">{project.description}</p>
           </div>
@@ -329,7 +330,7 @@ export function ProjectBoardPage() {
           onSelectedTaskChange={selectTask}
           isCreatingTask={search.newTask === '1'}
           onCreatingTaskChange={setCreatingTask}
-          onPersistenceFailure={() => setHasPersistenceFailure(true)}
+          onPersistenceFailure={handlePersistenceFailure}
           filters={filters}
         />
       </div>
