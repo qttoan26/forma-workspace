@@ -173,19 +173,29 @@ test('keeps the primary flow usable on a mobile viewport', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('exposes the skip link for keyboard navigation', async ({ page }) => {
-  await page.goto('/')
-  await expect(
-    page.getByRole('heading', { name: 'Keep the work moving.' }),
-  ).toBeVisible()
+for (const { path, heading } of [
+  { path: '/', heading: 'Keep the work moving.' },
+  {
+    path: '/workspaces/forma/projects/project-1',
+    heading: 'Avengers Initiative',
+  },
+  {
+    path: '/workspaces/forma/projects/missing-project',
+    heading: 'Project not found',
+  },
+]) {
+  test(`moves keyboard focus to main content on ${path}`, async ({ page }) => {
+    await page.goto(path)
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible()
 
-  const skipLink = page.getByRole('link', { name: /skip/i })
-  await page.keyboard.press('Tab')
+    const skipLink = page.getByRole('link', { name: 'Skip to content' })
+    await page.keyboard.press('Tab')
+    await expect(skipLink).toBeFocused()
 
-  await expect(skipLink).toBeFocused()
-  await page.keyboard.press('Enter')
-  await expect(page.locator('#main-content')).toBeVisible()
-})
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('main')).toBeFocused()
+  })
+}
 
 test('sidebar opens the selected detail and reflects edits from the project board', async ({
   page,

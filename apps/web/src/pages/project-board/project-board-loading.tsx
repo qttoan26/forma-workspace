@@ -1,6 +1,11 @@
 export function ProjectBoardLoading() {
   return (
-    <main className="home-shell" id="main-content" aria-busy="true">
+    <main
+      className="home-shell"
+      id="main-content"
+      tabIndex={-1}
+      aria-busy="true"
+    >
       <section className="hero" aria-labelledby="project-loading-title">
         <p className="eyebrow">Forma Workspace</p>
         <h1 id="project-loading-title">Loading project board</h1>

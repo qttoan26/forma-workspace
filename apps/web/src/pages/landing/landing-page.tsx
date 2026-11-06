@@ -238,7 +238,7 @@ function ProductPreview() {
 
 export function LandingPage() {
   return (
-    <main className="landing-page" id="main-content">
+    <main className="landing-page" id="main-content" tabIndex={-1}>
       <header className="landing-nav-wrap">
         <nav className="landing-nav" aria-label="Landing page navigation">
           <a

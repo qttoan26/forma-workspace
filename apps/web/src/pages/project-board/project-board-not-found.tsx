@@ -26,7 +26,7 @@ export function ProjectBoardNotFound({ data }: ProjectBoardNotFoundProps) {
   const identity = readRouteIdentity(data)
 
   return (
-    <main className="home-shell" id="main-content">
+    <main className="home-shell" id="main-content" tabIndex={-1}>
       <section className="hero" aria-labelledby="project-not-found-title">
         <p className="eyebrow">Forma Workspace</p>
         <h1 id="project-not-found-title">Project not found</h1>
