@@ -250,6 +250,8 @@ export function WorkspaceShell({
 
       <aside
         className={`workspace-sidebar${mobileOpen ? ' is-open' : ''}`}
+        role={isMobile ? 'dialog' : undefined}
+        aria-modal={isMobile && mobileOpen ? true : undefined}
         aria-label="Main navigation"
         id="workspace-navigation"
         ref={sidebarRef}

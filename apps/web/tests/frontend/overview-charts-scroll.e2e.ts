@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Task } from '../../src/entities/task/model/task'
+import { expectSavedTaskStatus } from './expect-saved-task-status'
 
 const tasks: Task[] = Array.from({ length: 70 }, (_, index) => ({
   id: `FOR-${100 + index}`,
@@ -49,37 +50,7 @@ test('renders real Chart.js charts and updates overview after a saved task move'
   await page
     .getByRole('combobox', { name: 'Move Analytics task 11', exact: true })
     .selectOption('done')
-  // A hard navigation can interrupt an in-flight browser write. Assert the
-  // committed snapshot before testing that the next page reads that snapshot.
-  await expect
-    .poll(() =>
-      page.evaluate(async () => {
-        const database = await new Promise<IDBDatabase>((resolve, reject) => {
-          const request = indexedDB.open('forma-workspace', 3)
-          request.onsuccess = () => resolve(request.result)
-          request.onerror = () =>
-            reject(request.error ?? new Error('open failed'))
-        })
-        try {
-          return await new Promise<string | undefined>((resolve, reject) => {
-            const request = database
-              .transaction('project-tasks', 'readonly')
-              .objectStore('project-tasks')
-              .get('project-1') as IDBRequest<{ tasks: Task[] } | undefined>
-            request.onsuccess = () =>
-              resolve(
-                request.result?.tasks.find((task) => task.id === 'FOR-110')
-                  ?.status,
-              )
-            request.onerror = () =>
-              reject(request.error ?? new Error('read failed'))
-          })
-        } finally {
-          database.close()
-        }
-      }),
-    )
-    .toBe('done')
+  await expectSavedTaskStatus(page, 'FOR-110', 'done')
   await page.goto('/modules/work/overview')
   await expect(page.getByText('11 of 70 tasks completed (16%).')).toBeVisible()
   await page.goto('/')

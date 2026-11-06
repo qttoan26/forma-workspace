@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { SearchIcon, XIcon } from '@/shared/ui/workspace-icons'
 import { searchWorkspaceNavigation } from '@/shared/workspace/navigation-search'
 
+import '@/shared/ui/modal/modal.css'
 import './workspace-navigation-search.css'
 
 export function WorkspaceNavigationSearch({
@@ -109,7 +110,7 @@ export function WorkspaceNavigationSearch({
         <kbd>Ctrl / ⌘ K</kbd>
       </button>
       <dialog
-        className="workspace-navigation-search"
+        className="workspace-navigation-search forma-overlay-enter"
         ref={dialogRef}
         aria-labelledby={titleId}
         onKeyDown={(event) => {

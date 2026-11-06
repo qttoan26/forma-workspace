@@ -1,4 +1,6 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+
+import { Modal } from '@/shared/ui/modal/modal'
 
 import './task-editor-drawer.css'
 
@@ -15,41 +17,16 @@ export function TaskEditorDrawer({
   onClose,
   children,
 }: TaskEditorDrawerProps) {
-  const triggerRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (!open) return
-
-    triggerRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
-
-    return () => {
-      const trigger = triggerRef.current
-      if (trigger?.isConnected) trigger.focus()
-      triggerRef.current = null
-    }
-  }, [open])
-
   if (!open) return null
 
   return (
-    <div
-      className="task-editor-backdrop"
-      onMouseDown={(event) => {
-        if (event.target !== event.currentTarget) return
-        onClose()
-      }}
+    <Modal
+      className="task-editor-drawer"
+      aria-label={label}
+      onDismiss={onClose}
+      dismissOnBackdrop
     >
-      <aside
-        className="task-editor-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
-      >
-        {children}
-      </aside>
-    </div>
+      {children}
+    </Modal>
   )
 }

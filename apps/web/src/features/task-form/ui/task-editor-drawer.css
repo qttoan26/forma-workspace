@@ -1,21 +1,25 @@
-.task-editor-backdrop {
+.task-editor-drawer {
+  box-sizing: border-box;
   position: fixed;
-  z-index: 90;
-  inset: 0;
-  display: flex;
-  justify-content: flex-end;
+  inset: 0 0 0 auto;
+  width: min(36rem, calc(100% - 2rem));
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-left: 1px solid var(--forma-color-accent-border);
+  background: var(--forma-task-editor-background);
+  color: var(--forma-color-text);
+  box-shadow: -18px 0 48px rgb(31 75 86 / 16%);
+}
+
+.task-editor-drawer::backdrop {
   background: var(--forma-color-overlay);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
-}
-
-.task-editor-drawer {
-  width: min(36rem, calc(100vw - 2rem));
-  height: 100%;
-  overflow-y: auto;
-  border-left: 1px solid var(--forma-color-accent-border);
-  background: var(--forma-task-editor-background);
-  box-shadow: -18px 0 48px rgb(31 75 86 / 16%);
 }
 
 .task-editor-drawer .task-form {
@@ -27,23 +31,25 @@
   background: transparent;
 }
 
-@media (max-width: 700px) {
-  .task-editor-backdrop {
-    align-items: flex-end;
-  }
-
+@media (max-width: 700px), (max-width: 1024px) and (pointer: coarse) {
   .task-editor-drawer {
+    --forma-overlay-travel: 100%;
+    --forma-overlay-start-opacity: 1;
+    --forma-overlay-duration: 260ms;
+    inset: auto 0 0;
     width: 100%;
-    height: min(92vh, 46rem);
+    height: min(calc(100dvh - env(safe-area-inset-top, 0px) - 12px), 46rem);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    scroll-padding-block: 100px 24px;
     border-top: 1px solid var(--forma-color-accent-border);
     border-left: 0;
-    border-radius: 1rem 1rem 0 0;
+    border-radius: 28px 28px 0 0;
     box-shadow: 0 -18px 48px rgb(31 75 86 / 16%);
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .task-editor-backdrop {
+  .task-editor-drawer::backdrop {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }

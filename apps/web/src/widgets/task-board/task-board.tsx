@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   DndContext,
@@ -36,6 +36,7 @@ import type { TaskFormValues } from '@/features/task-form/model/task-form-schema
 import { TaskEditorDrawer } from '@/features/task-form/ui/task-editor-drawer'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
+import { Modal } from '@/shared/ui/modal/modal'
 
 import {
   filterTasks,
@@ -124,6 +125,9 @@ export function TaskBoard({
   const [deletedTask, setDeletedTask] = useState<DeletedTaskSnapshot | null>(
     null,
   )
+  const [pendingDeletion, setPendingDeletion] = useState<Task | null>(null)
+  const deleteTitleId = useId()
+  const deleteDescriptionId = useId()
   const editorTriggerRef = useRef<HTMLElement | null>(null)
   const wasEditorOpenRef = useRef(false)
   const membersById = useMemo(
@@ -219,16 +223,16 @@ export function TaskBoard({
     setEditingTask(null)
   }
 
-  function deleteTask(task: Task) {
-    const confirmed = window.confirm(`Delete "${task.title}"?`)
-    if (!confirmed) return
+  function deleteTask() {
+    if (!pendingDeletion) return
 
-    const result = removeTask(tasks, task.id)
+    setPendingDeletion(null)
+    const result = removeTask(tasks, pendingDeletion.id)
     if (!result.deletedTask) return
 
     setDeletedTask(result.deletedTask)
     setTasks(result.tasks)
-    if (editingTaskId === task.id) setEditingTask(null)
+    if (editingTaskId === pendingDeletion.id) setEditingTask(null)
   }
 
   function undoDelete() {
@@ -285,6 +289,36 @@ export function TaskBoard({
   return (
     <>
       {editor}
+      {pendingDeletion ? (
+        <Modal
+          className="task-delete-dialog"
+          role="alertdialog"
+          aria-labelledby={deleteTitleId}
+          aria-describedby={deleteDescriptionId}
+          onDismiss={() => setPendingDeletion(null)}
+        >
+          <h2 id={deleteTitleId}>Delete task?</h2>
+          <p id={deleteDescriptionId}>
+            Delete “{pendingDeletion.title}” from the board?
+          </p>
+          <div className="task-delete-dialog-actions">
+            <Button
+              type="button"
+              data-modal-autofocus
+              onClick={() => setPendingDeletion(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="task-delete-confirm"
+              onClick={deleteTask}
+            >
+              Delete task
+            </Button>
+          </div>
+        </Modal>
+      ) : null}
       <section aria-label="Project task board">
         <div className="board-toolbar">
           <p aria-live="polite" role="status" aria-label="Task count">
@@ -357,7 +391,7 @@ export function TaskBoard({
                 membersById={membersById}
                 onMove={moveTask}
                 onEdit={editTask}
-                onDelete={deleteTask}
+                onDelete={setPendingDeletion}
               />
             ))}
           </div>

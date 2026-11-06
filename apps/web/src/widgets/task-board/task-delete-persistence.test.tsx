@@ -12,12 +12,7 @@ import { initialTasks, members } from '@/test/fixtures/project-board'
 import { TaskBoard } from './task-board'
 
 describe('TaskBoard deletion persistence contract', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('persists the task collection without the confirmed deleted task', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     const persist = vi
       .fn<(projectId: string, tasks: Task[]) => Promise<void>>()
       .mockResolvedValue(undefined)
@@ -40,6 +35,9 @@ describe('TaskBoard deletion persistence contract', () => {
         name: 'Delete Create board interaction model',
       }),
     )
+
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete task?' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete task' }))
 
     await waitFor(() => {
       const latestTasks = persist.mock.calls.at(-1)?.[1]

@@ -470,15 +470,20 @@
   .workspace-shell,
   .workspace-shell.is-sidebar-expanded {
     --workspace-sidebar-size: 0px;
-    --workspace-sidebar-panel-size: min(86vw, 286px);
   }
   .workspace-sidebar {
-    width: var(--workspace-sidebar-panel-size);
-    transform: translateX(-100%);
-    box-shadow: 18px 0 44px rgb(29 36 41 / 14%);
+    box-sizing: border-box;
+    inset: auto 0 0;
+    width: 100%;
+    height: min(42rem, calc(100dvh - env(safe-area-inset-top, 0px) - 1rem));
+    border-top: 1px solid var(--forma-color-glass-border);
+    border-right: 0;
+    border-radius: 1.75rem 1.75rem 0 0;
+    transform: translateY(100%);
+    box-shadow: 0 -18px 44px rgb(29 36 41 / 14%);
   }
   .workspace-sidebar.is-open {
-    transform: translateX(0);
+    transform: translateY(0);
   }
   .workspace-sidebar-close {
     display: grid;

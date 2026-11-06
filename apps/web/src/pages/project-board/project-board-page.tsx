@@ -60,6 +60,11 @@ export function ProjectBoardPage() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (
+        event.defaultPrevented ||
+        document.querySelector('dialog[open], [aria-modal="true"]')
+      )
+        return
       const shortcut = getProjectBoardShortcut(event)
       if (!shortcut) return
 

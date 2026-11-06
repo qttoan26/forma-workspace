@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { DocumentReference } from '@/entities/document/model/document-reference'
 import { getDocumentReferenceUrl } from '@/entities/document/lib/document-location'
 import { useDocumentReferences } from '@/entities/document/lib/use-document-references'
@@ -6,6 +6,7 @@ import { DocumentReferenceForm } from '@/features/document-reference/ui/document
 import { DocumentLibraryTable } from '@/widgets/document-library/document-library-table'
 import { FileStackIcon, XIcon } from '@/shared/ui/workspace-icons'
 import { Button } from '@/shared/ui'
+import { Modal } from '@/shared/ui/modal/modal'
 import { useWorkData } from './use-work-data'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import './documents-workspace.css'
@@ -275,38 +276,15 @@ function DocumentEditorModal({
   children: React.ReactNode
   onClose: () => void
 }) {
-  const dialog = useRef<HTMLDialogElement>(null)
-  const closeRef = useRef<HTMLButtonElement>(null)
-  useEffect(() => {
-    const trigger =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const element = dialog.current
-    element?.showModal()
-    closeRef.current?.focus()
-    return () => {
-      element?.close()
-      document.body.style.overflow = previousOverflow
-      if (trigger?.isConnected) trigger.focus()
-    }
-  }, [])
   return (
-    <dialog
-      ref={dialog}
+    <Modal
       className="document-editor-modal"
       aria-label="Document reference editor"
-      onCancel={(event) => {
-        event.preventDefault()
-        onClose()
-      }}
+      onDismiss={onClose}
     >
       <header>
         <h2>Document reference</h2>
         <button
-          ref={closeRef}
           type="button"
           aria-label="Close document editor"
           onClick={onClose}
@@ -315,6 +293,6 @@ function DocumentEditorModal({
         </button>
       </header>
       {children}
-    </dialog>
+    </Modal>
   )
 }

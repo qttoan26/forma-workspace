@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { expectSavedTaskStatus } from './expect-saved-task-status'
 
 const projectPath = '/workspaces/forma/projects/project-1'
 const taskTitle = 'Upgrade the Mark LXXXV armor'
@@ -67,6 +68,7 @@ test('moves a task with the mouse and retains it after reload', async ({
       .locator('.board-column[data-status="todo"]')
       .getByRole('heading', { name: taskTitle }),
   ).toHaveCount(0)
+  await expectSavedTaskStatus(page, 'FOR-18', 'in-progress')
   await page.reload()
   await expect(target.getByRole('heading', { name: taskTitle })).toBeVisible()
 })

@@ -254,3 +254,40 @@
     height: 44px;
   }
 }
+
+.task-delete-dialog {
+  box-sizing: border-box;
+  width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 1.5rem;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-xl);
+  background: var(--forma-task-editor-background);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-overlay);
+}
+
+.task-delete-dialog::backdrop {
+  background: var(--forma-color-overlay);
+}
+
+.task-delete-dialog h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.task-delete-dialog p {
+  overflow-wrap: anywhere;
+}
+
+.task-delete-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.task-delete-dialog .task-delete-confirm {
+  background: var(--forma-color-danger-surface);
+  color: var(--forma-color-danger-text);
+}
