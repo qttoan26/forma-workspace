@@ -25,7 +25,19 @@ import { requireAuthSession } from '@/shared/auth/auth-session'
 const rootRoute = createRootRoute({
   component: () => (
     <>
-      <a className="skip-link" href="#main-content">
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={(event) => {
+          const main = document.getElementById('main-content')
+          if (!main) return
+
+          // A fragment navigation can reload route state and replace the focus target.
+          event.preventDefault()
+          main.focus()
+          main.scrollIntoView()
+        }}
+      >
         Skip to content
       </a>
       <Outlet />
