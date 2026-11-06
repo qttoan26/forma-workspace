@@ -68,6 +68,11 @@
 .task-form small[role='alert'] {
   color: var(--forma-color-error-text);
 }
+.task-detail-panel {
+  display: grid;
+  gap: var(--forma-space-4);
+}
+
 .task-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

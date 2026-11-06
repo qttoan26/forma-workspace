@@ -115,10 +115,12 @@ test('contains the mobile table and keeps task editing usable in a short viewpor
   await page
     .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
-  const drawer = page.getByRole('dialog', { name: 'Edit task' })
-  await expect(drawer).toBeVisible()
-  await expect(drawer).toHaveCSS('animation-name', 'forma-overlay-rise')
+  const details = page.getByRole('dialog', { name: 'Task details' })
+  await expect(details).toBeVisible()
+  await expect(details).toHaveCSS('animation-name', 'forma-overlay-rise')
   await page.setViewportSize({ width: 393, height: 500 })
+  await details.getByRole('button', { name: 'Edit', exact: true }).click()
+  const drawer = page.getByRole('dialog', { name: 'Edit task' })
   await drawer.getByLabel('Title', { exact: true }).fill('Mobile task update')
   expect(
     await drawer

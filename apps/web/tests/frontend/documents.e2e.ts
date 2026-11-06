@@ -84,7 +84,7 @@ test('registers, searches, edits and removes a shared task document reference', 
     })
     .click()
   const taskEditor = page.getByRole('dialog', {
-    name: 'Edit task',
+    name: 'Task details',
     exact: true,
   })
   await taskEditor.getByRole('tab', { name: 'Files', exact: true }).click()

@@ -1,0 +1,86 @@
+.task-detail-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--forma-color-accent-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-glass);
+}
+
+.task-detail-tabs button {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: var(--forma-radius-md);
+  background: transparent;
+  color: var(--forma-color-text-secondary);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.task-detail-tabs button[aria-selected='true'] {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+  box-shadow: var(--forma-shadow-card);
+}
+
+.task-detail-tabs button:hover {
+  background: var(--forma-color-accent-subtle);
+  color: var(--forma-color-accent-text);
+}
+
+.task-detail-view .task-form-heading {
+  flex-direction: row;
+}
+
+.task-detail-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--forma-space-2);
+}
+
+.task-detail-actions button {
+  min-height: 2.75rem;
+}
+
+.task-detail-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--forma-space-4);
+  margin: 0;
+}
+
+.task-detail-fields dt {
+  margin-bottom: var(--forma-space-1);
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.task-detail-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--forma-color-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.task-detail-priority {
+  text-transform: capitalize;
+}
+
+.task-detail-description {
+  grid-column: 1 / -1;
+}
+
+.task-detail-description dd {
+  white-space: pre-wrap;
+}
+
+@media (max-width: 700px) {
+  .task-detail-tabs button {
+    min-height: 2.75rem;
+    padding-inline: 0.35rem;
+    font-size: 0.8rem;
+  }
+}

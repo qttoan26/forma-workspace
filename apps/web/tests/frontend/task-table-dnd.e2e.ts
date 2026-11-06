@@ -33,8 +33,11 @@ test('sorts the TanStack table and opens the corresponding task drawer', async (
     'Upgrade the Mark LXXXV armor',
   )
   await table.getByRole('button', { name: `Open ${taskTitle}` }).click()
-  await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
-  await expect(page.getByLabel('Title', { exact: true })).toHaveValue(taskTitle)
+  const details = page.getByRole('dialog', { name: 'Task details' })
+  await expect(
+    details.getByRole('heading', { name: taskTitle, exact: true }),
+  ).toBeVisible()
+  await expect(details.getByLabel('Title', { exact: true })).toHaveCount(0)
 })
 
 test('moves a task with the mouse and retains it after reload', async ({

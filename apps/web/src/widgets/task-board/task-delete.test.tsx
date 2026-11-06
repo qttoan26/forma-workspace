@@ -152,9 +152,10 @@ describe('TaskBoard task deletion', () => {
 
     fireEvent.click(
       within(task as HTMLElement).getByRole('button', {
-        name: 'Edit Create board interaction model',
+        name: 'View Create board interaction model',
       }),
     )
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     expect(
       screen.getByRole('button', { name: 'Save changes' }),
     ).toBeInTheDocument()

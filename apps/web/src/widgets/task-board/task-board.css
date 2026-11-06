@@ -161,12 +161,12 @@
   border-color: var(--forma-color-control-border);
   background: var(--forma-color-glass-strong);
 }
-.task-card .task-action-edit {
+.task-card .task-action-view {
   border-color: var(--forma-color-accent-border);
   background: var(--forma-color-accent-subtle);
   color: var(--forma-color-accent-text);
 }
-.task-card .task-action-edit:hover {
+.task-card .task-action-view:hover {
   border-color: var(--forma-color-accent-text);
 }
 .task-card .task-action-delete:hover {

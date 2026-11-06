@@ -33,6 +33,7 @@ import {
 } from '@/entities/task/model/task-mutations'
 import { createTaskFormDraftKey } from '@/features/task-form/lib/task-form-draft'
 import type { TaskFormValues } from '@/features/task-form/model/task-form-schema'
+import { TaskDetailsDrawer } from '@/features/task-form/ui/task-details-drawer'
 import { TaskEditorDrawer } from '@/features/task-form/ui/task-editor-drawer'
 import { TaskForm } from '@/features/task-form/ui/task-form'
 import { Button } from '@/shared/ui'
@@ -196,7 +197,7 @@ export function TaskBoard({
     if (status) moveTask(String(active.id), status)
   }
 
-  function editTask(taskId: string) {
+  function openTask(taskId: string) {
     rememberEditorTrigger()
     setCreatingTask(false)
     setEditingTask(taskId)
@@ -242,10 +243,18 @@ export function TaskBoard({
     setDeletedTask(null)
   }
 
-  const editor = (
+  const editor = editingTask ? (
+    <TaskDetailsDrawer
+      key={editingTask.id}
+      task={editingTask}
+      members={members}
+      onClose={closeEditor}
+      onSubmit={updateTask}
+    />
+  ) : (
     <TaskEditorDrawer
       open={isEditorOpen}
-      label={isCreating ? 'Create task' : 'Edit task'}
+      label={isCreating ? 'Create task' : 'Task unavailable'}
       onClose={closeEditor}
     >
       {isCreating ? (
@@ -254,16 +263,6 @@ export function TaskBoard({
           draftKey={createTaskFormDraftKey(scopedProjectId)}
           onCancel={() => setCreatingTask(false)}
           onSubmit={createTask}
-        />
-      ) : null}
-
-      {editingTask ? (
-        <TaskForm
-          members={members}
-          task={editingTask}
-          draftKey={createTaskFormDraftKey(scopedProjectId, editingTask.id)}
-          onCancel={() => setEditingTask(null)}
-          onSubmit={updateTask}
         />
       ) : null}
 
@@ -390,7 +389,7 @@ export function TaskBoard({
                 tasks={columns[status]}
                 membersById={membersById}
                 onMove={moveTask}
-                onEdit={editTask}
+                onOpen={openTask}
                 onDelete={setPendingDeletion}
               />
             ))}
@@ -426,7 +425,7 @@ interface TaskColumnProps {
   tasks: Task[]
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
-  onEdit: (taskId: string) => void
+  onOpen: (taskId: string) => void
   onDelete: (task: Task) => void
 }
 
@@ -435,7 +434,7 @@ function TaskColumn({
   tasks,
   membersById,
   onMove,
-  onEdit,
+  onOpen,
   onDelete,
 }: TaskColumnProps) {
   const shouldVirtualize = tasks.length > VIRTUALIZATION_THRESHOLD
@@ -466,7 +465,7 @@ function TaskColumn({
           status={status}
           membersById={membersById}
           onMove={onMove}
-          onEdit={onEdit}
+          onOpen={onOpen}
           onDelete={onDelete}
         />
       ) : (
@@ -482,7 +481,7 @@ function TaskColumn({
               task={task}
               membersById={membersById}
               onMove={onMove}
-              onEdit={onEdit}
+              onOpen={onOpen}
               onDelete={onDelete}
               position={index + 1}
               setSize={tasks.length}
@@ -499,7 +498,7 @@ interface VirtualTaskListProps {
   status: TaskStatus
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
-  onEdit: (taskId: string) => void
+  onOpen: (taskId: string) => void
   onDelete: (task: Task) => void
 }
 
@@ -508,7 +507,7 @@ function VirtualTaskList({
   status,
   membersById,
   onMove,
-  onEdit,
+  onOpen,
   onDelete,
 }: VirtualTaskListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -550,7 +549,7 @@ function VirtualTaskList({
                 task={task}
                 membersById={membersById}
                 onMove={onMove}
-                onEdit={onEdit}
+                onOpen={onOpen}
                 onDelete={onDelete}
                 position={virtualItem.index + 1}
                 setSize={tasks.length}
@@ -567,7 +566,7 @@ interface TaskCardProps {
   task: Task
   membersById: Map<string, Member>
   onMove: (taskId: string, status: TaskStatus) => void
-  onEdit: (taskId: string) => void
+  onOpen: (taskId: string) => void
   onDelete: (task: Task) => void
   position: number
   setSize: number
@@ -577,7 +576,7 @@ function TaskCard({
   task,
   membersById,
   onMove,
-  onEdit,
+  onOpen,
   onDelete,
   position,
   setSize,
@@ -673,11 +672,11 @@ function TaskCard({
         </label>
         <Button
           type="button"
-          className="task-action-edit"
-          aria-label={`Edit ${task.title}`}
-          onClick={() => onEdit(task.id)}
+          className="task-action-view"
+          aria-label={`View ${task.title}`}
+          onClick={() => onOpen(task.id)}
         >
-          Edit
+          View
         </Button>
         <Button
           type="button"

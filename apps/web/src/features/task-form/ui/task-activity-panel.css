@@ -1,39 +1,3 @@
-.task-detail-tabs {
-  display: flex;
-  gap: 0.25rem;
-  padding: 0.25rem;
-  border: 1px solid var(--forma-color-accent-border);
-  border-radius: var(--forma-radius-lg);
-  background: var(--forma-color-glass);
-}
-
-.task-detail-tabs button {
-  flex: 1;
-  padding: 0.55rem 0.75rem;
-  border: 0;
-  border-radius: var(--forma-radius-md);
-  background: transparent;
-  color: var(--forma-color-text-secondary);
-  cursor: pointer;
-  font-weight: 650;
-}
-
-.task-detail-tabs button[aria-selected='true'] {
-  background: var(--forma-color-accent-subtle);
-  color: var(--forma-color-accent-text);
-  box-shadow: var(--forma-shadow-card);
-}
-
-.task-detail-tabs button:hover {
-  background: var(--forma-color-accent-subtle);
-  color: var(--forma-color-accent-text);
-}
-
-.task-detail-panel {
-  display: grid;
-  gap: var(--forma-space-4);
-}
-
 .task-activity-panel {
   display: grid;
   gap: var(--forma-space-5);

@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useId, useState } from 'react'
 import { localDateKey } from '@/shared/lib/local-date-key'
 
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import {
+  isTaskOverdue,
   taskPriorities,
   taskStatuses,
   taskStatusLabels,
@@ -10,7 +11,6 @@ import {
 import {
   defaultWorkTaskSearch,
   filterWorkTasks,
-  isTaskOverdue,
   workTaskScopes,
   type WorkTaskSearch,
 } from './work-task-filters'
@@ -44,6 +44,8 @@ export function WorkTaskExplorer({
   userId: string | undefined
   personal?: boolean
 }) {
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filterOptionsId = useId()
   const tasks = personal
     ? data.initialTasks.filter((task) => task.assigneeId === userId)
     : data.initialTasks
@@ -56,6 +58,9 @@ export function WorkTaskExplorer({
     overdue: tasks.filter((task) => isTaskOverdue(task, today)).length,
     completed: tasks.filter((task) => task.status === 'done').length,
   }
+  const advancedFilterCount = (
+    ['status', 'priority', 'assignee', 'due'] as const
+  ).filter((key) => effectiveSearch[key] !== defaultWorkTaskSearch[key]).length
   const hasFilters = Object.entries(effectiveSearch).some(
     ([key, value]) =>
       value !== defaultWorkTaskSearch[key as keyof WorkTaskSearch],
@@ -103,78 +108,95 @@ export function WorkTaskExplorer({
             onChange={(event) => update({ query: event.target.value })}
           />
         </label>
-        <label>
-          Status
-          <select
-            value={search.status}
-            onChange={(event) =>
-              update({ status: event.target.value as WorkTaskSearch['status'] })
-            }
-          >
-            <option value="all">All statuses</option>
-            {taskStatuses.map((status) => (
-              <option key={status} value={status}>
-                {taskStatusLabels[status]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Priority
-          <select
-            value={search.priority}
-            onChange={(event) =>
-              update({
-                priority: event.target.value as WorkTaskSearch['priority'],
-              })
-            }
-          >
-            <option value="all">All priorities</option>
-            {taskPriorities.map((priority) => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </select>
-        </label>
-        {!personal ? (
+        <button
+          type="button"
+          className="button-secondary work-task-filter-toggle"
+          aria-expanded={filtersOpen}
+          aria-controls={filterOptionsId}
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          Filters{advancedFilterCount ? ` (${advancedFilterCount})` : ''}
+        </button>
+        <div
+          id={filterOptionsId}
+          className="work-task-filter-options"
+          data-expanded={filtersOpen}
+        >
           <label>
-            Assignee
+            Status
             <select
-              value={search.assignee}
-              onChange={(event) => update({ assignee: event.target.value })}
+              value={search.status}
+              onChange={(event) =>
+                update({
+                  status: event.target.value as WorkTaskSearch['status'],
+                })
+              }
             >
-              <option value="all">All assignees</option>
-              <option value="unassigned">Unassigned</option>
-              {data.members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
+              <option value="all">All statuses</option>
+              {taskStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {taskStatusLabels[status]}
                 </option>
               ))}
-              {![
-                'all',
-                'unassigned',
-                ...data.members.map((member) => member.id),
-              ].includes(search.assignee) ? (
-                <option value={search.assignee}>Unavailable member</option>
-              ) : null}
             </select>
           </label>
-        ) : null}
-        <label>
-          Due date
-          <select
-            value={search.due}
-            onChange={(event) =>
-              update({ due: event.target.value as WorkTaskSearch['due'] })
-            }
-          >
-            <option value="all">Any date</option>
-            <option value="today">Today</option>
-            <option value="week">Next 7 days</option>
-            <option value="none">No due date</option>
-          </select>
-        </label>
+          <label>
+            Priority
+            <select
+              value={search.priority}
+              onChange={(event) =>
+                update({
+                  priority: event.target.value as WorkTaskSearch['priority'],
+                })
+              }
+            >
+              <option value="all">All priorities</option>
+              {taskPriorities.map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
+                </option>
+              ))}
+            </select>
+          </label>
+          {!personal ? (
+            <label>
+              Assignee
+              <select
+                value={search.assignee}
+                onChange={(event) => update({ assignee: event.target.value })}
+              >
+                <option value="all">All assignees</option>
+                <option value="unassigned">Unassigned</option>
+                {data.members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+                {![
+                  'all',
+                  'unassigned',
+                  ...data.members.map((member) => member.id),
+                ].includes(search.assignee) ? (
+                  <option value={search.assignee}>Unavailable member</option>
+                ) : null}
+              </select>
+            </label>
+          ) : null}
+          <label>
+            Due date
+            <select
+              value={search.due}
+              onChange={(event) =>
+                update({ due: event.target.value as WorkTaskSearch['due'] })
+              }
+            >
+              <option value="all">Any date</option>
+              <option value="today">Today</option>
+              <option value="week">Next 7 days</option>
+              <option value="none">No due date</option>
+            </select>
+          </label>
+        </div>
       </form>
       <div className="work-task-results">
         <p role="status" aria-live="polite">

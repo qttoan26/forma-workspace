@@ -86,8 +86,14 @@ test('edits one live task through the shared drawer across project views', async
     .click()
 
   await expect(page).toHaveURL(/view=list&task=FOR-18/)
+  const details = page.getByRole('dialog', { name: 'Task details' })
+  await expect(
+    details.getByRole('heading', { name: 'Upgrade the Mark LXXXV armor' }),
+  ).toBeVisible()
+  await expect(details.getByLabel('Title')).toHaveCount(0)
+  await details.getByRole('button', { name: 'Edit', exact: true }).click()
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
-  await expect(drawer).toBeVisible()
+  await expect(drawer.getByLabel('Title')).toBeFocused()
 
   await drawer.getByLabel('Title').fill('Create shared task drawer')
   await drawer.getByRole('button', { name: 'Save changes' }).click()
@@ -113,7 +119,7 @@ test('persists task comments in the shared drawer activity tab', async ({
     .getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
 
-  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  const drawer = page.getByRole('dialog', { name: 'Task details' })
   await drawer.getByRole('tab', { name: 'Activity' }).click()
   await expect(drawer.getByText('No activity yet')).toBeVisible()
 
@@ -123,7 +129,7 @@ test('persists task comments in the shared drawer activity tab', async ({
   await expect(drawer.getByText('Ready for customer review')).toBeVisible()
   await expect(drawer.getByRole('status')).toHaveText('Comment saved locally.')
 
-  await drawer.getByRole('button', { name: 'Cancel' }).click()
+  await drawer.getByRole('button', { name: 'Close' }).click()
   await expect(drawer).toBeHidden()
 
   await page
@@ -134,16 +140,16 @@ test('persists task comments in the shared drawer activity tab', async ({
   await expect(drawer.getByText('Ready for customer review')).toBeVisible()
 })
 
-test('opens the same task drawer from the board editor action', async ({
+test('opens the same task drawer from the board View action', async ({
   page,
 }) => {
   await page.goto('/workspaces/forma/projects/project-1')
 
   await page
-    .getByRole('button', { name: 'Edit Upgrade the Mark LXXXV armor' })
+    .getByRole('button', { name: 'View Upgrade the Mark LXXXV armor' })
     .click()
 
-  await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Task details' })).toBeVisible()
   await expect(page).toHaveURL(/task=FOR-18/)
 })
 
@@ -210,6 +216,10 @@ test('sidebar opens the selected detail and reflects edits from the project boar
   await page
     .getByRole('link', { name: 'Upgrade the Mark LXXXV armor', exact: true })
     .click()
+  await page
+    .getByRole('dialog', { name: 'Task details' })
+    .getByRole('button', { name: 'Edit', exact: true })
+    .click()
   const drawer = page.getByRole('dialog', { name: 'Edit task' })
   await drawer
     .getByLabel('Title')
@@ -218,7 +228,7 @@ test('sidebar opens the selected detail and reflects edits from the project boar
   await expect(drawer).toBeHidden()
   await expect(
     page.getByRole('button', {
-      name: 'Edit Sidebar and board share this saved task',
+      name: 'View Sidebar and board share this saved task',
       exact: true,
     }),
   ).toBeVisible()
@@ -373,7 +383,7 @@ test('does not open navigation search over an active task editor', async ({
   page,
 }) => {
   await page.goto('/workspaces/forma/projects/project-1?task=FOR-18')
-  const editor = page.getByRole('dialog', { name: 'Edit task' })
+  const editor = page.getByRole('dialog', { name: 'Task details' })
   await expect(editor).toBeVisible()
   await page.keyboard.press('Control+k')
   await expect(

@@ -94,7 +94,7 @@ test('triages persisted read state and shares Inbox replies with the original ta
     })
     .click()
   await page.getByRole('link', { name: 'Open task ↗' }).click()
-  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  const drawer = page.getByRole('dialog', { name: 'Task details' })
   await drawer.getByRole('tab', { name: 'Activity', exact: true }).click()
   await expect(
     drawer.getByText('Inbox conversation check', { exact: true }),
