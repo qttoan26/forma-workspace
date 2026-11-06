@@ -28,9 +28,15 @@ Allow four fields in the external response. Return the opaque share ID, approved
 
 ### Implementation order
 
-1. Complete frontend hardening (Task 70). Keep the existing Customers and Vendors sections labeled `Implementation in progress` until they have an authorized source.
+1. Frontend hardening (Task 70) is complete. See the [verified frontend progress](../frontend-progress.md). Keep the existing Customers and Vendors sections labeled `Implementation in progress` until they have an authorized source.
 2. Establish authoritative identity, organization membership and audience-specific relationships in Admin. Add server-owned delivery transitions and the ability for an authorized operator to publish or revoke a share. Record the actor, scope, revision and time for each publication or revocation.
 3. Add the read-only server projection and wire Customers → Service visibility and Vendors → Vendor deliveries to it. Distinguish an empty list from a failed request. Leave existing browser-local package history in Production and require an explicit, authorized server record before any external publication.
+
+### First backend slice
+
+Use the existing NestJS authentication guard and MongoDB service. The guard establishes the account identity. Organization membership is a server-managed record scoped by workspace, organization and account. Reuse the authenticated account identifier, keep membership inactive until provisioned by an authorized operator, and require a delivery-read permission for the relevant audience. Browser profiles and Production's free-text recipient cannot supply any of these attributes.
+
+Build and test the membership lookup before adding publication or external reads. Include active membership, missing permission, revoked membership, the same account in an unrelated organization, and a matching organization in a different workspace. Keep existing task owner authorization in place. Provisioning, relationship records and the publication workflow each need their own authorization checks before their endpoints are exposed.
 
 ### Acceptance cases
 

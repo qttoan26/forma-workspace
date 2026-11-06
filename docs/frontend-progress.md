@@ -4,9 +4,9 @@ The fixed frontend master backlog remains **70 tasks**.
 
 ## Verified progress
 
-- Completed: **69 / 70**
-- Remaining: **1 / 70**
-- Completion: **98.6%**
+- Completed: **70 / 70**
+- Remaining: **0 / 70**
+- Completion: **100%**
 
 This count follows the previously agreed fixed backlog. Backend work is not counted as frontend progress.
 
@@ -23,20 +23,12 @@ Completed and validated:
 - CI passed typecheck, lint, formatting, tests and production build
 - performance baseline and browser performance workflows passed
 
-## Remaining frontend work
-
 ### Task 70 — Production frontend hardening
 
-In progress:
+[PR #147](https://github.com/qttoan26/forma-workspace/pull/147) landed on `main` as `dcfec4f`. CI passed 245 web tests, 39 API tests, 57 Chromium smoke tests, typecheck, lint, formatting, production build, and both performance workflows. Coverage includes loading, unexpected-error and persistence-error regressions.
 
-- validate dashboard, project board and task flows end-to-end
-- verify project deep links and project-specific not-found behavior
-- verify desktop and mobile primary flows
-- verify keyboard focus entry through the skip link
-- keep loading, unexpected-error and persistence-error regression coverage in the existing component suite
-- verify GitHub Pages base-path navigation and deep-route fallback on deployment
-- run CI, frontend smoke, performance/browser checks and production build before declaring frontend 70/70
+After merge, the [GitHub Pages deployment](https://qttoan26.github.io/forma-workspace/) served the verified build under `/forma-workspace/`. The deployed dashboard loaded, a direct task link opened the editor again after reload, a missing project rendered its own fallback and returned to the dashboard, and the skip link moved keyboard focus into the missing-project content without changing the route.
 
-## Priority rule
+## Next phase
 
-Finish Task 70 before resuming PostgreSQL/backend expansion. The existing backend draft remains paused until the frontend reaches **70 / 70**.
+Continue with the existing NestJS and MongoDB API. [PR #96](https://github.com/qttoan26/forma-workspace/pull/96) replaced PostgreSQL task persistence. Start delivery work with [server-owned organization membership](decisions/007-external-delivery-milestones.md#first-backend-slice) before enabling external milestones.

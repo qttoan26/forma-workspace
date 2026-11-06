@@ -33,6 +33,7 @@ export function AuthCallbackPage() {
   return (
     <main
       id="main-content"
+      tabIndex={-1}
       style={{ maxWidth: 520, margin: '0 auto', padding: '5rem 1.5rem' }}
     >
       <p className="eyebrow">Forma Workspace</p>

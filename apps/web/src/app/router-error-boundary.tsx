@@ -10,7 +10,7 @@ export function RouterErrorView({ error, onRetry }: RouterErrorViewProps) {
   const message = error instanceof Error ? error.message : 'Unexpected error'
 
   return (
-    <main className="home-shell" id="main-content">
+    <main className="home-shell" id="main-content" tabIndex={-1}>
       <section className="hero" aria-labelledby="router-error-title">
         <p className="eyebrow">Forma Workspace</p>
         <h1 id="router-error-title">Something went wrong.</h1>

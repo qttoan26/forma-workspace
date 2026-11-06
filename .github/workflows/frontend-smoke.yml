@@ -42,3 +42,12 @@ jobs:
 
       - name: Run frontend smoke tests
         run: pnpm test:frontend
+
+      - name: Verify GitHub Pages build and deep links
+        env:
+          GITHUB_PAGES: 'true'
+          VITE_DEMO_MODE: 'true'
+        run: |
+          pnpm build:web
+          cp apps/web/dist/index.html apps/web/dist/404.html
+          node apps/web/tests/pages/check-pages.mjs
