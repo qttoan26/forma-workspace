@@ -102,9 +102,43 @@ try {
       0,
     )
 
+    const automation = home + 'modules/automation'
+    assert.equal((await page.goto(automation)).status(), 404)
+    await page.getByRole('heading', { name: 'Automation flow' }).waitFor()
+    await page
+      .getByRole('region', { name: 'Automation areas' })
+      .getByRole('link', { name: /Workflows/ })
+      .click()
+    await page.getByLabel('Workflow name').fill('Review handoff')
+    await page.getByLabel('Trigger').selectOption('production')
+    await page
+      .getByLabel('Condition (optional)')
+      .fill('QC has approved the package.')
+    await page
+      .getByLabel('Action', { exact: true })
+      .fill('Prepare the delivery notice.')
+    await page.getByLabel('Require manual approval before the action').check()
+    await page.getByRole('button', { name: 'Preview draft' }).click()
+    const preview = page.getByRole('region', { name: 'Draft preview' })
+    await preview.getByText('Previewing Review handoff').waitFor()
+    const steps = await preview.getByRole('listitem').allTextContents()
+    assert.deepEqual(steps, [
+      'TriggerProduction package ready for handoff',
+      'ConditionQC has approved the package.',
+      'ApprovalWait for manual approval.',
+      'ActionPrepare the delivery notice.',
+    ])
+    await page.getByRole('button', { name: 'Clear draft' }).click()
+    assert.equal(await preview.getByRole('listitem').count(), 0)
+    assert.equal(await page.getByLabel('Workflow name').inputValue(), '')
+
+    assert.equal((await page.goto(automation + '/runs')).status(), 404)
+    await page
+      .getByRole('region', { name: 'Run history implementation status' })
+      .waitFor()
     assert.deepEqual(failures, [])
     console.log(
-      'Pages static fallback passed on mobile: dashboard, prefixed navigation, task deep link + reload, project not found and return home.',
+      'Pages static fallback passed on mobile: dashboard, task deep link and reload, project not found, Vendors, Admin access, and Automation draft preview.',
     )
   } finally {
     await browser.close()

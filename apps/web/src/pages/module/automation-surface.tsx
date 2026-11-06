@@ -22,17 +22,17 @@ const automationStages = [
     icon: SettingsIcon,
   },
   {
+    id: 'approval',
+    label: 'Approval',
+    description: 'Pause for governed decisions where human review is required.',
+    icon: UsersIcon,
+  },
+  {
     id: 'actions',
     label: 'Actions',
     description:
       'Coordinate approved operations across Forma module boundaries.',
     icon: ClipboardIcon,
-  },
-  {
-    id: 'approval',
-    label: 'Approval',
-    description: 'Pause for governed decisions where human review is required.',
-    icon: UsersIcon,
   },
   {
     id: 'monitoring',
@@ -47,7 +47,7 @@ const automationCapabilities = [
     eyebrow: 'Reusable workflows',
     title: 'Workflow definitions',
     description:
-      'The frontend boundary is ready for named workflows, versions, ownership, and activation state once a workflow repository is connected.',
+      'Use Workflows to outline a trigger, condition, action, and approval step. Shared definitions and activation require a connected workflow repository.',
   },
   {
     eyebrow: 'Governed execution',
@@ -74,8 +74,8 @@ export function AutomationSurface() {
           <p className="eyebrow">Workflow orchestration</p>
           <h2>Automation flow</h2>
           <p>
-            Automation coordinates reusable triggers, conditions, actions,
-            approvals, and monitoring across Forma. Each business module remains
+            Automation coordinates reusable triggers, conditions, approvals,
+            actions, and monitoring across Forma. Each business module remains
             the source of truth for its own data and lifecycle state.
           </p>
         </div>
@@ -119,12 +119,11 @@ export function AutomationSurface() {
 
       <section className="automation-boundary-card">
         <p className="eyebrow">Domain boundary</p>
-        <h3>Orchestration, not duplicate business state</h3>
+        <h3>Module ownership</h3>
         <p>
-          Automation will reference Work, Production, Documents & Data, Vendors,
-          Customers, and Policy & Compliance through stable contracts. It will
-          not recreate their project, document, queue, customer, or policy
-          models inside the workflow engine.
+          Projects, documents, packages, customer records, and policies stay in
+          their respective modules. Workflow execution will rely on approved
+          events and actions from those modules.
         </p>
       </section>
     </section>

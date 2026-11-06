@@ -28,6 +28,16 @@ const CustomersSurface = lazy(() =>
     default: module.CustomersSurface,
   })),
 )
+const AutomationSurface = lazy(() =>
+  import('./automation-surface').then((module) => ({
+    default: module.AutomationSurface,
+  })),
+)
+const WorkflowDraft = lazy(() =>
+  import('./workflow-draft').then((module) => ({
+    default: module.WorkflowDraft,
+  })),
+)
 const VendorsSurface = lazy(() =>
   import('./vendors-surface').then((module) => ({
     default: module.VendorsSurface,
@@ -144,6 +154,10 @@ export function ModulePage({
               sectionId={selected?.id}
             />
           </Suspense>
+        ) : module.id === 'automation' && selected?.id === 'workflows' ? (
+          <Suspense fallback={<p role="status">Loading workflow draft…</p>}>
+            <WorkflowDraft />
+          </Suspense>
         ) : selected ? (
           <section
             className="module-state-card"
@@ -185,6 +199,13 @@ export function ModulePage({
         {module.id === 'customers' && !selected ? (
           <Suspense fallback={<p role="status">Loading customer overview…</p>}>
             <CustomersSurface />
+          </Suspense>
+        ) : null}
+        {module.id === 'automation' && !selected ? (
+          <Suspense
+            fallback={<p role="status">Loading automation overview…</p>}
+          >
+            <AutomationSurface />
           </Suspense>
         ) : null}
         {module.id === 'vendors' && !selected ? (
