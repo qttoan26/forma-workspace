@@ -36,13 +36,19 @@ test('shows the correct deadline column and opens a past task in its project wee
     .getByRole('link', { name: 'Open Upgrade the Mark LXXXV armor' })
     .click()
   await expect(page).toHaveURL(/project-1\?view=timeline&task=FOR-18/)
-  const drawer = page.getByRole('dialog', { name: 'Edit task' })
+  const drawer = page.getByRole('dialog', { name: 'Task details' })
   await expect(drawer).toBeVisible()
-  await drawer.getByRole('button', { name: 'Cancel' }).click()
+  await drawer.getByRole('button', { name: 'Close' }).click()
   await expect(
     calendar.getByRole('button', { name: 'Open Upgrade the Mark LXXXV armor' }),
   ).toBeVisible()
   await expect(calendar.locator('time[aria-current="date"]')).toHaveCount(0)
+  await expect(
+    calendar
+      .getByRole('listitem')
+      .filter({ hasText: 'Upgrade the Mark LXXXV armor' })
+      .getByText('Overdue', { exact: true }),
+  ).toBeVisible()
 })
 
 test('keeps mobile navigation and unscheduled tasks available in an empty week', async ({
@@ -70,7 +76,7 @@ test('keeps mobile navigation and unscheduled tasks available in an empty week',
     name: 'Open Map Bifrost evacuation routes',
   })
   await task.click()
-  await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Task details' })).toBeVisible()
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
 import { taskStatusLabels, type Task } from '@/entities/task/model/task'
+import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
 import { localDateKey } from '@/shared/lib/local-date-key'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { ChevronDownIcon } from '@/shared/ui/workspace-icons'
@@ -96,6 +97,7 @@ export function TaskTimeline({
                 <time dateTime={task.dueDate}>
                   {dateFormat.format(parseDateKey(task.dueDate))}
                 </time>
+                <TaskOverdueBadge task={task} today={today} />
               </>
             ) : null}
           </span>

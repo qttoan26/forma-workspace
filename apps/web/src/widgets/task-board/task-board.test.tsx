@@ -76,10 +76,11 @@ describe('TaskBoard', () => {
     expect(createdCard).not.toBeNull()
     fireEvent.click(
       within(createdCard as HTMLElement).getByRole('button', {
-        name: 'Edit Prepare release notes',
+        name: 'View Prepare release notes',
       }),
     )
 
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     const title = screen.getByLabelText('Title')
     fireEvent.change(title, { target: { value: 'Publish release notes' } })
     fireEvent.change(screen.getByLabelText('Description'), {

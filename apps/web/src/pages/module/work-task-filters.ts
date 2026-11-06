@@ -1,5 +1,6 @@
 import type { Member } from '@/entities/member/model/member'
 import {
+  isTaskOverdue,
   taskPriorities,
   taskStatuses,
   type Task,
@@ -33,10 +34,6 @@ export function compactWorkTaskSearch(search: WorkTaskSearch) {
         value !== defaultWorkTaskSearch[key as keyof WorkTaskSearch],
     ),
   )
-}
-
-export function isTaskOverdue(task: Task, today: string) {
-  return task.status !== 'done' && Boolean(task.dueDate && task.dueDate < today)
 }
 
 export function filterWorkTasks(

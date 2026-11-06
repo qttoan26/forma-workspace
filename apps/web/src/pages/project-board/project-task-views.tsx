@@ -7,6 +7,8 @@ import {
   taskStatusLabels,
   type Task,
 } from '@/entities/task/model/task'
+import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
+import { localDateKey } from '@/shared/lib/local-date-key'
 import { filterTasks } from '@/widgets/task-board/model/task-board-view'
 import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 
@@ -193,6 +195,7 @@ function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
 
 function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
+  const today = localDateKey()
   const orderedTasks = [...tasks].sort(compareTaskDueDate)
 
   return (
@@ -209,7 +212,10 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
         {orderedTasks.map((task) => (
           <article className="project-calendar-item" key={task.id}>
             <div className="project-calendar-date">
-              <strong>{task.dueDate ?? 'Unscheduled'}</strong>
+              <strong>
+                {task.dueDate ?? 'Unscheduled'}
+                <TaskOverdueBadge task={task} today={today} />
+              </strong>
               <small>{taskStatusLabels[task.status]}</small>
             </div>
             <div className="project-calendar-task">

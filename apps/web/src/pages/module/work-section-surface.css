@@ -258,6 +258,12 @@
   gap: 12px;
   padding: 18px;
 }
+.work-task-filters .work-task-filter-toggle {
+  display: none;
+}
+.work-task-filter-options {
+  display: contents;
+}
 .work-task-filters label {
   display: grid;
   gap: 7px;
@@ -396,8 +402,27 @@
 }
 @media (max-width: 600px) {
   .work-task-filters {
-    padding: 14px;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.875rem;
+    gap: 0.625rem;
+  }
+  .work-task-search {
+    grid-column: 1;
+  }
+  .work-task-filters .work-task-filter-toggle {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .work-task-filter-options {
+    display: none;
+  }
+  .work-task-filter-options[data-expanded='true'] {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
   }
   .work-task-filters input,
   .work-task-filters select {

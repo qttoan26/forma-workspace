@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import type { Member } from '@/entities/member/model/member'
@@ -19,9 +19,6 @@ import {
   saveTaskFormDraft,
 } from '../lib/task-form-draft'
 import { taskFormSchema, type TaskFormValues } from '../model/task-form-schema'
-import { TaskActivityPanel } from './task-activity-panel'
-import { TaskChecklistPanel } from './task-checklist-panel'
-import { TaskLinkedFilesPanel } from './task-linked-files-panel'
 import './task-form.css'
 
 interface TaskFormProps {
@@ -32,8 +29,6 @@ interface TaskFormProps {
   onSubmit: (values: TaskFormValues) => void
 }
 
-type TaskDetailSection = 'details' | 'checklist' | 'files' | 'activity'
-
 export function TaskForm({
   members,
   task,
@@ -41,8 +36,6 @@ export function TaskForm({
   onCancel,
   onSubmit,
 }: TaskFormProps) {
-  const [activeSection, setActiveSection] =
-    useState<TaskDetailSection>('details')
   const {
     control,
     register,
@@ -97,155 +90,62 @@ export function TaskForm({
         </Button>
       </div>
 
-      {task ? (
-        <div
-          className="task-detail-tabs"
-          role="tablist"
-          aria-label="Task details"
-        >
-          <button
-            id={`task-details-tab-${task.id}`}
-            type="button"
-            role="tab"
-            aria-selected={activeSection === 'details'}
-            aria-controls={`task-details-panel-${task.id}`}
-            onClick={() => setActiveSection('details')}
-          >
-            Details
-          </button>
-          <button
-            id={`task-checklist-tab-${task.id}`}
-            type="button"
-            role="tab"
-            aria-selected={activeSection === 'checklist'}
-            aria-controls={`task-checklist-panel-${task.id}`}
-            onClick={() => setActiveSection('checklist')}
-          >
-            Checklist
-          </button>
-          <button
-            id={`task-files-tab-${task.id}`}
-            type="button"
-            role="tab"
-            aria-selected={activeSection === 'files'}
-            aria-controls={`task-files-panel-${task.id}`}
-            onClick={() => setActiveSection('files')}
-          >
-            Files
-          </button>
-          <button
-            id={`task-activity-tab-${task.id}`}
-            type="button"
-            role="tab"
-            aria-selected={activeSection === 'activity'}
-            aria-controls={`task-activity-panel-${task.id}`}
-            onClick={() => setActiveSection('activity')}
-          >
-            Activity
-          </button>
-        </div>
-      ) : null}
+      <div className="task-detail-panel">
+        <Field label="Title" error={errors.title?.message}>
+          <input
+            autoFocus={Boolean(task)}
+            data-modal-autofocus
+            {...register('title')}
+          />
+        </Field>
 
-      {!task || activeSection === 'details' ? (
-        <div
-          id={task ? `task-details-panel-${task.id}` : undefined}
-          className="task-detail-panel"
-          role={task ? 'tabpanel' : undefined}
-          aria-labelledby={task ? `task-details-tab-${task.id}` : undefined}
-        >
-          <Field label="Title" error={errors.title?.message}>
-            <input data-modal-autofocus {...register('title')} />
+        <Field label="Description" error={errors.description?.message}>
+          <textarea rows={4} {...register('description')} />
+        </Field>
+
+        <div className="task-form-grid">
+          <Field label="Status">
+            <select {...register('status')}>
+              {taskStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {taskStatusLabels[status]}
+                </option>
+              ))}
+            </select>
           </Field>
 
-          <Field label="Description" error={errors.description?.message}>
-            <textarea rows={4} {...register('description')} />
+          <Field label="Priority">
+            <select {...register('priority')}>
+              {taskPriorities.map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        <div className="task-form-grid">
+          <Field label="Assignee">
+            <select {...register('assigneeId')}>
+              <option value="">Unassigned</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
           </Field>
 
-          <div className="task-form-grid">
-            <Field label="Status">
-              <select {...register('status')}>
-                {taskStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {taskStatusLabels[status]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="Priority">
-              <select {...register('priority')}>
-                {taskPriorities.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {priority}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-
-          <div className="task-form-grid">
-            <Field label="Assignee">
-              <select {...register('assigneeId')}>
-                <option value="">Unassigned</option>
-                {members.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="Due date">
-              <input type="date" {...register('dueDate')} />
-            </Field>
-          </div>
-
-          <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {task ? 'Save changes' : 'Create task'}
-          </Button>
+          <Field label="Due date">
+            <input type="date" {...register('dueDate')} />
+          </Field>
         </div>
-      ) : null}
 
-      {task && activeSection === 'checklist' ? (
-        <div
-          id={`task-checklist-panel-${task.id}`}
-          className="task-detail-panel"
-          role="tabpanel"
-          aria-labelledby={`task-checklist-tab-${task.id}`}
-        >
-          <TaskChecklistPanel
-            key={`${task.projectId}:${task.id}`}
-            projectId={task.projectId}
-            taskId={task.id}
-          />
-        </div>
-      ) : null}
-
-      {task && activeSection === 'files' ? (
-        <div
-          id={`task-files-panel-${task.id}`}
-          className="task-detail-panel"
-          role="tabpanel"
-          aria-labelledby={`task-files-tab-${task.id}`}
-        >
-          <TaskLinkedFilesPanel
-            key={`${task.projectId}:${task.id}`}
-            projectId={task.projectId}
-            taskId={task.id}
-          />
-        </div>
-      ) : null}
-
-      {task && activeSection === 'activity' ? (
-        <div
-          id={`task-activity-panel-${task.id}`}
-          className="task-detail-panel"
-          role="tabpanel"
-          aria-labelledby={`task-activity-tab-${task.id}`}
-        >
-          <TaskActivityPanel projectId={task.projectId} taskId={task.id} />
-        </div>
-      ) : null}
+        <Button variant="primary" type="submit" disabled={isSubmitting}>
+          {task ? 'Save changes' : 'Create task'}
+        </Button>
+      </div>
     </form>
   )
 }

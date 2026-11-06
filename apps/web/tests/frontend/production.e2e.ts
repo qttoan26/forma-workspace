@@ -100,9 +100,9 @@ test('creates, edits, queues, filters and removes packages without deleting Work
   await table.getByRole('link', { name: 'FOR-18', exact: true }).click()
   await expect(
     page
-      .getByRole('dialog', { name: 'Edit task', exact: true })
-      .getByLabel('Title', { exact: true }),
-  ).toHaveValue('Upgrade the Mark LXXXV armor')
+      .getByRole('dialog', { name: 'Task details', exact: true })
+      .getByRole('heading', { name: 'Upgrade the Mark LXXXV armor' }),
+  ).toBeVisible()
   await page.goto('/modules/production/queue')
   await table
     .getByRole('button', { name: 'Armor source preparation', exact: true })

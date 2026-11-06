@@ -51,7 +51,7 @@ describe('TaskBoard editor focus management', () => {
     ).toBeInTheDocument()
   })
 
-  it('returns focus to the task Edit button after cancelling an edit', async () => {
+  it('returns to read-only details and restores focus after cancelling an edit', async () => {
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     const task = screen
@@ -59,21 +59,29 @@ describe('TaskBoard editor focus management', () => {
       .closest('article')
     expect(task).not.toBeNull()
 
-    const editButton = within(task as HTMLElement).getByRole('button', {
-      name: 'Edit Create board interaction model',
+    const viewButton = within(task as HTMLElement).getByRole('button', {
+      name: 'View Create board interaction model',
     })
-    editButton.focus()
-    fireEvent.click(editButton)
+    viewButton.focus()
+    fireEvent.click(viewButton)
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
 
     const titleInput = screen.getByLabelText('Title')
     expect(titleInput).toHaveFocus()
 
+    fireEvent.change(titleInput, { target: { value: 'Unsaved task title' } })
     fireEvent.keyDown(titleInput, { key: 'Escape' })
 
-    await waitFor(() => expect(editButton).toHaveFocus())
+    const details = within(screen.getByRole('dialog', { name: 'Task details' }))
+    expect(details.getByRole('heading')).toHaveTextContent(
+      'Create board interaction model',
+    )
+    expect(details.getByRole('button', { name: 'Edit' })).toHaveFocus()
+    fireEvent.click(details.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(viewButton).toHaveFocus())
   })
 
-  it('returns focus to the task Edit button after saving an edit', async () => {
+  it('returns focus to the task View button after saving an edit', async () => {
     render(<TaskBoard initialTasks={initialTasks} members={members} />)
 
     const task = screen
@@ -81,18 +89,19 @@ describe('TaskBoard editor focus management', () => {
       .closest('article')
     expect(task).not.toBeNull()
 
-    const editButton = within(task as HTMLElement).getByRole('button', {
-      name: 'Edit Create board interaction model',
+    const viewButton = within(task as HTMLElement).getByRole('button', {
+      name: 'View Create board interaction model',
     })
-    editButton.focus()
-    fireEvent.click(editButton)
+    viewButton.focus()
+    fireEvent.click(viewButton)
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
 
     fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: 'Create accessible board interaction model' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
-    await waitFor(() => expect(editButton).toHaveFocus())
+    await waitFor(() => expect(viewButton).toHaveFocus())
     expect(
       screen.getByText('Create accessible board interaction model'),
     ).toBeInTheDocument()

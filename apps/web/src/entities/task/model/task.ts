@@ -58,3 +58,7 @@ export const taskStatusLabels: Record<TaskStatus, string> = {
   'in-progress': 'In Progress',
   done: 'Done',
 }
+
+export function isTaskOverdue(task: Task, today: string) {
+  return task.status !== 'done' && Boolean(task.dueDate && task.dueDate < today)
+}

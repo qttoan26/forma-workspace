@@ -21,11 +21,13 @@ describe('TaskBoard external task selection', () => {
       />,
     )
 
-    expect(screen.getByLabelText('Title')).toHaveValue(
+    const drawer = within(screen.getByRole('dialog', { name: 'Task details' }))
+    expect(drawer.getByRole('heading')).toHaveTextContent(
       'Create board interaction model',
     )
+    expect(drawer.queryByLabelText('Title')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    fireEvent.click(drawer.getByRole('button', { name: 'Close' }))
 
     expect(onSelectedTaskChange).toHaveBeenCalledWith(null)
   })
@@ -49,7 +51,7 @@ describe('TaskBoard external task selection', () => {
 
     fireEvent.click(
       within(task as HTMLElement).getByRole('button', {
-        name: 'Edit Create board interaction model',
+        name: 'View Create board interaction model',
       }),
     )
 

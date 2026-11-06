@@ -65,10 +65,10 @@ try {
 
     const deepLink = project + '?view=list&task=FOR-18'
     assert.equal((await page.goto(deepLink)).status(), 404)
-    await page.getByRole('dialog', { name: 'Edit task' }).waitFor()
+    await page.getByRole('dialog', { name: 'Task details' }).waitFor()
     assert.equal(page.url(), deepLink)
     assert.equal((await page.reload()).status(), 404)
-    await page.getByRole('dialog', { name: 'Edit task' }).waitFor()
+    await page.getByRole('dialog', { name: 'Task details' }).waitFor()
 
     const missing = home + 'workspaces/forma/projects/missing-project'
     assert.equal((await page.goto(missing)).status(), 404)

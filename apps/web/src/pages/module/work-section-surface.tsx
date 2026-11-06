@@ -2,11 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { localDateKey } from '@/shared/lib/local-date-key'
 import { WorkTaskExplorer } from './work-task-explorer'
 import { WorkActivityFeed } from './work-activity-feed'
-import {
-  defaultWorkTaskSearch,
-  isTaskOverdue,
-  type WorkTaskSearch,
-} from './work-task-filters'
+import { defaultWorkTaskSearch, type WorkTaskSearch } from './work-task-filters'
 import {
   projectViews,
   projectViewLabels,
@@ -15,7 +11,8 @@ import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
-import { taskStatusLabels } from '@/entities/task/model/task'
+import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
+import { isTaskOverdue, taskStatusLabels } from '@/entities/task/model/task'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import { useWorkData } from '@/pages/module/use-work-data'
 import type { WorkSection } from '@/shared/workspace/work-section-registry'
@@ -107,6 +104,7 @@ function WorkSectionDataSurface({
     )
   if (!data) return <p role="status">Loading current work…</p>
 
+  const today = localDateKey()
   const tasks = data.initialTasks
   const completed = tasks.filter((task) => task.status === 'done').length
   const completion = tasks.length
@@ -225,10 +223,7 @@ function WorkSectionDataSurface({
                 />
                 <small>
                   {tasks.length - completed} open ·{' '}
-                  {
-                    tasks.filter((task) => isTaskOverdue(task, localDateKey()))
-                      .length
-                  }{' '}
+                  {tasks.filter((task) => isTaskOverdue(task, today)).length}{' '}
                   overdue
                 </small>
               </div>
@@ -284,7 +279,10 @@ function WorkSectionDataSurface({
             >
               {datedTasks.map((task) => (
                 <article key={task.id}>
-                  <span>{task.dueDate}</span>
+                  <span>
+                    {task.dueDate}
+                    <TaskOverdueBadge task={task} today={today} />
+                  </span>
                   <a
                     href={`${projectHref}?view=calendar&task=${encodeURIComponent(task.id)}`}
                   >
