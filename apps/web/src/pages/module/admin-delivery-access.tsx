@@ -69,7 +69,10 @@ export function AdminDeliveryAccess() {
   function lookup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
-    const value = (field: string) => String(form.get(field) ?? '').trim()
+    const value = (field: string) => {
+      const entry = form.get(field)
+      return typeof entry === 'string' ? entry.trim() : ''
+    }
     const workspace = value('workspace')
     const organization = value('organization')
     const account = value('account')
