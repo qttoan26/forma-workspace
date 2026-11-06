@@ -23,6 +23,11 @@ const ProductionWorkspace = lazy(() =>
     default: module.ProductionWorkspace,
   })),
 )
+const CustomersSurface = lazy(() =>
+  import('./customers-surface').then((module) => ({
+    default: module.CustomersSurface,
+  })),
+)
 
 export function ModulePage({
   moduleId,
@@ -167,6 +172,11 @@ export function ModulePage({
             ))}
           </section>
         )}
+        {module.id === 'customers' && !selected ? (
+          <Suspense fallback={<p role="status">Loading customer overview…</p>}>
+            <CustomersSurface />
+          </Suspense>
+        ) : null}
       </section>
     </WorkspaceShell>
   )

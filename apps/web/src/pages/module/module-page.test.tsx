@@ -72,6 +72,27 @@ describe('Workspace section navigation', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('keeps Customers section links alongside the overview foundation', async () => {
+    const { rerender } = render(<ModulePage moduleId="customers" />)
+    const areas = screen.getByRole('region', { name: 'Customers areas' })
+    expect(
+      within(areas).getByRole('link', { name: /Service visibility/ }),
+    ).toHaveAttribute('href', '/modules/customers/services')
+    expect(
+      await screen.findByRole('heading', { name: 'Customer service flow' }),
+    ).toBeInTheDocument()
+
+    rerender(<ModulePage moduleId="customers" sectionId="services" />)
+    expect(
+      screen.getByRole('region', {
+        name: 'Service visibility implementation status',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Customer service flow' }),
+    ).toBeNull()
+  })
+
   it('uses saved project tasks and correct assignees in My Tasks', async () => {
     saveProjectTasks('project-1', [
       {
