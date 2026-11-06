@@ -181,6 +181,63 @@ test('blocks editing unreadable data and keeps the original storage', async ({
   ).toBe('{invalid')
 })
 
+test('finds unavailable task links and reassigns them without changing the source', async ({
+  page,
+}) => {
+  await page.addInitScript((key) => {
+    if (localStorage.getItem(key) !== null) return
+    const source = {
+      projectId: 'project-1',
+      location: 'DOC-100',
+      createdAt: '2026-11-02T00:00:00.000Z',
+    }
+    localStorage.setItem(
+      key,
+      JSON.stringify([
+        { ...source, id: 'stale', taskId: 'FOR-999', name: 'Stale link.pdf' },
+        { ...source, id: 'linked', taskId: 'FOR-18', name: 'Linked.pdf' },
+        { ...source, id: 'project', name: 'Project source.pdf' },
+      ]),
+    )
+  }, storageKey)
+  await page.goto('/modules/documents/library')
+  const table = page.getByRole('table', { name: 'Document references' })
+  const unavailable = page
+    .getByRole('article')
+    .filter({ hasText: 'Unavailable task links' })
+  const scope = page.getByRole('combobox', { name: 'Link scope', exact: true })
+
+  await expect(unavailable.getByText('1', { exact: true })).toBeVisible()
+  await scope.selectOption('linked')
+  await expect(
+    table.getByRole('button', { name: 'Linked.pdf', exact: true }),
+  ).toBeVisible()
+  await expect(
+    table.getByRole('button', { name: 'Stale link.pdf' }),
+  ).toHaveCount(0)
+  await scope.selectOption('unavailable')
+  await expect(table.getByText('Unavailable task · FOR-999')).toBeVisible()
+  await expect(
+    table.getByRole('button', { name: 'Linked.pdf', exact: true }),
+  ).toHaveCount(0)
+  await expect(
+    table.getByRole('button', { name: 'Project source.pdf' }),
+  ).toHaveCount(0)
+  await table.getByRole('button', { name: 'Stale link.pdf' }).click()
+  const editor = page.getByRole('dialog', { name: 'Document reference editor' })
+  await editor.getByLabel('Linked task', { exact: true }).selectOption('FOR-18')
+  await editor
+    .getByRole('button', { name: 'Save reference', exact: true })
+    .click()
+  await expect(unavailable.getByText('0', { exact: true })).toBeVisible()
+  await expect(table.getByText('No matching references')).toBeVisible()
+
+  await page.reload()
+  const repaired = table.getByRole('row').filter({ hasText: 'Stale link.pdf' })
+  await expect(repaired.getByRole('link', { name: /FOR-18/ })).toBeVisible()
+  await expect(repaired.getByText('DOC-100')).toBeVisible()
+})
+
 test('contains table scrolling on a 375px phone and treats non-web sources as text', async ({
   page,
 }) => {

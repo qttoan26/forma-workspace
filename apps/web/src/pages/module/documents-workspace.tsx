@@ -55,18 +55,19 @@ export function DocumentsWorkspaceContent({
     setMessage('')
     setEditor({ reference })
   }, [])
-  const linked = references.filter((reference) => reference.taskId).length
+  const taskNames = useMemo(
+    () => new Map(data.initialTasks.map((task) => [task.id, task.title])),
+    [data.initialTasks],
+  )
+  const counts = { linked: 0, project: 0, unavailable: 0 }
+  for (const reference of references) {
+    counts[getLinkScope(reference, taskNames)]++
+  }
   const filtered = useMemo(() => {
-    const taskNames = new Map(
-      data.initialTasks.map((task) => [task.id, task.title]),
-    )
     const search = query.trim().toLocaleLowerCase()
     return references.filter(
       (reference) =>
-        (scope === 'all' ||
-          (scope === 'linked'
-            ? Boolean(reference.taskId)
-            : !reference.taskId)) &&
+        (scope === 'all' || scope === getLinkScope(reference, taskNames)) &&
         (source === 'all' ||
           (source === 'web'
             ? Boolean(getDocumentReferenceUrl(reference.location))
@@ -75,7 +76,7 @@ export function DocumentsWorkspaceContent({
           .toLocaleLowerCase()
           .includes(search),
     )
-  }, [references, query, scope, source, data.initialTasks])
+  }, [references, query, scope, source, taskNames])
   function saved(notice: string) {
     setMessage(notice)
     setEditor(null)
@@ -118,11 +119,15 @@ export function DocumentsWorkspaceContent({
         </article>
         <article>
           <small>Linked to tasks</small>
-          <strong>{error ? '—' : linked}</strong>
+          <strong>{error ? '—' : counts.linked}</strong>
         </article>
         <article>
           <small>Project-level</small>
-          <strong>{error ? '—' : references.length - linked}</strong>
+          <strong>{error ? '—' : counts.project}</strong>
+        </article>
+        <article>
+          <small>Unavailable task links</small>
+          <strong>{error ? '—' : counts.unavailable}</strong>
         </article>
       </div>
       <p className="documents-boundary-note">
@@ -202,6 +207,7 @@ export function DocumentsWorkspaceContent({
             <option value="all">All references</option>
             <option value="linked">Linked to tasks</option>
             <option value="project">Project-level</option>
+            <option value="unavailable">Unavailable task links</option>
           </select>
         </label>
         <label>
@@ -254,6 +260,14 @@ export function DocumentsWorkspaceContent({
       ) : null}
     </section>
   )
+}
+
+function getLinkScope(
+  reference: DocumentReference,
+  taskNames: ReadonlyMap<string, string>,
+) {
+  if (!reference.taskId) return 'project'
+  return taskNames.has(reference.taskId) ? 'linked' : 'unavailable'
 }
 
 function DocumentEditorModal({
