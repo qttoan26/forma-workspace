@@ -1,0 +1,68 @@
+.workflow-draft-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.workflow-draft-form,
+.workflow-draft-form label,
+.workflow-draft-preview ol {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.workflow-draft-form {
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.workflow-draft-form :is(input:not([type='checkbox']), select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--forma-color-control-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text);
+  font: inherit;
+}
+
+.workflow-draft-form textarea {
+  resize: vertical;
+}
+
+.workflow-draft-form .workflow-draft-approval,
+.workflow-draft-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.workflow-draft-actions {
+  flex-wrap: wrap;
+}
+
+.workflow-draft-form [role='alert'] {
+  color: var(--forma-color-error-text);
+}
+
+.workflow-draft-preview ol {
+  margin: 1rem 0 0;
+  padding-inline-start: 1.75rem;
+}
+
+.workflow-draft-preview li {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--forma-color-accent-border);
+  border-radius: var(--forma-radius-md);
+  background: var(--forma-color-accent-subtle);
+  overflow-wrap: anywhere;
+}
+
+.workflow-draft-preview li span {
+  display: block;
+  margin-top: 0.25rem;
+  white-space: pre-wrap;
+}
