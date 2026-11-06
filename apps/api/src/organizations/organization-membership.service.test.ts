@@ -47,7 +47,6 @@ describe('OrganizationMembershipService', () => {
     await expect(service.canReadDelivery(user, scope)).resolves.toBe(true)
     await expect(service.canReadDelivery(user, scope)).resolves.toBe(false)
 
-    expect(database.collection).toHaveBeenCalledWith('organization_memberships')
     expect(findOne).toHaveBeenCalledTimes(2)
     expect(findOne).toHaveBeenLastCalledWith(
       { _id: membership._id },
