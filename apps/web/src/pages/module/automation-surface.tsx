@@ -22,17 +22,17 @@ const automationStages = [
     icon: SettingsIcon,
   },
   {
+    id: 'approval',
+    label: 'Approval',
+    description: 'Pause for governed decisions where human review is required.',
+    icon: UsersIcon,
+  },
+  {
     id: 'actions',
     label: 'Actions',
     description:
       'Coordinate approved operations across Forma module boundaries.',
     icon: ClipboardIcon,
-  },
-  {
-    id: 'approval',
-    label: 'Approval',
-    description: 'Pause for governed decisions where human review is required.',
-    icon: UsersIcon,
   },
   {
     id: 'monitoring',
@@ -74,8 +74,8 @@ export function AutomationSurface() {
           <p className="eyebrow">Workflow orchestration</p>
           <h2>Automation flow</h2>
           <p>
-            Automation coordinates reusable triggers, conditions, actions,
-            approvals, and monitoring across Forma. Each business module remains
+            Automation coordinates reusable triggers, conditions, approvals,
+            actions, and monitoring across Forma. Each business module remains
             the source of truth for its own data and lifecycle state.
           </p>
         </div>
