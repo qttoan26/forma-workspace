@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
+import {
+  useLoaderData,
+  useNavigate,
+  useSearch,
+  useRouteContext,
+} from '@tanstack/react-router'
+import { ProjectPicker } from '@/pages/module/project-picker'
 
 import {
   refreshConfiguredProjectTasks,
@@ -32,6 +38,7 @@ const appBaseUrl = import.meta.env.BASE_URL
 export function ProjectBoardPage() {
   const search = useSearch({ from: projectRoutePath })
   const navigate = useNavigate({ from: projectRoutePath })
+  const { user } = useRouteContext({ from: projectRoutePath })
   const { project, members, initialTasks } = useLoaderData({
     from: projectRoutePath,
   })
@@ -175,6 +182,7 @@ export function ProjectBoardPage() {
     <WorkspaceShell
       activeModuleId="work"
       activeSectionId="projects"
+      workProjectId={project.id}
       pageLabel={`Work / ${project.name}`}
     >
       <div className="project-board-shell project-detail-page">
@@ -205,6 +213,17 @@ export function ProjectBoardPage() {
           </div>
         </header>
 
+        <ProjectPicker
+          projectId={project.id}
+          projectName={project.name}
+          accountId={user.id}
+          onChange={(id) => {
+            void navigate({
+              params: (previous) => ({ ...previous, projectId: id }),
+              search: activeView === 'board' ? {} : { view: activeView },
+            })
+          }}
+        />
         <nav className="project-view-nav" aria-label="Project views">
           {projectViews.map((view) => (
             <button
@@ -326,6 +345,7 @@ export function ProjectBoardPage() {
         ) : null}
 
         <ProjectTaskViews
+          key={project.id}
           view={activeView}
           projectId={project.id}
           taskIdPrefix={project.key}

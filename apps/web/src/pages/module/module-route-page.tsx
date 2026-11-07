@@ -18,6 +18,10 @@ export function ModuleRoutePage() {
   const sectionId = params.sectionId
   const search = useSearch({ strict: false })
   const navigate = useNavigate()
+  const projectId =
+    typeof search.project === 'string' && search.project
+      ? search.project
+      : 'project-1'
   const accountId = useRouteContext({
     strict: false,
     select: (context) => context.user?.id,
@@ -26,7 +30,10 @@ export function ModuleRoutePage() {
   function updateSearch(next: WorkTaskSearch) {
     void navigate({
       to: '.',
-      search: compactWorkTaskSearch(next),
+      search: {
+        ...compactWorkTaskSearch(next),
+        ...(projectId !== 'project-1' ? { project: projectId } : {}),
+      },
       replace: true,
     })
   }
@@ -38,6 +45,13 @@ export function ModuleRoutePage() {
       accountId={accountId}
       taskSearch={parseWorkTaskSearch(search)}
       onTaskSearchChange={updateSearch}
+      projectId={projectId}
+      onProjectChange={(id) => {
+        void navigate({
+          to: '.',
+          search: id === 'project-1' ? {} : { project: id },
+        })
+      }}
     />
   )
 }

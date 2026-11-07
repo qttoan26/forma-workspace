@@ -1,3 +1,4 @@
+import { projectHref as hrefForProject } from '@/entities/project/lib/project-href'
 import { lazy, Suspense, useId, useState } from 'react'
 import { localDateKey } from '@/shared/lib/local-date-key'
 
@@ -20,7 +21,6 @@ const TaskTable = lazy(() =>
     default: module.TaskTable,
   })),
 )
-const projectHref = `${import.meta.env.BASE_URL}workspaces/forma/projects/project-1`
 const scopeLabels = {
   all: 'All tasks',
   open: 'Open',
@@ -44,6 +44,7 @@ export function WorkTaskExplorer({
   userId: string | undefined
   personal?: boolean
 }) {
+  const projectHref = hrefForProject(data.workspace.slug, data.project.id)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const filterOptionsId = useId()
   const tasks = personal

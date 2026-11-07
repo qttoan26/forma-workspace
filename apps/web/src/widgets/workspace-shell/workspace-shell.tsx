@@ -63,6 +63,7 @@ type WorkspaceShellProps = {
   activeSectionId?: string | undefined
   pageLabel: string
   children: ReactNode
+  workProjectId?: string | undefined
 }
 
 export function WorkspaceShell({
@@ -70,7 +71,12 @@ export function WorkspaceShell({
   activeSectionId,
   pageLabel,
   children,
+  workProjectId,
 }: WorkspaceShellProps) {
+  const workSearch =
+    workProjectId && workProjectId !== 'project-1'
+      ? `?project=${encodeURIComponent(workProjectId)}`
+      : ''
   const [mobileOpen, setMobileOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(readSidebarPreference)
   const [openModuleId, setOpenModuleId] = useState<string | null>(
@@ -202,7 +208,7 @@ export function WorkspaceShell({
               ) : null}
               {sections.map((section) => (
                 <a
-                  href={hrefFor(moduleSectionPath(module.id, section.id))}
+                  href={`${hrefFor(moduleSectionPath(module.id, section.id))}${module.id === 'work' && section.id !== 'projects' ? workSearch : ''}`}
                   key={section.id}
                   aria-current={
                     active && activeSectionId === section.id
@@ -352,7 +358,7 @@ export function WorkspaceShell({
             <a
               className="workspace-notification-button"
               aria-label="Open inbox"
-              href={hrefFor(workSectionPath('inbox'))}
+              href={`${hrefFor(workSectionPath('inbox'))}${workSearch}`}
               title="Inbox"
             >
               <BellIcon />
@@ -405,7 +411,7 @@ export function WorkspaceShell({
             <span>Home</span>
           </a>
           <a
-            href={hrefFor(workSectionPath('overview'))}
+            href={`${hrefFor(workSectionPath('overview'))}${workSearch}`}
             aria-current={
               activeModuleId === 'work' && activeSectionId !== 'inbox'
                 ? 'page'
@@ -416,7 +422,7 @@ export function WorkspaceShell({
             <span>Work</span>
           </a>
           <a
-            href={hrefFor(workSectionPath('inbox'))}
+            href={`${hrefFor(workSectionPath('inbox'))}${workSearch}`}
             aria-current={
               activeModuleId === 'work' && activeSectionId === 'inbox'
                 ? 'page'

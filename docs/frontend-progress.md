@@ -31,4 +31,18 @@ After merge, the [GitHub Pages deployment](https://qttoan26.github.io/forma-work
 
 ## Next phase
 
+### Frontend extension — Projects
+
+Work → Projects now supports browser-local project creation and discovery,
+URL-backed search, live per-project task summaries and all existing project
+views. Work sections and project pages can switch projects without carrying
+another project's task state. Home links to saved projects. Catalog records are
+scoped by account, workspace and deployment; duplicate keys are checked in one
+IndexedDB transaction. See [the scope and remaining integration work](decisions/008-browser-local-project-catalog.md).
+
+This extension does not change the fixed **70/70** frontend foundation count.
+Next frontend integration: project context selection in Documents and Production.
+Server project discovery, project membership and cross-device catalog sync need
+an authoritative API.
+
 Continue with the existing NestJS and MongoDB API. [PR #96](https://github.com/qttoan26/forma-workspace/pull/96) replaced PostgreSQL task persistence. Start delivery work with [server-owned organization membership](decisions/007-external-delivery-milestones.md#first-backend-slice) before enabling external milestones.
