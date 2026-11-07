@@ -139,6 +139,9 @@ jobs:
       - name: Verify MongoDB organization membership isolation
         run: docker exec -i -w /app/apps/api forma-api node < apps/api/scripts/verify-organization-membership.cjs
 
+      - name: Verify MongoDB delivery relationship authorization and revisions
+        run: docker exec -i -w /app/apps/api forma-api node < apps/api/scripts/verify-delivery-relationships.cjs
+
       - name: Verify readiness fails when MongoDB is unavailable
         run: |
           docker stop forma-mongo

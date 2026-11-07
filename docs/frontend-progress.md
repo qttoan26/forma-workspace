@@ -31,4 +31,6 @@ After merge, the [GitHub Pages deployment](https://qttoan26.github.io/forma-work
 
 ## Next phase
 
-Continue with the existing NestJS and MongoDB API. [PR #96](https://github.com/qttoan26/forma-workspace/pull/96) replaced PostgreSQL task persistence. Start delivery work with [server-owned organization membership](decisions/007-external-delivery-milestones.md#first-backend-slice) before enabling external milestones.
+Continue with the existing NestJS and MongoDB API. [PR #96](https://github.com/qttoan26/forma-workspace/pull/96) replaced PostgreSQL task persistence. Server-owned organization membership lookup and scoped delivery-access administration are implemented. The API now also provides separately authorized, revisioned customer-request/vendor-assignment organization bindings; see [the relationship contract](decisions/007-external-delivery-milestones.md#customer-request-and-vendor-assignment-relationships).
+
+Next: server-owned Production package transitions and explicitly authorized share publication/revocation, followed by the four-field external milestone projection. Customers/Vendors milestone sections remain in implementation until those dependencies exist. These backend increments do not change the fixed frontend backlog count.
