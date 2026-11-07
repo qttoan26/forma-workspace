@@ -153,6 +153,13 @@
 .task-card .task-meta > span:not(.priority) {
   color: var(--forma-color-accent-text);
 }
+.task-card-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .task-card .task-footer > span:first-child {
   background: var(--forma-color-accent-subtle);
   color: var(--forma-color-accent-text);

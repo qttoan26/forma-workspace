@@ -79,6 +79,14 @@
   gap: var(--forma-space-4);
 }
 
+.task-form-schedule-hint {
+  align-self: center;
+  margin: 0;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 .task-form .button-primary {
   border-color: var(--forma-color-accent-solid);
   background: var(--forma-color-accent-solid);

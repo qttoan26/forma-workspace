@@ -1,38 +1,42 @@
-import { useId, useRef, useState } from 'react'
+import { useId, useRef, useState, type CSSProperties } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
-import { taskStatusLabels, type Task } from '@/entities/task/model/task'
-import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
-import { localDateKey } from '@/shared/lib/local-date-key'
+import {
+  getTaskDeadline,
+  getTaskDeadlineState,
+  taskStatusLabels,
+  type Task,
+} from '@/entities/task/model/task'
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
+import {
+  calendarDate,
+  calendarDateKey,
+  localDateKey,
+} from '@/shared/lib/local-date-key'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { ChevronDownIcon } from '@/shared/ui/workspace-icons'
 
+import {
+  getTimelinePeriod,
+  timelineScales,
+  type TimelineScale,
+} from './timeline-period'
 import './task-timeline.css'
 
-const weekdayFormat = new Intl.DateTimeFormat('en', { weekday: 'short' })
+const weekdayFormat = new Intl.DateTimeFormat('en', {
+  weekday: 'short',
+  timeZone: 'UTC',
+})
+const monthFormat = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  timeZone: 'UTC',
+})
 const dateFormat = new Intl.DateTimeFormat('en', {
   month: 'short',
   day: 'numeric',
-})
-const weekFormat = new Intl.DateTimeFormat('en', {
-  month: 'short',
-  day: 'numeric',
   year: 'numeric',
+  timeZone: 'UTC',
 })
-
-function addDays(date: Date, days: number) {
-  const result = new Date(date)
-  result.setDate(result.getDate() + days)
-  return result
-}
-
-function parseDateKey(date: string) {
-  return new Date(`${date}T12:00:00`)
-}
-
-function startOfWeek(date: Date) {
-  return addDays(date, -((date.getDay() + 6) % 7))
-}
 
 type TaskTimelineAction =
   | { onOpenTask: (taskId: string) => void; getTaskHref?: never }
@@ -49,34 +53,65 @@ export function TaskTimeline({
   members: Member[]
   initialDate?: string | undefined
 } & TaskTimelineAction) {
-  const [weekStart, setWeekStart] = useState(() =>
-    startOfWeek(initialDate ? parseDateKey(initialDate) : new Date()),
-  )
+  const [anchor, setAnchor] = useState(() => initialDate ?? localDateKey())
+  const [scale, setScale] = useState<TimelineScale>('week')
   const timelineId = useId()
-  const weekStatus = useRef<HTMLParagraphElement>(null)
+  const periodStatus = useRef<HTMLParagraphElement>(null)
   const today = localDateKey()
-  const weekEnd = addDays(weekStart, 6)
-  const dates = Array.from({ length: 7 }, (_, index) =>
-    addDays(weekStart, index),
-  )
-  const dateKeys = dates.map(localDateKey)
-  const todayColumn = dateKeys.indexOf(today) + 2
-  const startKey = localDateKey(weekStart)
-  const endKey = localDateKey(weekEnd)
-  const scheduled = tasks
-    .flatMap((task) => (task.dueDate ? [{ task, date: task.dueDate }] : []))
-    .sort((left, right) => left.date.localeCompare(right.date))
-  const weekTasks = scheduled.filter(
-    ({ date }) => date >= startKey && date <= endKey,
-  )
-  const unscheduled = tasks.filter((task) => !task.dueDate)
+  const period = getTimelinePeriod(anchor, scale)
+  const todayColumn = period.columnFor(today)
   const memberNames = new Map(members.map(({ id, name }) => [id, name]))
+  const scheduled = tasks
+    .flatMap((task) => {
+      const deadline = getTaskDeadline(task)
+      const plannedStart = task.startDate ?? task.dueDate
+      const plannedEnd = task.dueDate ?? task.startDate
+      const dates = [plannedStart, plannedEnd, deadline].filter(
+        (date) => date !== undefined,
+      )
+      const first = dates.sort()[0]
+      return first ? [{ task, first, plannedStart, plannedEnd, deadline }] : []
+    })
+    .sort((left, right) => left.first.localeCompare(right.first))
+  const visible = scheduled.flatMap(
+    ({ task, plannedStart, plannedEnd, deadline }) => {
+      const deadlineColumn = period.columnFor(deadline)
+      const hasPlan =
+        plannedStart &&
+        plannedEnd &&
+        plannedStart <= period.endKey &&
+        plannedEnd >= period.startKey &&
+        (task.startDate || task.dueDate !== deadline)
+      const startColumn = hasPlan
+        ? period.columnFor(
+            plannedStart < period.startKey ? period.startKey : plannedStart,
+          )
+        : undefined
+      const endColumn = hasPlan
+        ? period.columnFor(
+            plannedEnd > period.endKey ? period.endKey : plannedEnd,
+          )
+        : undefined
+      if (startColumn === undefined && deadlineColumn === undefined) return []
+      return [{ task, startColumn, endColumn, deadlineColumn }]
+    },
+  )
+  const unscheduled = tasks.filter(
+    (task) => !task.startDate && !getTaskDeadline(task),
+  )
+  const otherDates = visible.length
+    ? []
+    : scheduled
+        .flatMap(({ first, deadline }) =>
+          deadline ? [first, deadline] : [first],
+        )
+        .sort()
   const otherDate =
-    scheduled.find(({ date }) => date > endKey)?.date ?? scheduled.at(-1)?.date
+    otherDates.find((date) => date > period.endKey) ?? otherDates.at(-1)
 
-  function openScheduledWeek(date: string) {
-    weekStatus.current?.focus()
-    setWeekStart(startOfWeek(parseDateKey(date)))
+  function openScheduledPeriod(date: string) {
+    periodStatus.current?.focus()
+    setAnchor(date)
   }
 
   function renderTask(task: Task) {
@@ -91,15 +126,36 @@ export function TaskTimeline({
           </span>
           <span>
             {memberNames.get(task.assigneeId ?? '') ?? 'Unassigned'}
-            {task.dueDate ? (
+            <TaskDeadlineBadge task={task} today={today} />
+          </span>
+          <span>
+            {task.startDate && (
               <>
-                {' · Due '}
-                <time dateTime={task.dueDate}>
-                  {dateFormat.format(parseDateKey(task.dueDate))}
-                </time>
-                <TaskOverdueBadge task={task} today={today} />
+                Start{' '}
+                <time dateTime={task.startDate}>
+                  {dateFormat.format(calendarDate(task.startDate))}
+                </time>{' '}
               </>
-            ) : null}
+            )}
+            {task.dueDate && (
+              <>
+                Due{' '}
+                <time dateTime={task.dueDate}>
+                  {dateFormat.format(calendarDate(task.dueDate))}
+                </time>{' '}
+              </>
+            )}
+            {task.deadline && (
+              <>
+                Deadline{' '}
+                <time dateTime={task.deadline}>
+                  {dateFormat.format(calendarDate(task.deadline))}
+                </time>{' '}
+              </>
+            )}
+            {task.estimateMinutes !== undefined && (
+              <>{task.estimateMinutes} min estimated</>
+            )}
           </span>
         </span>
       </>
@@ -131,98 +187,147 @@ export function TaskTimeline({
     <div className="task-timeline">
       <div className="task-timeline-toolbar">
         <p
-          className="task-timeline-week"
-          ref={weekStatus}
+          className="task-timeline-period"
+          ref={periodStatus}
           role="status"
           tabIndex={-1}
         >
-          <strong>{weekFormat.formatRange(weekStart, weekEnd)}</strong>
+          <strong>{period.label}</strong>
           <span>
-            {weekTasks.length}{' '}
-            {weekTasks.length === 1 ? 'deadline' : 'deadlines'} this week
+            {visible.length} scheduled {visible.length === 1 ? 'task' : 'tasks'}{' '}
+            this {scale}
           </span>
         </p>
         <div
           className="task-timeline-controls"
           role="group"
-          aria-label="Change timeline week"
+          aria-label="Change timeline period"
         >
+          <select
+            aria-label="Timeline scale"
+            value={scale}
+            onChange={(event) => {
+              const nextScale = timelineScales.find(
+                (option) => option === event.target.value,
+              )
+              if (nextScale) setScale(nextScale)
+            }}
+          >
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
           <button
-            aria-label="Previous week"
+            aria-label={`Previous ${scale}`}
             type="button"
-            onClick={() => setWeekStart((date) => addDays(date, -7))}
+            onClick={() => setAnchor(period.previous)}
           >
             <ChevronDownIcon className="task-timeline-previous" />
           </button>
-          <button
-            type="button"
-            onClick={() => setWeekStart(startOfWeek(new Date()))}
-          >
+          <button type="button" onClick={() => setAnchor(localDateKey())}>
             Today
           </button>
           <button
-            aria-label="Next week"
+            aria-label={`Next ${scale}`}
             type="button"
-            onClick={() => setWeekStart((date) => addDays(date, 7))}
+            onClick={() => setAnchor(period.next)}
           >
             <ChevronDownIcon className="task-timeline-next" />
           </button>
         </div>
       </div>
 
+      <div className="task-timeline-legend">
+        <span>
+          <i className="task-timeline-plan" aria-hidden="true" /> Planned dates
+        </span>
+        <span>
+          <i className="task-timeline-deadline" aria-hidden="true" /> Deadline
+        </span>
+      </div>
+
       <ScrollRegion
         label="Task timeline calendar"
         className="task-timeline-scroll"
       >
-        <div className="task-timeline-grid">
+        <div
+          className="task-timeline-grid"
+          data-scale={scale}
+          style={
+            { '--timeline-columns': period.columns.length } as CSSProperties
+          }
+        >
           <div className="task-timeline-row task-timeline-axis">
-            <span className="task-timeline-axis-label">Task / deadline</span>
-            {dates.map((date, index) => (
-              <time
-                key={dateKeys[index]}
-                dateTime={dateKeys[index]}
-                aria-current={dateKeys[index] === today ? 'date' : undefined}
-              >
-                <span>{weekdayFormat.format(date)}</span>
-                <strong>{date.getDate()}</strong>
-              </time>
-            ))}
+            <span className="task-timeline-axis-label">Task / schedule</span>
+            {period.columns.map((date, index) => {
+              const key = calendarDateKey(date)
+              return (
+                <time
+                  key={key}
+                  dateTime={scale === 'year' ? key.slice(0, 7) : key}
+                  aria-current={index + 2 === todayColumn ? 'date' : undefined}
+                >
+                  {scale === 'year' ? (
+                    <strong>{monthFormat.format(date)}</strong>
+                  ) : (
+                    <>
+                      <span>{weekdayFormat.format(date)}</span>
+                      <strong>{date.getUTCDate()}</strong>
+                    </>
+                  )}
+                </time>
+              )
+            })}
           </div>
           <ul className="task-timeline-rows" aria-label="Scheduled tasks">
-            {weekTasks.map(({ task, date }) => (
-              <li className="task-timeline-row" key={task.id}>
+            {visible.map(({ task, startColumn, endColumn, deadlineColumn }) => (
+              <li
+                className="task-timeline-row"
+                key={task.id}
+                data-deadline-state={getTaskDeadlineState(task, today)}
+              >
                 {renderTask(task)}
                 <span className="task-timeline-track" aria-hidden="true" />
-                {todayColumn > 1 ? (
+                {todayColumn !== undefined ? (
                   <span
                     className="task-timeline-today"
                     style={{ gridColumn: todayColumn }}
                     aria-hidden="true"
                   />
                 ) : null}
-                <span
-                  className="task-timeline-deadline"
-                  style={{ gridColumn: dateKeys.indexOf(date) + 2 }}
-                  aria-hidden="true"
-                />
+                {startColumn !== undefined && endColumn !== undefined ? (
+                  <span
+                    className="task-timeline-plan"
+                    data-single={startColumn === endColumn}
+                    style={{ gridColumn: `${startColumn} / ${endColumn + 1}` }}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                {deadlineColumn !== undefined ? (
+                  <span
+                    className="task-timeline-deadline"
+                    style={{ gridColumn: deadlineColumn }}
+                    aria-hidden="true"
+                  />
+                ) : null}
               </li>
             ))}
           </ul>
         </div>
 
-        {weekTasks.length === 0 ? (
+        {visible.length === 0 ? (
           <div className="task-timeline-empty">
             <p>
               {scheduled.length
-                ? 'No deadlines this week.'
+                ? `No scheduled tasks this ${scale}.`
                 : 'No scheduled tasks match this view.'}
             </p>
             {otherDate ? (
               <button
                 type="button"
-                onClick={() => openScheduledWeek(otherDate)}
+                onClick={() => openScheduledPeriod(otherDate)}
               >
-                Go to a scheduled week
+                Go to a scheduled {scale}
               </button>
             ) : null}
           </div>

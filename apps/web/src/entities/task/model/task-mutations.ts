@@ -6,7 +6,10 @@ export interface TaskWriteValues {
   priority: Task['priority']
   description?: Task['description']
   assigneeId?: Task['assigneeId']
+  startDate?: Task['startDate']
   dueDate?: Task['dueDate']
+  deadline?: Task['deadline']
+  estimateMinutes?: Task['estimateMinutes']
 }
 
 export interface DeletedTaskSnapshot {

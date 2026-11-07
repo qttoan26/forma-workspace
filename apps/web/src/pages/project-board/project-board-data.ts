@@ -108,6 +108,9 @@ const projectTasks = projectTasksSchema.parse({
       status: 'todo',
       priority: 'medium',
       assigneeId: 'member-4',
+      startDate: '2026-11-05',
+      deadline: '2026-11-08',
+      estimateMinutes: 180,
       dueDate: '2026-11-07',
     },
     {

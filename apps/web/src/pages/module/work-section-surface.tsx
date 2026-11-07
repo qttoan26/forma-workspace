@@ -11,8 +11,12 @@ import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
-import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
-import { isTaskOverdue, taskStatusLabels } from '@/entities/task/model/task'
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
+import {
+  getTaskDeadline,
+  isTaskOverdue,
+  taskStatusLabels,
+} from '@/entities/task/model/task'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import { useWorkData } from '@/pages/module/use-work-data'
 import type { WorkSection } from '@/shared/workspace/work-section-registry'
@@ -113,8 +117,11 @@ function WorkSectionDataSurface({
   const datedTasks =
     section.id === 'calendar'
       ? tasks
-          .filter((task) => task.dueDate)
-          .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+          .flatMap((task) => {
+            const deadline = getTaskDeadline(task)
+            return deadline ? [{ task, deadline }] : []
+          })
+          .sort((a, b) => a.deadline.localeCompare(b.deadline))
       : []
 
   return (
@@ -269,19 +276,19 @@ function WorkSectionDataSurface({
             <a href={`${projectHref}?view=calendar`}>Open project calendar</a>
           </div>
           <p className="work-data-context">
-            Scheduled by task due date. {tasks.length - datedTasks.length} tasks
-            have no due date.
+            Scheduled by deadline. {tasks.length - datedTasks.length} tasks have
+            no deadline.
           </p>
           {datedTasks.length ? (
             <ScrollRegion
               label="Task deadline list"
               className="work-agenda-list"
             >
-              {datedTasks.map((task) => (
+              {datedTasks.map(({ task, deadline }) => (
                 <article key={task.id}>
                   <span>
-                    {task.dueDate}
-                    <TaskOverdueBadge task={task} today={today} />
+                    <time dateTime={deadline}>{deadline}</time>
+                    <TaskDeadlineBadge task={task} today={today} />
                   </span>
                   <a
                     href={`${projectHref}?view=calendar&task=${encodeURIComponent(task.id)}`}
@@ -294,7 +301,7 @@ function WorkSectionDataSurface({
             </ScrollRegion>
           ) : (
             <p className="work-empty-state">
-              Add due dates to tasks to see the schedule.
+              Add due dates or deadlines to tasks to see the schedule.
             </p>
           )}
         </section>

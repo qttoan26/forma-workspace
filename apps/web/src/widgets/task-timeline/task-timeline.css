@@ -5,6 +5,10 @@
   gap: 0.5rem;
 }
 
+.task-timeline-controls {
+  flex-wrap: wrap;
+}
+
 .task-timeline-toolbar {
   flex-wrap: wrap;
   justify-content: space-between;
@@ -12,7 +16,7 @@
   border-bottom: 1px solid var(--forma-color-border);
 }
 
-.task-timeline-week {
+.task-timeline-period {
   display: grid;
   gap: 0.2rem;
   margin: 0;
@@ -20,12 +24,13 @@
   font-size: 0.9rem;
 }
 
-.task-timeline-week > span {
+.task-timeline-period > span {
   color: var(--forma-color-text-secondary);
   font-size: 0.75rem;
 }
 
 .task-timeline-controls button,
+.task-timeline-controls select,
 .task-timeline-empty button {
   display: inline-grid;
   min-width: 2.75rem;
@@ -43,6 +48,7 @@
 }
 
 .task-timeline-controls button:hover,
+.task-timeline-controls select:hover,
 .task-timeline-empty button:hover {
   border-color: var(--forma-color-accent-border);
   background: var(--forma-color-accent-subtle);
@@ -53,6 +59,11 @@
 .task-timeline-scroll :focus-visible {
   outline: 2px solid var(--forma-color-accent-text);
   outline-offset: -2px;
+}
+
+.task-timeline-controls select {
+  display: block;
+  font-size: 1rem;
 }
 
 .task-timeline-controls svg {
@@ -70,14 +81,24 @@
 
 .task-timeline-grid {
   --timeline-task-width: clamp(8.25rem, 26vw, 17rem);
-  --timeline-day-width: 2rem;
+  --timeline-column-width: 2rem;
 
-  min-width: calc(var(--timeline-task-width) + 7 * var(--timeline-day-width));
+  min-width: calc(
+    var(--timeline-task-width) + var(--timeline-columns) *
+      var(--timeline-column-width)
+  );
+}
+
+.task-timeline-grid[data-scale='year'] {
+  --timeline-column-width: 3rem;
 }
 
 .task-timeline-row {
   display: grid;
-  grid-template-columns: var(--timeline-task-width) repeat(7, minmax(0, 1fr));
+  grid-template-columns: var(--timeline-task-width) repeat(
+      var(--timeline-columns),
+      minmax(0, 1fr)
+    );
   border-bottom: 1px solid var(--forma-color-border);
 }
 
@@ -192,15 +213,58 @@
     transparent calc(100% - 1px),
     var(--forma-color-border) 0
   );
-  background-size: calc(100% / 7) 100%;
+  background-size: calc(100% / var(--timeline-columns)) 100%;
+}
+
+.task-timeline-row[data-deadline-state='due-soon'] {
+  --timeline-marker: var(--forma-color-warning-text);
+}
+
+.task-timeline-row[data-deadline-state='overdue'] {
+  --timeline-marker: var(--forma-color-danger-text);
+}
+
+.task-timeline-plan,
+.task-timeline-deadline {
+  place-self: center;
+  background: var(--timeline-marker, var(--forma-color-accent-solid));
+}
+
+.task-timeline-plan {
+  width: calc(100% - 0.5rem);
+  height: 0.5rem;
+  border-radius: var(--forma-radius-pill);
+}
+
+.task-timeline-plan[data-single='true'] {
+  width: 0.9rem;
 }
 
 .task-timeline-deadline {
-  place-self: center;
-  width: 0.85rem;
-  height: 0.85rem;
-  border-radius: var(--forma-radius-pill);
-  background: var(--forma-color-accent-solid);
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 1px solid var(--forma-color-surface);
+  border-radius: 0.1rem;
+  transform: rotate(45deg);
+}
+
+.task-timeline-legend,
+.task-timeline-legend > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-timeline-legend {
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  color: var(--forma-color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.task-timeline-legend .task-timeline-plan {
+  width: 1.25rem;
 }
 
 .task-timeline-empty {

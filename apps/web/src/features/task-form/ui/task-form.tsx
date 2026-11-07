@@ -137,9 +137,33 @@ export function TaskForm({
             </select>
           </Field>
 
-          <Field label="Due date">
+          <Field
+            label="Estimate (minutes)"
+            error={errors.estimateMinutes?.message}
+          >
+            <input
+              type="number"
+              min="1"
+              step="1"
+              {...register('estimateMinutes')}
+            />
+          </Field>
+        </div>
+
+        <div className="task-form-grid">
+          <Field label="Start date" error={errors.startDate?.message}>
+            <input type="date" {...register('startDate')} />
+          </Field>
+          <Field label="Due date" error={errors.dueDate?.message}>
             <input type="date" {...register('dueDate')} />
           </Field>
+          <Field label="Deadline" error={errors.deadline?.message}>
+            <input type="date" {...register('deadline')} />
+          </Field>
+          <p className="task-form-schedule-hint">
+            Due date is the planned finish. Leave Deadline blank to use the due
+            date for alerts.
+          </p>
         </div>
 
         <Button variant="primary" type="submit" disabled={isSubmitting}>
@@ -151,11 +175,17 @@ export function TaskForm({
 }
 
 function getInitialValues(task?: Task, draftKey?: string): TaskFormValues {
-  if (draftKey) {
-    const draft = loadTaskFormDraft(draftKey)
-    if (draft) return draft
+  const saved = toFormValues(task)
+  const draft = draftKey ? loadTaskFormDraft(draftKey) : null
+  if (!draft) return saved
+
+  return {
+    ...saved,
+    ...draft,
+    startDate: draft.startDate ?? saved.startDate,
+    deadline: draft.deadline ?? saved.deadline,
+    estimateMinutes: draft.estimateMinutes ?? saved.estimateMinutes,
   }
-  return toFormValues(task)
 }
 
 function toFormValues(task?: Task): TaskFormValues {
@@ -165,7 +195,10 @@ function toFormValues(task?: Task): TaskFormValues {
     status: task?.status ?? 'todo',
     priority: task?.priority ?? 'medium',
     assigneeId: task?.assigneeId ?? '',
+    startDate: task?.startDate ?? '',
     dueDate: task?.dueDate ?? '',
+    deadline: task?.deadline ?? '',
+    estimateMinutes: String(task?.estimateMinutes ?? ''),
   }
 }
 
@@ -199,7 +232,11 @@ function describeTaskChanges(task: Task, values: TaskFormValues) {
   }
   if (task.priority !== values.priority) changes.push('priority')
   if ((task.assigneeId ?? '') !== values.assigneeId) changes.push('assignee')
+  if ((task.startDate ?? '') !== values.startDate) changes.push('start date')
   if ((task.dueDate ?? '') !== values.dueDate) changes.push('due date')
+  if ((task.deadline ?? '') !== values.deadline) changes.push('deadline')
+  if (String(task.estimateMinutes ?? '') !== values.estimateMinutes)
+    changes.push('estimate')
 
   if (changes.length === 0) return null
   return `Updated ${changes.join(', ')}.`

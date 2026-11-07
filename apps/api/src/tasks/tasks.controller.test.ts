@@ -43,6 +43,45 @@ describe('TasksController', () => {
     })
   })
 
+  it('round-trips task scheduling fields and rejects dates before the start', async () => {
+    const { controller } = createSubject()
+    const scheduled = {
+      ...task,
+      startDate: '2026-11-05',
+      dueDate: '2026-11-10',
+      deadline: '2026-11-12',
+      estimateMinutes: 150,
+    }
+
+    await controller.replaceProjectTasks(
+      task.projectId,
+      { tasks: [scheduled] },
+      owner,
+    )
+    await expect(
+      controller.getProjectTasks(task.projectId, owner),
+    ).resolves.toEqual({
+      tasks: [scheduled],
+      revision: 1,
+    })
+    await expect(
+      controller.replaceProjectTasks(
+        task.projectId,
+        {
+          tasks: [{ ...scheduled, deadline: '2026-11-04' }],
+          expectedRevision: 1,
+        },
+        owner,
+      ),
+    ).rejects.toThrow(BadRequestException)
+    await expect(
+      controller.getProjectTasks(task.projectId, owner),
+    ).resolves.toEqual({
+      tasks: [scheduled],
+      revision: 1,
+    })
+  })
+
   it('increments the revision after each successful replacement', async () => {
     const { controller } = createSubject()
 
