@@ -70,11 +70,21 @@ const authCallbackRoute = createRoute({
   component: AuthCallbackPage,
 })
 
+function parseModuleSearch(search: Record<string, unknown>) {
+  return {
+    ...compactWorkTaskSearch(parseWorkTaskSearch(search)),
+    ...(typeof search.project === 'string' &&
+    search.project.trim() &&
+    search.project !== 'project-1'
+      ? { project: search.project }
+      : {}),
+  }
+}
+
 const moduleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId',
-  validateSearch: (search) =>
-    compactWorkTaskSearch(parseWorkTaskSearch(search)),
+  validateSearch: parseModuleSearch,
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })
@@ -82,8 +92,7 @@ const moduleRoute = createRoute({
 const moduleSectionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/modules/$moduleId/$sectionId',
-  validateSearch: (search) =>
-    compactWorkTaskSearch(parseWorkTaskSearch(search)),
+  validateSearch: parseModuleSearch,
   beforeLoad: requireAuthSession,
   component: ModuleRoutePage,
 })
@@ -93,10 +102,11 @@ const projectRoute = createRoute({
   path: '/workspaces/$workspaceSlug/projects/$projectId',
   beforeLoad: requireAuthSession,
   validateSearch: parseProjectBoardSearch,
-  loader: ({ params }) =>
+  loader: ({ params, context }) =>
     loadProjectBoard({
       workspaceSlug: params.workspaceSlug,
       projectId: params.projectId,
+      accountId: context.user.id,
     }),
   component: ProjectBoardPage,
   pendingComponent: ProjectBoardLoading,

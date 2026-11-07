@@ -3,30 +3,25 @@ import { localDateKey } from '@/shared/lib/local-date-key'
 import { WorkTaskExplorer } from './work-task-explorer'
 import { WorkActivityFeed } from './work-activity-feed'
 import { defaultWorkTaskSearch, type WorkTaskSearch } from './work-task-filters'
-import {
-  projectViews,
-  projectViewLabels,
-} from '@/pages/project-board/project-view'
 import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import type { Task } from '@/entities/task/model/task'
 import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
-import {
-  getTaskDeadline,
-  isTaskOverdue,
-  taskStatusLabels,
-} from '@/entities/task/model/task'
+import { getTaskDeadline, taskStatusLabels } from '@/entities/task/model/task'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import { useWorkData } from '@/pages/module/use-work-data'
 import type { WorkSection } from '@/shared/workspace/work-section-registry'
 import { workSectionPath } from '@/shared/workspace/work-section-registry'
 import { isDemoMode } from '@/shared/auth/auth-session'
 
+import { projectHref as hrefForProject } from '@/entities/project/lib/project-href'
+import { WorkProjects } from './work-projects'
+import { ProjectPicker } from './project-picker'
+
 import './work-section-surface.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
-const projectHref = `${appBaseUrl}workspaces/forma/projects/project-1`
 
 const WorkInbox = lazy(() =>
   import('./work-inbox').then((module) => ({ default: module.WorkInbox })),
@@ -39,6 +34,7 @@ const SharedTaskTable = lazy(() =>
 )
 
 function TaskTable({ tasks, data }: { tasks: Task[]; data: ProjectBoardData }) {
+  const projectHref = hrefForProject(data.workspace.slug, data.project.id)
   return (
     <Suspense fallback={<p role="status">Loading task table…</p>}>
       <SharedTaskTable
@@ -57,10 +53,16 @@ export function WorkSectionSurface({
   section,
   taskSearch,
   onTaskSearchChange,
+  projectId = 'project-1',
+  accountId,
+  onProjectChange,
 }: {
   section: WorkSection
   taskSearch?: WorkTaskSearch | undefined
   onTaskSearchChange?: ((search: WorkTaskSearch) => void) | undefined
+  projectId?: string | undefined
+  accountId?: string | undefined
+  onProjectChange?: ((id: string) => void) | undefined
 }) {
   const [localSearch, setLocalSearch] = useState(defaultWorkTaskSearch)
   if (section.status === 'implementation')
@@ -77,8 +79,25 @@ export function WorkSectionSurface({
         </p>
       </section>
     )
+  if (section.id === 'projects')
+    return (
+      <WorkProjects
+        accountId={accountId}
+        query={(taskSearch ?? localSearch).query}
+        onQueryChange={(query) =>
+          (onTaskSearchChange ?? setLocalSearch)({
+            ...defaultWorkTaskSearch,
+            query,
+          })
+        }
+      />
+    )
   return (
     <WorkSectionDataSurface
+      key={`${accountId ?? ''}:${projectId}`}
+      projectId={projectId}
+      accountId={accountId}
+      onProjectChange={onProjectChange}
       section={section}
       taskSearch={taskSearch ?? localSearch}
       onTaskSearchChange={onTaskSearchChange ?? setLocalSearch}
@@ -90,17 +109,24 @@ function WorkSectionDataSurface({
   section,
   taskSearch,
   onTaskSearchChange,
+  projectId = 'project-1',
+  accountId,
+  onProjectChange,
 }: {
   section: WorkSection
   taskSearch: WorkTaskSearch
   onTaskSearchChange: (search: WorkTaskSearch) => void
+  projectId?: string | undefined
+  accountId?: string | undefined
+  onProjectChange?: ((id: string) => void) | undefined
 }) {
-  const { data, error, userId, retry } = useWorkData()
+  const { data, error, userId, retry } = useWorkData(projectId, accountId)
   if (error)
     return (
       <section className="module-state-card" role="alert">
         <h2>Work could not be loaded</h2>
         <p>Try loading the current project again.</p>
+        <a href={`${appBaseUrl}modules/work/projects`}>Browse projects</a>
         <button type="button" className="module-primary-action" onClick={retry}>
           Try again
         </button>
@@ -108,6 +134,7 @@ function WorkSectionDataSurface({
     )
   if (!data) return <p role="status">Loading current work…</p>
 
+  const projectHref = hrefForProject(data.workspace.slug, data.project.id)
   const today = localDateKey()
   const tasks = data.initialTasks
   const completed = tasks.filter((task) => task.status === 'done').length
@@ -126,6 +153,14 @@ function WorkSectionDataSurface({
 
   return (
     <section className="work-surface" aria-label={`${section.label} details`}>
+      {onProjectChange ? (
+        <ProjectPicker
+          projectId={data.project.id}
+          projectName={data.project.name}
+          accountId={accountId}
+          onChange={onProjectChange}
+        />
+      ) : null}
       {isDemoMode() && section.id !== 'inbox' ? (
         <p className="work-data-context">
           Demo workspace · Uses the same saved tasks as the project board.
@@ -165,7 +200,9 @@ function WorkSectionDataSurface({
           <section className="work-panel">
             <div className="work-panel-heading">
               <h2>Current tasks</h2>
-              <a href={`${appBaseUrl}${workSectionPath('tasks').slice(1)}`}>
+              <a
+                href={`${appBaseUrl}${workSectionPath('tasks').slice(1)}${data.project.id === 'project-1' ? '' : `?project=${encodeURIComponent(data.project.id)}`}`}
+              >
                 View all tasks
               </a>
             </div>
@@ -210,49 +247,6 @@ function WorkSectionDataSurface({
         <Suspense fallback={<p role="status">Loading inbox…</p>}>
           <WorkInbox data={data} userId={userId} />
         </Suspense>
-      ) : null}
-      {section.id === 'projects' ? (
-        <section className="work-panel">
-          <article className="work-project-row">
-            <span className="work-project-mark">{data.project.key}</span>
-            <div className="work-project-row-main">
-              <h2>{data.project.name}</h2>
-              <p>{data.project.description}</p>
-              <span>
-                {tasks.length} tasks · {data.members.length} members ·{' '}
-                {completion}% complete
-              </span>
-              <div className="work-project-progress">
-                <progress
-                  aria-label="Project task completion"
-                  max={100}
-                  value={completion}
-                />
-                <small>
-                  {tasks.length - completed} open ·{' '}
-                  {tasks.filter((task) => isTaskOverdue(task, today)).length}{' '}
-                  overdue
-                </small>
-              </div>
-              <nav
-                className="work-project-views"
-                aria-label="Open project view"
-              >
-                {projectViews.map((view) => (
-                  <a
-                    key={view}
-                    href={`${projectHref}${view === 'board' ? '' : `?view=${view}`}`}
-                  >
-                    {projectViewLabels[view]}
-                  </a>
-                ))}
-              </nav>
-            </div>
-            <a className="module-primary-action" href={projectHref}>
-              Open project
-            </a>
-          </article>
-        </section>
       ) : null}
       {section.id === 'timeline' ? (
         <section className="work-panel">

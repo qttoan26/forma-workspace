@@ -6,9 +6,9 @@ import { currentDemoMember } from '@/shared/demo/demo-members'
 import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 
-export function useWorkData() {
+export function useWorkData(projectId = 'project-1', accountId?: string) {
   const [data, setData] = useState<ProjectBoardData | null>(null)
-  const [error, setError] = useState(false)
+  const [errorProject, setErrorProject] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | undefined>(() =>
     isDemoMode() ? currentDemoMember.id : undefined,
   )
@@ -22,18 +22,19 @@ export function useWorkData() {
       try {
         const result = await projectBoardRepository.getProjectBoard({
           workspaceSlug: 'forma',
-          projectId: 'project-1',
+          projectId,
+          accountId,
         })
         if (active && request === revision) {
           setData(result)
-          setError(false)
+          setErrorProject(null)
         }
       } catch {
-        if (active && request === revision) setError(true)
+        if (active && request === revision) setErrorProject(projectId)
       }
     }
     void load()
-    const unsubscribe = subscribeProjectTasks('project-1', () => {
+    const unsubscribe = subscribeProjectTasks(projectId, () => {
       void load()
     })
     const onFocus = () => {
@@ -45,7 +46,7 @@ export function useWorkData() {
       unsubscribe()
       window.removeEventListener('focus', onFocus)
     }
-  }, [attempt])
+  }, [attempt, projectId, accountId])
 
   useEffect(() => {
     let active = true
@@ -61,5 +62,10 @@ export function useWorkData() {
     }
   }, [])
 
-  return { data, error, userId, retry: () => setAttempt((value) => value + 1) }
+  return {
+    data: data?.project.id === projectId ? data : null,
+    error: errorProject === projectId,
+    userId,
+    retry: () => setAttempt((value) => value + 1),
+  }
 }

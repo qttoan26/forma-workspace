@@ -1,3 +1,4 @@
+import { projectHref as hrefForProject } from '@/entities/project/lib/project-href'
 import { useEffect, useState } from 'react'
 import { loadProjectActivityFromIndexedDb } from '@/entities/task/lib/task-indexed-db'
 import { subscribeTaskActivity } from '@/entities/task/lib/task-activity-events'
@@ -5,9 +6,8 @@ import type { TaskActivityEntry } from '@/entities/task/model/task-activity'
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 
-const projectHref = `${import.meta.env.BASE_URL}workspaces/forma/projects/project-1`
-
 export function WorkActivityFeed({ data }: { data: ProjectBoardData }) {
+  const projectHref = hrefForProject(data.workspace.slug, data.project.id)
   const [state, setState] = useState<{
     entries: TaskActivityEntry[]
     status: 'loading' | 'ready' | 'error'
