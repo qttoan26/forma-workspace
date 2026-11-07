@@ -57,7 +57,7 @@ test('switches project detail views without leaving the project route', async ({
   await page.getByRole('button', { name: 'Calendar' }).click()
   await expect(page).toHaveURL(/project-1\?view=calendar/)
   await expect(
-    page.getByRole('heading', { name: 'Due-date schedule' }),
+    page.getByRole('heading', { name: 'Deadline schedule' }),
   ).toBeVisible()
 
   await page.getByRole('button', { name: 'Timeline' }).click()

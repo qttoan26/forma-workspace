@@ -1,4 +1,5 @@
 import {
+  getTaskDeadlineState,
   taskDescriptionSchema,
   taskDueDateSchema,
   taskSchema,
@@ -36,6 +37,23 @@ describe('task domain schema', () => {
 
   it('keeps due dates optional', () => {
     expect(taskSchema.safeParse(baseTask).success).toBe(true)
+  })
+
+  it('uses an explicit deadline before falling back to the due date', () => {
+    const task = { ...baseTask, dueDate: '2026-10-29', deadline: '2026-11-02' }
+    expect(getTaskDeadlineState(task, '2026-10-29')).toBeUndefined()
+    expect(getTaskDeadlineState(task, '2026-10-30')).toBe('due-soon')
+    expect(getTaskDeadlineState(task, '2026-11-02')).toBe('due-soon')
+    expect(getTaskDeadlineState(task, '2026-11-03')).toBe('overdue')
+    expect(
+      getTaskDeadlineState({ ...task, status: 'done' }, '2026-11-03'),
+    ).toBeUndefined()
+    expect(
+      getTaskDeadlineState(
+        { ...baseTask, dueDate: task.dueDate },
+        '2026-10-30',
+      ),
+    ).toBe('overdue')
   })
 
   it('shares title validation with persisted tasks', () => {

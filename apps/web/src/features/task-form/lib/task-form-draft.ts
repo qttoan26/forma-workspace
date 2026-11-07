@@ -5,8 +5,6 @@ import {
   taskStatusSchema,
 } from '@/entities/task/model/task'
 
-import type { TaskFormValues } from '../model/task-form-schema'
-
 const draftVersion = 'v1'
 
 const taskFormDraftSchema = z.object({
@@ -15,7 +13,10 @@ const taskFormDraftSchema = z.object({
   status: taskStatusSchema,
   priority: taskPrioritySchema,
   assigneeId: z.string(),
+  startDate: z.string().optional(),
   dueDate: z.string(),
+  deadline: z.string().optional(),
+  estimateMinutes: z.string().optional(),
 })
 
 export function createTaskFormDraftKey(projectId: string, taskId?: string) {
@@ -23,10 +24,7 @@ export function createTaskFormDraftKey(projectId: string, taskId?: string) {
   return `forma:task-draft:${draftVersion}:${projectId}:${scope}`
 }
 
-export function loadTaskFormDraft(
-  key: string,
-  storage?: Storage,
-): TaskFormValues | null {
+export function loadTaskFormDraft(key: string, storage?: Storage) {
   const target = resolveStorage(storage)
   if (!target) return null
 

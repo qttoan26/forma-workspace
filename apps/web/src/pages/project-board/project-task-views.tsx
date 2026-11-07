@@ -3,11 +3,12 @@ import { lazy, Suspense } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
 import {
+  getTaskDeadline,
   taskStatuses,
   taskStatusLabels,
   type Task,
 } from '@/entities/task/model/task'
-import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
 import { localDateKey } from '@/shared/lib/local-date-key'
 import { filterTasks } from '@/widgets/task-board/model/task-board-view'
 import { TaskTimeline } from '@/widgets/task-timeline/task-timeline'
@@ -84,7 +85,8 @@ function ProjectReadOnlyTaskView({
           onOpenTask={onOpenTask}
         />
       )
-    case 'timeline':
+    case 'timeline': {
+      const selected = snapshot.tasks.find((task) => task.id === selectedTaskId)
       return (
         <section className="project-view-surface" aria-label="Project timeline">
           <ProjectViewHeading
@@ -97,12 +99,15 @@ function ProjectReadOnlyTaskView({
             tasks={tasks}
             members={members}
             initialDate={
-              snapshot.tasks.find((task) => task.id === selectedTaskId)?.dueDate
+              selected
+                ? (getTaskDeadline(selected) ?? selected.startDate)
+                : undefined
             }
             onOpenTask={onOpenTask}
           />
         </section>
       )
+    }
     case 'files':
       return (
         <ProjectFilesView
@@ -196,14 +201,14 @@ function ProjectTableView({ tasks, members, onOpenTask }: TaskViewProps) {
 function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
   const memberById = createMemberMap(members)
   const today = localDateKey()
-  const orderedTasks = [...tasks].sort(compareTaskDueDate)
+  const orderedTasks = [...tasks].sort(compareTaskDeadline)
 
   return (
     <section className="project-view-surface" aria-label="Project calendar">
       <ProjectViewHeading
         eyebrow="Calendar"
-        title="Due-date schedule"
-        meta={`${tasks.filter((task) => task.dueDate).length} scheduled`}
+        title="Deadline schedule"
+        meta={`${tasks.filter(getTaskDeadline).length} scheduled`}
       />
       <ScrollRegion
         label="Project calendar content"
@@ -213,8 +218,8 @@ function ProjectCalendarView({ tasks, members, onOpenTask }: TaskViewProps) {
           <article className="project-calendar-item" key={task.id}>
             <div className="project-calendar-date">
               <strong>
-                {task.dueDate ?? 'Unscheduled'}
-                <TaskOverdueBadge task={task} today={today} />
+                {getTaskDeadline(task) ?? 'Unscheduled'}
+                <TaskDeadlineBadge task={task} today={today} />
               </strong>
               <small>{taskStatusLabels[task.status]}</small>
             </div>
@@ -299,9 +304,11 @@ function createMemberMap(members: Member[]) {
   return new Map(members.map((member) => [member.id, member]))
 }
 
-function compareTaskDueDate(left: Task, right: Task) {
-  if (!left.dueDate && !right.dueDate) return left.id.localeCompare(right.id)
-  if (!left.dueDate) return 1
-  if (!right.dueDate) return -1
-  return left.dueDate.localeCompare(right.dueDate)
+function compareTaskDeadline(left: Task, right: Task) {
+  const leftDate = getTaskDeadline(left)
+  const rightDate = getTaskDeadline(right)
+  if (!leftDate && !rightDate) return left.id.localeCompare(right.id)
+  if (!leftDate) return 1
+  if (!rightDate) return -1
+  return leftDate.localeCompare(rightDate)
 }

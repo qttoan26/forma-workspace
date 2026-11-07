@@ -1,8 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
 import type { Member } from '@/entities/member/model/member'
-import { taskStatusLabels, type Task } from '@/entities/task/model/task'
-import { TaskOverdueBadge } from '@/entities/task/ui/task-overdue-badge'
+import {
+  getTaskDeadline,
+  taskStatusLabels,
+  type Task,
+} from '@/entities/task/model/task'
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
 import { localDateKey } from '@/shared/lib/local-date-key'
 import { Button } from '@/shared/ui'
 
@@ -46,6 +50,7 @@ export function TaskDetailsDrawer({
   }, [editing])
 
   const assignee = members.find((member) => member.id === task.assigneeId)
+  const deadline = getTaskDeadline(task)
 
   return (
     <TaskEditorDrawer
@@ -127,6 +132,24 @@ export function TaskDetailsDrawer({
                   <dd>{assignee?.name ?? 'Unassigned'}</dd>
                 </div>
                 <div>
+                  <dt>Estimate</dt>
+                  <dd>
+                    {task.estimateMinutes === undefined
+                      ? 'No estimate'
+                      : `${task.estimateMinutes} min`}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Start date</dt>
+                  <dd>
+                    {task.startDate ? (
+                      <time dateTime={task.startDate}>{task.startDate}</time>
+                    ) : (
+                      'No start date'
+                    )}
+                  </dd>
+                </div>
+                <div>
                   <dt>Due date</dt>
                   <dd>
                     {task.dueDate ? (
@@ -134,7 +157,17 @@ export function TaskDetailsDrawer({
                     ) : (
                       'No due date'
                     )}
-                    <TaskOverdueBadge task={task} today={localDateKey()} />
+                  </dd>
+                </div>
+                <div>
+                  <dt>Deadline</dt>
+                  <dd>
+                    {deadline ? (
+                      <time dateTime={deadline}>{deadline}</time>
+                    ) : (
+                      'No deadline'
+                    )}
+                    <TaskDeadlineBadge task={task} today={localDateKey()} />
                   </dd>
                 </div>
                 <div className="task-detail-description">

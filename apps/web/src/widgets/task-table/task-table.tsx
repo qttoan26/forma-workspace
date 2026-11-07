@@ -18,6 +18,8 @@ import {
   type Task,
 } from '@/entities/task/model/task'
 
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
+import { localDateKey } from '@/shared/lib/local-date-key'
 import './task-table.css'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 
@@ -50,6 +52,7 @@ export function TaskTable({
       Math.max(0, Math.ceil(tasks.length / pagination.pageSize) - 1),
     ),
   }
+  const today = localDateKey()
   const columns = useMemo<ColumnDef<Task>[]>(() => {
     const memberById = new Map(members.map((member) => [member.id, member]))
 
@@ -109,15 +112,24 @@ export function TaskTable({
         accessorKey: 'dueDate',
         header: 'Due',
         sortUndefined: 'last',
-        cell: ({ row }) =>
-          row.original.dueDate ? (
-            <time dateTime={row.original.dueDate}>{row.original.dueDate}</time>
-          ) : (
-            'No due date'
-          ),
+        cell: ({ row: { original: task } }) => (
+          <>
+            {task.dueDate ? (
+              <time dateTime={task.dueDate}>{task.dueDate}</time>
+            ) : (
+              'No due date'
+            )}
+            {task.deadline && task.deadline !== task.dueDate ? (
+              <div>
+                Deadline <time dateTime={task.deadline}>{task.deadline}</time>
+              </div>
+            ) : null}
+            <TaskDeadlineBadge task={task} today={today} />
+          </>
+        ),
       },
     ]
-  }, [members, onOpenTask, getTaskHref])
+  }, [members, onOpenTask, getTaskHref, today])
   const table = useReactTable({
     data: tasks,
     columns,

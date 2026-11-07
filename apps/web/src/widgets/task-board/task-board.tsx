@@ -36,6 +36,8 @@ import type { TaskFormValues } from '@/features/task-form/model/task-form-schema
 import { TaskDetailsDrawer } from '@/features/task-form/ui/task-details-drawer'
 import { TaskEditorDrawer } from '@/features/task-form/ui/task-editor-drawer'
 import { TaskForm } from '@/features/task-form/ui/task-form'
+import { TaskDeadlineBadge } from '@/entities/task/ui/task-deadline-badge'
+import { localDateKey } from '@/shared/lib/local-date-key'
 import { Button } from '@/shared/ui'
 import { Modal } from '@/shared/ui/modal/modal'
 
@@ -416,7 +418,12 @@ function toTaskWriteValues(values: TaskFormValues): TaskWriteValues {
     priority: values.priority,
     ...(values.description ? { description: values.description } : {}),
     ...(values.assigneeId ? { assigneeId: values.assigneeId } : {}),
+    ...(values.startDate ? { startDate: values.startDate } : {}),
     ...(values.dueDate ? { dueDate: values.dueDate } : {}),
+    ...(values.deadline ? { deadline: values.deadline } : {}),
+    ...(values.estimateMinutes
+      ? { estimateMinutes: Number(values.estimateMinutes) }
+      : {}),
   }
 }
 
@@ -642,16 +649,26 @@ function TaskCard({
         >
           {assignee?.initials ?? '—'}
         </span>
-        {task.dueDate ? (
-          <time
-            dateTime={task.dueDate}
-            aria-label={`Due date: ${task.dueDate}`}
-          >
-            {task.dueDate}
-          </time>
-        ) : (
-          <span>No due date</span>
-        )}
+        <div className="task-card-deadline">
+          {task.deadline ? (
+            <time
+              dateTime={task.deadline}
+              aria-label={`Deadline: ${task.deadline}`}
+            >
+              {task.deadline}
+            </time>
+          ) : task.dueDate ? (
+            <time
+              dateTime={task.dueDate}
+              aria-label={`Due date: ${task.dueDate}`}
+            >
+              {task.dueDate}
+            </time>
+          ) : (
+            <span>No due date</span>
+          )}
+          <TaskDeadlineBadge task={task} today={localDateKey()} />
+        </div>
       </div>
       <div className="task-actions">
         <label className="move-task">
