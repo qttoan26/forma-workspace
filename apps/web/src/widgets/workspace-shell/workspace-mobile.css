@@ -73,6 +73,64 @@
     overflow-wrap: anywhere;
   }
 
+  .workspace-shell.is-inbox .workspace-shell-content {
+    min-height: 0;
+    padding-bottom: 0;
+  }
+
+  .workspace-shell.is-inbox .module-page-content.module-page-inbox {
+    min-height: 0;
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: calc(12px + var(--forma-mobile-dock-space));
+  }
+
+  .workspace-shell.is-inbox .module-page-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 0 0 8px;
+  }
+
+  .workspace-shell.is-inbox .module-page-header p {
+    display: none;
+  }
+
+  .workspace-shell.is-inbox .module-page-header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .workspace-shell.is-inbox .work-surface {
+    gap: 10px;
+  }
+
+  .workspace-shell.is-inbox .project-picker {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    max-width: none;
+    margin: 0;
+    font-size: 0.75rem;
+  }
+
+  .workspace-shell.is-inbox .project-picker select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Let a short viewport scroll rather than squeezing away the inbox list. */
+  @media (max-height: 600px) {
+    .workspace-shell.is-inbox .module-page-content.module-page-inbox {
+      height: auto;
+    }
+
+    .workspace-shell.is-inbox .work-inbox {
+      flex: none;
+      height: 320px;
+    }
+  }
+
   .workspace-mobile-dock {
     position: fixed;
     z-index: 32;
