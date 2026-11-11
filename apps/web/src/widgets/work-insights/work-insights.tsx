@@ -14,7 +14,15 @@ import {
 import type { Member } from '@/entities/member/model/member'
 import type { Task } from '@/entities/task/model/task'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
+import {
+  DoughnutChartIcon,
+  GroupedBarChartIcon,
+  HorizontalBarChartIcon,
+  PieChartIcon,
+  StackedBarChartIcon,
+} from '@/shared/ui/workspace-icons'
 
+import { ChartTypeToggle } from './chart-type-toggle'
 import { summarizeWork } from './model/work-insights'
 import './work-insights.css'
 
@@ -34,6 +42,16 @@ const workloadColors = ['#4078bc', '#19816b']
 
 type StatusChartKind = 'doughnut' | 'pie' | 'bar'
 type WorkloadChartMode = 'stacked' | 'grouped'
+
+const statusChartOptions = [
+  { value: 'doughnut', label: 'Doughnut', icon: DoughnutChartIcon },
+  { value: 'pie', label: 'Pie', icon: PieChartIcon },
+  { value: 'bar', label: 'Horizontal bars', icon: HorizontalBarChartIcon },
+] as const
+const workloadChartOptions = [
+  { value: 'stacked', label: 'Stacked bars', icon: StackedBarChartIcon },
+  { value: 'grouped', label: 'Grouped bars', icon: GroupedBarChartIcon },
+] as const
 
 export function WorkInsights({
   tasks,
@@ -89,20 +107,12 @@ export function WorkInsights({
         </p>
         {summary.total ? (
           <>
-            <label className="work-insight-chart-type">
-              Chart type
-              <select
-                aria-label="Task status chart type"
-                value={statusKind}
-                onChange={(event) =>
-                  setStatusKind(event.target.value as StatusChartKind)
-                }
-              >
-                <option value="doughnut">Doughnut</option>
-                <option value="pie">Pie</option>
-                <option value="bar">Horizontal bars</option>
-              </select>
-            </label>
+            <ChartTypeToggle
+              label="Task status chart type"
+              value={statusKind}
+              options={statusChartOptions}
+              onChange={setStatusKind}
+            />
             <div
               className="work-insight-status-layout"
               data-chart-kind={statusKind}
@@ -162,19 +172,12 @@ export function WorkInsights({
         {summary.total ? (
           <>
             <div className="work-insight-workload-controls">
-              <label className="work-insight-chart-type">
-                Chart type
-                <select
-                  aria-label="Owner workload chart type"
-                  value={workloadMode}
-                  onChange={(event) =>
-                    setWorkloadMode(event.target.value as WorkloadChartMode)
-                  }
-                >
-                  <option value="stacked">Stacked bars</option>
-                  <option value="grouped">Grouped bars</option>
-                </select>
-              </label>
+              <ChartTypeToggle
+                label="Owner workload chart type"
+                value={workloadMode}
+                options={workloadChartOptions}
+                onChange={setWorkloadMode}
+              />
               <div className="work-insight-legend">
                 <span>
                   <i

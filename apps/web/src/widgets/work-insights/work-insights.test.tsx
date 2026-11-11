@@ -70,10 +70,10 @@ describe('WorkInsights', () => {
         projectName="Product launch"
       />,
     )
-    const status = screen.getByRole('combobox', {
+    const status = screen.getByRole('group', {
       name: 'Task status chart type',
     })
-    const workload = screen.getByRole('combobox', {
+    const workload = screen.getByRole('group', {
       name: 'Owner workload chart type',
     })
     const statusCanvas = screen.getByRole('img', {
@@ -82,18 +82,27 @@ describe('WorkInsights', () => {
     const workloadCanvas = screen.getByRole('img', {
       name: 'Open and completed tasks by owner',
     })
-    expect(status).toHaveValue('doughnut')
-    expect(workload).toHaveValue('stacked')
+    expect(
+      within(status).getByRole('button', { name: 'Doughnut', pressed: true }),
+    ).toBeVisible()
+    expect(
+      within(workload).getByRole('button', {
+        name: 'Stacked bars',
+        pressed: true,
+      }),
+    ).toBeVisible()
     const statusData = chartMocks.create.mock.calls[0]?.[1].data
     const workloadData = chartMocks.create.mock.calls[1]?.[1].data
 
-    fireEvent.change(status, { target: { value: 'pie' } })
+    fireEvent.click(within(status).getByRole('button', { name: 'Pie' }))
     expect(chartMocks.create.mock.lastCall?.[0]).toBe(statusCanvas)
     expect(chartMocks.create.mock.lastCall?.[1]).toMatchObject({
       type: 'pie',
       data: statusData,
     })
-    fireEvent.change(status, { target: { value: 'bar' } })
+    fireEvent.click(
+      within(status).getByRole('button', { name: 'Horizontal bars' }),
+    )
     const statusBars = chartMocks.create.mock.lastCall?.[1]
     expect(statusBars).toMatchObject({
       type: 'bar',
@@ -104,7 +113,9 @@ describe('WorkInsights', () => {
       statusData?.datasets[0]?.data,
     )
 
-    fireEvent.change(workload, { target: { value: 'grouped' } })
+    fireEvent.click(
+      within(workload).getByRole('button', { name: 'Grouped bars' }),
+    )
     expect(chartMocks.create.mock.lastCall?.[0]).toBe(workloadCanvas)
     expect(chartMocks.create.mock.lastCall?.[1]).toMatchObject({
       type: 'bar',
@@ -115,7 +126,34 @@ describe('WorkInsights', () => {
     })
     expect(chartMocks.create).toHaveBeenCalledTimes(5)
     expect(chartMocks.destroy).toHaveBeenCalledTimes(3)
-    expect(status).toHaveValue('bar')
+    expect(
+      within(status).getAllByRole('button', { pressed: true }),
+    ).toHaveLength(1)
+    expect(
+      within(status).getByRole('button', {
+        name: 'Horizontal bars',
+        pressed: true,
+      }),
+    ).toBeVisible()
+    expect(
+      within(workload).getAllByRole('button', { pressed: true }),
+    ).toHaveLength(1)
+    expect(
+      within(workload).getByRole('button', {
+        name: 'Grouped bars',
+        pressed: true,
+      }),
+    ).toBeVisible()
+    fireEvent.click(
+      within(status).getByRole('button', { name: 'Horizontal bars' }),
+    )
+    expect(chartMocks.create).toHaveBeenCalledTimes(5)
+    expect(
+      within(status).getByRole('button', {
+        name: 'Horizontal bars',
+        pressed: true,
+      }),
+    ).toBeVisible()
     expect(screen.getByText('1 of 4 tasks completed (25%).')).toBeVisible()
     expect(
       screen.getByRole('table', { name: 'Tasks by owner', hidden: true }),
