@@ -244,7 +244,7 @@ export function WorkspaceShell({
 
   return (
     <div
-      className={`workspace-shell${sidebarExpanded ? ' is-sidebar-expanded' : ' is-sidebar-collapsed'}`}
+      className={`workspace-shell${sidebarExpanded ? ' is-sidebar-expanded' : ' is-sidebar-collapsed'}${activeModuleId === 'work' && activeSectionId === 'inbox' ? ' is-inbox' : ''}`}
     >
       <button
         className={`workspace-shell-backdrop${mobileOpen ? ' is-visible' : ''}`}

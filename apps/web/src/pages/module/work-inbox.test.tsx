@@ -90,6 +90,28 @@ async function openMention() {
 }
 
 describe('Inbox triage and conversation', () => {
+  it('returns focus to the notification without focusing search, or to the results when Unread removes it', async () => {
+    render(<WorkInbox data={data} userId="member-2" />)
+    await openMention()
+    fireEvent.click(screen.getByRole('button', { name: 'Back to inbox' }))
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Alex Morgan mentioned you/ }),
+      ).toHaveFocus(),
+    )
+    expect(
+      screen.getByRole('searchbox', { name: 'Search inbox' }),
+    ).not.toHaveFocus()
+    fireEvent.click(
+      screen.getByRole('button', { name: /Alex Morgan mentioned you/ }),
+    )
+    fireEvent.click(screen.getByLabelText('Unread'))
+    fireEvent.click(screen.getByRole('button', { name: 'Back to inbox' }))
+    await waitFor(() => expect(screen.getByRole('tabpanel')).toHaveFocus())
+    expect(
+      screen.getByRole('searchbox', { name: 'Search inbox' }),
+    ).not.toHaveFocus()
+  })
   it('filters categories/search, preserves selection through Unread and persists read state after remount', async () => {
     const view = render(<WorkInbox data={data} userId="member-2" />)
     fireEvent.click(screen.getByLabelText('Unread'))
