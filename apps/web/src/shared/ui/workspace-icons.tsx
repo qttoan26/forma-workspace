@@ -253,3 +253,51 @@ export function CalendarIcon(props: IconProps) {
     </IconBase>
   )
 }
+
+export function DoughnutChartIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="12" cy="12" r="8.25" {...strokeProps} />
+      <circle cx="12" cy="12" r="3.5" {...strokeProps} />
+      <path d="M12 3.75V8.5M15.5 12h4.75" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function PieChartIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path
+        d="M12 3.75A8.25 8.25 0 1 0 20.25 12H12ZM15 3.75V9h5.25A8.25 8.25 0 0 0 15 3.75Z"
+        {...strokeProps}
+      />
+    </IconBase>
+  )
+}
+
+export function HorizontalBarChartIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3.75 3.75v16.5h16.5" {...strokeProps} />
+      <path d="M7 6.5h11v2H7ZM7 11h7v2H7ZM7 15.5h9v2H7Z" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function StackedBarChartIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3.75 3.75v16.5h16.5" {...strokeProps} />
+      <path d="M7 6h13v4H7ZM7 13h10v4H7ZM14 6v4M11 13v4" {...strokeProps} />
+    </IconBase>
+  )
+}
+
+export function GroupedBarChartIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3.75 3.75v16.5h16.5" {...strokeProps} />
+      <path d="M7 5h13v2H7ZM7 9h8v2H7ZM7 14h10v2H7ZM7 18h6" {...strokeProps} />
+    </IconBase>
+  )
+}

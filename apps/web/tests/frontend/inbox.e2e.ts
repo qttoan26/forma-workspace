@@ -114,6 +114,19 @@ test.describe('Phone inbox', () => {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBe(width)
+      expect(
+        await page.evaluate(() => document.documentElement.scrollHeight),
+      ).toBeLessThanOrEqual(853)
+      const checkbox = (await page
+        .getByRole('checkbox', { name: 'Unread' })
+        .boundingBox())!
+      expect(checkbox.width).toBe(16)
+      expect(checkbox.height).toBe(16)
+      const markAll = (await page
+        .getByRole('button', { name: 'Mark all as read', exact: true })
+        .boundingBox())!
+      expect(markAll.width).toBeGreaterThanOrEqual(44)
+      expect(markAll.height).toBeGreaterThanOrEqual(44)
       await list
         .getByRole('button', {
           name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
@@ -132,7 +145,9 @@ test.describe('Phone inbox', () => {
       await page.getByRole('button', { name: 'Back to inbox' }).click()
       await expect(list).toBeVisible()
       await expect(
-        page.getByRole('searchbox', { name: 'Search inbox' }),
+        list.getByRole('button', {
+          name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
+        }),
       ).toBeFocused()
       await list
         .getByRole('button', {
@@ -152,6 +167,64 @@ test.describe('Phone inbox', () => {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBe(width)
+    })
+  }
+
+  for (const viewport of [
+    { width: 393, height: 500 },
+    { width: 852, height: 393 },
+  ]) {
+    test(`keeps notifications and reply reachable in a ${viewport.width}×${viewport.height} viewport`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport)
+      await page.goto('/modules/work/inbox')
+      const list = page.getByRole('region', { name: 'Inbox notifications' })
+      await expect(list).toBeVisible()
+      expect(
+        await list.evaluate((element) => element.clientHeight),
+      ).toBeGreaterThanOrEqual(100)
+      await list
+        .getByRole('button', {
+          name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
+        })
+        .click()
+      const conversation = page.getByRole('region', {
+        name: 'Inbox conversation',
+      })
+      await expect(conversation).toBeVisible()
+      await conversation
+        .getByLabel('Reply', { exact: true })
+        .fill('Short viewport reply')
+      await page.evaluate(() =>
+        window.scrollTo(0, document.documentElement.scrollHeight),
+      )
+      const send = conversation.getByRole('button', {
+        name: 'Reply',
+        exact: true,
+      })
+      await send.scrollIntoViewIfNeeded()
+      const bounds = (await send.boundingBox())!
+      const dock = (await page
+        .getByRole('navigation', { name: 'Mobile navigation' })
+        .boundingBox())!
+      const topbar = (await page.locator('.workspace-topbar').boundingBox())!
+      expect(bounds.y).toBeGreaterThanOrEqual(topbar.y + topbar.height)
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(dock.y)
+      await send.click()
+      await expect(conversation.getByText('Reply saved locally.')).toBeVisible()
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBe(viewport.width)
+      await page.getByRole('button', { name: 'Back to inbox' }).click()
+      await expect(
+        list.getByRole('button', {
+          name: /^Assigned to you Upgrade the Mark LXXXV armor\./,
+        }),
+      ).toBeFocused()
+      await expect(
+        page.getByRole('searchbox', { name: 'Search inbox' }),
+      ).not.toBeFocused()
     })
   }
 })

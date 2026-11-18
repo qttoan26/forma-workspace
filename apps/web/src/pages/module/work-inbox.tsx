@@ -35,7 +35,8 @@ export function WorkInbox({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [limit, setLimit] = useState(50)
   const [drafts, setDrafts] = useState<Record<string, string>>({})
-  const searchRef = useRef<HTMLInputElement>(null)
+  const selectedTrigger = useRef<HTMLButtonElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
   const items = buildInboxItems(data, activity.entries, userId)
   const selected = items.find((item) => item.id === selectedId)
   const selectedTask = data.initialTasks.find(
@@ -150,7 +151,6 @@ export function WorkInbox({
         <div className="inbox-search">
           <SearchIcon width={16} height={16} />
           <input
-            ref={searchRef}
             type="search"
             aria-label="Search inbox"
             placeholder="Search inbox…"
@@ -191,10 +191,12 @@ export function WorkInbox({
           </div>
         ) : null}
         <div
+          ref={resultsRef}
           id="inbox-results"
           className="inbox-results"
           role="tabpanel"
           aria-labelledby={`inbox-tab-${category}`}
+          tabIndex={-1}
         >
           <ScrollRegion
             label="Inbox notifications"
@@ -215,7 +217,8 @@ export function WorkInbox({
                         className="inbox-item"
                         aria-label={`${item.actor ? `${item.actor} ` : ''}${item.action} ${title}. ${item.snippet}. ${read ? 'Read' : 'Unread'}`}
                         aria-pressed={selectedId === item.id}
-                        onClick={() => {
+                        onClick={(event) => {
+                          selectedTrigger.current = event.currentTarget
                           setSelectedId(item.id)
                           readState.mark([item.id], true)
                         }}
@@ -321,7 +324,11 @@ export function WorkInbox({
             onReplySaved={(id) => readState.mark([`activity:${id}`], true)}
             onBack={() => {
               setSelectedId(null)
-              requestAnimationFrame(() => searchRef.current?.focus())
+              requestAnimationFrame(() => {
+                const target = selectedTrigger.current
+                if (target?.isConnected) target.focus({ preventScroll: true })
+                else resultsRef.current?.focus({ preventScroll: true })
+              })
             }}
           />
         ) : (

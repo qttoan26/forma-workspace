@@ -12,7 +12,7 @@ Frontend demo: https://qttoan26.github.io/forma-workspace/
 
 > The GitHub Pages deployment is an explicit browser/demo build. It does not connect to the production API or OIDC provider. Production authentication remains enabled when `VITE_DEMO_MODE` is not set.
 
-Module rollout: [priorities and current Work scope](docs/module-priorities.md). Work Tasks/My Tasks provide URL-backed filters; Projects exposes progress and view links; Activity shows locally saved task comments and updates. Inbox provides a split-view conversation, category/search/unread filters, per-account local read status, current assignments and replies through the same task activity store. Its scope is the current project on this browser; remote notification delivery remains unconnected.
+Module rollout: [priorities and current Work scope](docs/module-priorities.md). Work Tasks/My Tasks provide URL-backed filters; Projects supports browser-local creation, search, per-project progress and view links; Activity shows locally saved task comments and updates. Work project selection stays in the URL and Home links to saved projects. The project catalog is scoped by account, workspace and deployment on this browser; see [its persistence and integration boundaries](docs/decisions/008-browser-local-project-catalog.md). Inbox provides a split-view conversation, category/search/unread filters, per-account local read status, current assignments and replies through the same task activity store. Its scope is the current project on this browser; remote notification delivery remains unconnected.
 
 ## Engineering principles
 

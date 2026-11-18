@@ -1,3 +1,4 @@
+import { projectHref as hrefForProject } from '@/entities/project/lib/project-href'
 import { useEffect, useRef, useState } from 'react'
 import type { Task } from '@/entities/task/model/task'
 import { taskStatusLabels } from '@/entities/task/model/task'
@@ -9,8 +10,6 @@ import { appendTaskActivityToIndexedDb } from '@/entities/task/lib/task-indexed-
 import type { ProjectBoardData } from '@/pages/project-board/project-board-data-parser'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { inboxActor, type InboxItem } from './work-inbox-model'
-
-const projectHref = `${import.meta.env.BASE_URL}workspaces/forma/projects/project-1`
 
 export function InboxConversation({
   task,
@@ -37,6 +36,7 @@ export function InboxConversation({
   onDraftChange: (value: string) => void
   onReplySaved: (id: string) => void
 }) {
+  const projectHref = hrefForProject(data.workspace.slug, data.project.id)
   const heading = useRef<HTMLHeadingElement>(null)
   const sending = useRef(false)
   const [saveState, setSaveState] = useState<

@@ -55,12 +55,16 @@ export function ModulePage({
   accountId,
   taskSearch,
   onTaskSearchChange,
+  projectId,
+  onProjectChange,
 }: {
   moduleId: string
   sectionId?: string | undefined
   accountId?: string | undefined
   taskSearch?: WorkTaskSearch | undefined
   onTaskSearchChange?: ((search: WorkTaskSearch) => void) | undefined
+  projectId?: string | undefined
+  onProjectChange?: ((id: string) => void) | undefined
 }) {
   const module = getWorkspaceModule(moduleId)
   const sections = getModuleSections(moduleId)
@@ -106,6 +110,7 @@ export function ModulePage({
     <WorkspaceShell
       activeModuleId={module.id}
       activeSectionId={selected?.id}
+      workProjectId={module.id === 'work' ? projectId : undefined}
       pageLabel={
         selected ? `${module.label} / ${selected.label}` : module.label
       }
@@ -132,6 +137,9 @@ export function ModulePage({
             section={workSection}
             taskSearch={taskSearch}
             onTaskSearchChange={onTaskSearchChange}
+            accountId={accountId}
+            projectId={projectId}
+            onProjectChange={onProjectChange}
           />
         ) : module.id === 'documents' &&
           (!selected ||

@@ -29,6 +29,39 @@ for (const width of [320, 393, 440]) {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBe(width)
+    for (const name of [
+      'Task status chart type',
+      'Owner workload chart type',
+    ]) {
+      const group = page.getByRole('group', { name })
+      expect(
+        await group.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      ).toBeLessThanOrEqual(1)
+      const layout = await group.getByRole('button').evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const icon = button.querySelector('svg')!.getBoundingClientRect()
+          const label = button.querySelector('span')!
+          const text = label.getBoundingClientRect()
+          const range = document.createRange()
+          range.selectNodeContents(label)
+          return {
+            lines: range.getClientRects().length,
+            iconBeforeLabel: icon.right <= text.left,
+            centerOffset: Math.abs(
+              icon.y + icon.height / 2 - text.y - text.height / 2,
+            ),
+          }
+        }),
+      )
+      expect(
+        layout.every(
+          (item) =>
+            item.lines === 1 && item.iconBeforeLabel && item.centerOffset < 2,
+        ),
+      ).toBe(true)
+    }
     for (const control of await dock.locator('a, button').all()) {
       const bounds = (await control.boundingBox())!
       expect(bounds.width).toBeGreaterThanOrEqual(44)

@@ -1,0 +1,128 @@
+.project-catalog-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.project-catalog-toolbar label,
+.project-picker {
+  display: grid;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.project-catalog-toolbar label {
+  flex: 1 1 240px;
+}
+.project-catalog-toolbar input,
+.project-picker select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
+  font: inherit;
+}
+.project-catalog-list {
+  max-block-size: min(68vh, 800px);
+  display: grid;
+  gap: 16px;
+  padding: 2px;
+}
+.project-catalog .work-project-row {
+  align-items: start;
+}
+.project-catalog h2,
+.project-catalog .work-project-row-main {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.project-catalog .work-project-mark {
+  overflow-wrap: anywhere;
+  flex-shrink: 0;
+}
+.project-create-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid var(--forma-color-glass-border);
+  border-radius: var(--forma-radius-lg);
+  background: var(--forma-color-surface);
+  color: var(--forma-color-text-strong);
+  box-shadow: var(--forma-shadow-glass);
+}
+.project-create-modal::backdrop {
+  background: rgb(17 24 39 / 35%);
+}
+.project-create-form,
+.project-create-form label {
+  display: grid;
+  gap: 10px;
+}
+.project-create-form {
+  gap: 18px;
+}
+.project-create-form header,
+.project-create-form footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.project-create-form h2,
+.project-create-form p {
+  margin: 0;
+}
+.project-create-form p,
+.project-create-form small {
+  color: var(--forma-color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.project-create-form [role='alert'] {
+  color: var(--forma-color-danger-text);
+}
+.project-create-form input,
+.project-create-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--forma-color-border);
+  border-radius: var(--forma-radius-sm);
+  background: var(--forma-color-surface);
+  color: inherit;
+  font: inherit;
+}
+.project-picker {
+  max-width: 360px;
+  margin-block-end: 16px;
+}
+@media (max-width: 600px) {
+  .project-catalog-toolbar {
+    align-items: stretch;
+    gap: 12px;
+  }
+  .project-catalog-toolbar label {
+    flex-basis: 100%;
+  }
+  .project-catalog-toolbar input,
+  .project-picker select,
+  .project-create-form input,
+  .project-create-form textarea {
+    font-size: 16px;
+  }
+  .project-create-modal {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .project-catalog-list {
+    max-block-size: 65dvh;
+  }
+}

@@ -51,11 +51,13 @@ test('renders real Chart.js charts and updates overview after a saved task move'
     )
   const initialCharts = await chartImages()
   await page
-    .getByRole('combobox', { name: 'Task status chart type' })
-    .selectOption('pie')
+    .getByRole('group', { name: 'Task status chart type' })
+    .getByRole('button', { name: 'Pie' })
+    .click()
   await page
-    .getByRole('combobox', { name: 'Owner workload chart type' })
-    .selectOption('grouped')
+    .getByRole('group', { name: 'Owner workload chart type' })
+    .getByRole('button', { name: 'Grouped bars' })
+    .click()
   await expect.poll(chartsHavePaint).toEqual([true, true])
   const updatedCharts = await chartImages()
   expect(updatedCharts[0]).not.toBe(initialCharts[0])
@@ -128,11 +130,19 @@ test('contains list and board column scrolling, with mobile chart responsiveness
     page.getByRole('img', { name: 'Task status distribution' }),
   ).toBeVisible()
   await page
-    .getByRole('combobox', { name: 'Task status chart type' })
-    .selectOption('bar')
+    .getByRole('group', { name: 'Task status chart type' })
+    .getByRole('button', { name: 'Horizontal bars' })
+    .click()
   await page
-    .getByRole('combobox', { name: 'Owner workload chart type' })
-    .selectOption('grouped')
+    .getByRole('group', { name: 'Owner workload chart type' })
+    .getByRole('button', { name: 'Grouped bars' })
+    .focus()
+  await page.keyboard.press('Enter')
+  await expect(
+    page
+      .getByRole('group', { name: 'Owner workload chart type' })
+      .getByRole('button', { name: 'Grouped bars', pressed: true }),
+  ).toBeFocused()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     375,
   )

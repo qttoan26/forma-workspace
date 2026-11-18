@@ -1,6 +1,9 @@
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { WorkInsightsPanel } from '@/widgets/work-insights/work-insights-panel'
 import { useWorkData } from '@/pages/module/use-work-data'
+import { useProjectCatalog } from '@/pages/module/use-project-catalog'
+import { projectHref as hrefForProject } from '@/entities/project/lib/project-href'
+import { workspace } from '@/pages/project-board/project-board-data'
 
 import { workspaceModules } from '@/shared/workspace/module-registry'
 import { WorkspaceShell } from '@/widgets/workspace-shell/workspace-shell'
@@ -17,6 +20,7 @@ function hrefFor(path: string) {
 
 export function HomePage() {
   const { data, error, retry } = useWorkData()
+  const catalog = useProjectCatalog()
   const tasks = data?.initialTasks ?? []
   const completed = tasks.filter((task) => task.status === 'done').length
   const completion = tasks.length
@@ -96,40 +100,73 @@ export function HomePage() {
                 <p className="eyebrow">Active work</p>
                 <h2 id="projects-title">Projects</h2>
               </div>
-              <span className="panel-count">1 active</span>
+              <a href={`${appBaseUrl}modules/work/projects`}>Browse projects</a>
             </div>
 
-            <a className="project-overview-card" href={projectHref}>
-              <div className="project-overview-main">
-                <span className="project-key">FOR</span>
-                <div>
-                  <h3>{data?.project.name ?? 'Loading project…'}</h3>
-                  <p>
-                    {data?.project.description ?? 'Loading project details…'}
-                  </p>
+            <ScrollRegion label="Dashboard projects">
+              <a className="project-overview-card" href={projectHref}>
+                <div className="project-overview-main">
+                  <span className="project-key">FOR</span>
+                  <div>
+                    <h3>{data?.project.name ?? 'Loading project…'}</h3>
+                    <p>
+                      {data?.project.description ?? 'Loading project details…'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div
-                className="project-progress"
-                aria-label={
-                  data
-                    ? `Project progress ${completion} percent`
-                    : 'Loading project progress'
-                }
-              >
-                <span>
-                  <strong>{data ? `${completion}%` : '—'}</strong> complete
-                </span>
-                <span className="progress-track" aria-hidden="true">
-                  <span style={{ width: `${completion}%` }} />
-                </span>
-              </div>
-              <div className="project-overview-footer">
-                <span>{data ? tasks.length : '—'} tasks</span>
-                <span>{data ? data.members.length : '—'} members</span>
-                <span aria-hidden="true">→</span>
-              </div>
-            </a>
+                <div
+                  className="project-progress"
+                  aria-label={
+                    data
+                      ? `Project progress ${completion} percent`
+                      : 'Loading project progress'
+                  }
+                >
+                  <span>
+                    <strong>{data ? `${completion}%` : '—'}</strong> complete
+                  </span>
+                  <span className="progress-track" aria-hidden="true">
+                    <span style={{ width: `${completion}%` }} />
+                  </span>
+                </div>
+                <div className="project-overview-footer">
+                  <span>{data ? tasks.length : '—'} tasks</span>
+                  <span>{data ? data.members.length : '—'} members</span>
+                  <span aria-hidden="true">→</span>
+                </div>
+              </a>
+              {catalog.projects
+                .filter((project) => project.id !== 'project-1')
+                .map((project) => (
+                  <a
+                    key={project.id}
+                    className="project-overview-card"
+                    href={hrefForProject(workspace.slug, project.id)}
+                  >
+                    <div className="project-overview-main">
+                      <span className="project-key">{project.key}</span>
+                      <div>
+                        <h3>{project.name}</h3>
+                        <p>{project.description || 'Open project board'}</p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+            </ScrollRegion>
+            {catalog.error ? (
+              <p role="alert">
+                Saved projects could not be loaded.{' '}
+                <button type="button" onClick={catalog.retry}>
+                  Retry projects
+                </button>
+              </p>
+            ) : (
+              <p className="work-data-context">
+                {catalog.loading
+                  ? 'Loading saved projects…'
+                  : `${catalog.projects.length} projects on this browser`}
+              </p>
+            )}
           </section>
 
           <aside className="dashboard-panel" aria-labelledby="attention-title">
