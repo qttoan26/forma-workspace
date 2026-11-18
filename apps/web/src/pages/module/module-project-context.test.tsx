@@ -68,7 +68,7 @@ beforeEach(() => {
   sessionStorage.clear()
   latest = structuredClone(linked)
   vi.spyOn(projectBoardRepository, 'getProjectBoard').mockImplementation(
-    async (input) => {
+    (input) => {
       if (input.accountId !== 'operator')
         return Promise.reject(new Error('Project not found'))
       if (input.projectId === linked.project.id) return Promise.resolve(latest)
@@ -111,9 +111,7 @@ it('registers documents for the selected project and clears the form when switch
   fireEvent.change(screen.getByLabelText('Linked task'), {
     target: { value: 'LINK-01' },
   })
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Register reference', exact: true }),
-  )
+  fireEvent.click(screen.getByRole('button', { name: 'Register reference' }))
   await screen.findByText('Reference registered locally.')
   expect(readProjectDocumentReferences(linked.project.id)[0]?.taskId).toBe(
     'LINK-01',
@@ -140,7 +138,6 @@ it('registers documents for the selected project and clears the form when switch
   expect(
     await screen.findByRole('button', {
       name: 'Linked brief.pdf',
-      exact: true,
     }),
   ).toBeInTheDocument()
   const library = screen.getByRole('table', { name: 'Document references' })
@@ -173,15 +170,10 @@ it('re-resolves Production sources with the current account and rejects removed 
   fireEvent.click(
     screen.getByRole('checkbox', {
       name: 'LINK-01 Prepare linked source',
-      exact: true,
     }),
   )
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Linked brief.pdf', exact: true }),
-  )
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Save draft package', exact: true }),
-  )
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Linked brief.pdf' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Save draft package' }))
   await screen.findByText(/^Draft work package saved locally/)
   expect(projectBoardRepository.getProjectBoard).toHaveBeenLastCalledWith({
     workspaceSlug: 'forma',
@@ -197,16 +189,13 @@ it('re-resolves Production sources with the current account and rejects removed 
   const views = screen.getByRole('navigation', {
     name: 'Production workspace views',
   })
-  expect(
-    within(views).getByRole('link', { name: 'Queue', exact: true }),
-  ).toHaveAttribute('href', '/modules/production/queue?project=project-linked')
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Linked package', exact: true }),
+  expect(within(views).getByRole('link', { name: 'Queue' })).toHaveAttribute(
+    'href',
+    '/modules/production/queue?project=project-linked',
   )
+  fireEvent.click(screen.getByRole('button', { name: 'Linked package' }))
   latest = { ...latest, initialTasks: [] }
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Queue package', exact: true }),
-  )
+  fireEvent.click(screen.getByRole('button', { name: 'Queue package' }))
   await screen.findByText(
     /Some source tasks, document references or owners are unavailable/,
   )
