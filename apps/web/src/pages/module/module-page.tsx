@@ -110,7 +110,7 @@ export function ModulePage({
     <WorkspaceShell
       activeModuleId={module.id}
       activeSectionId={selected?.id}
-      workProjectId={module.id === 'work' ? projectId : undefined}
+      workProjectId={projectId}
       pageLabel={
         selected ? `${module.label} / ${selected.label}` : module.label
       }
@@ -147,8 +147,11 @@ export function ModulePage({
             selected.id === 'library') ? (
           <Suspense fallback={<p role="status">Loading document workspace…</p>}>
             <DocumentsWorkspace
-              key={selected?.id ?? 'overview'}
+              key={`${accountId ?? ''}:${projectId ?? 'project-1'}:${selected?.id ?? 'overview'}`}
               sectionId={selected?.id}
+              projectId={projectId}
+              accountId={accountId}
+              onProjectChange={onProjectChange}
             />
           </Suspense>
         ) : module.id === 'production' &&
@@ -160,8 +163,11 @@ export function ModulePage({
             fallback={<p role="status">Loading production workspace…</p>}
           >
             <ProductionWorkspace
-              key={selected?.id ?? 'overview'}
+              key={`${accountId ?? ''}:${projectId ?? 'project-1'}:${selected?.id ?? 'overview'}`}
               sectionId={selected?.id}
+              projectId={projectId}
+              accountId={accountId}
+              onProjectChange={onProjectChange}
             />
           </Suspense>
         ) : module.id === 'automation' && selected?.id === 'workflows' ? (

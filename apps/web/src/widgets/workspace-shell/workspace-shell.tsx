@@ -1,3 +1,4 @@
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import {
   useEffect,
   useRef,
@@ -199,7 +200,7 @@ export function WorkspaceShell({
             >
               {module.id !== 'work' ? (
                 <a
-                  href={hrefFor(module.path)}
+                  href={projectContextHref(module.path, workProjectId)}
                   aria-current={active && !activeSectionId ? 'page' : undefined}
                   onClick={() => setMobileOpen(false)}
                 >
@@ -208,7 +209,10 @@ export function WorkspaceShell({
               ) : null}
               {sections.map((section) => (
                 <a
-                  href={`${hrefFor(moduleSectionPath(module.id, section.id))}${module.id === 'work' && section.id !== 'projects' ? workSearch : ''}`}
+                  href={projectContextHref(
+                    moduleSectionPath(module.id, section.id),
+                    workProjectId,
+                  )}
                   key={section.id}
                   aria-current={
                     active && activeSectionId === section.id
@@ -354,7 +358,10 @@ export function WorkspaceShell({
           </div>
 
           <div className="workspace-topbar-actions">
-            <WorkspaceNavigationSearch disabled={mobileOpen} />
+            <WorkspaceNavigationSearch
+              disabled={mobileOpen}
+              projectId={workProjectId}
+            />
             <a
               className="workspace-notification-button"
               aria-label="Open inbox"

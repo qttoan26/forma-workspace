@@ -1,3 +1,5 @@
+import { ProjectPicker } from './project-picker'
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { useCallback, useMemo, useState } from 'react'
 import type { DocumentReference } from '@/entities/document/model/document-reference'
 import { getDocumentReferenceUrl } from '@/entities/document/lib/document-location'
@@ -12,29 +14,48 @@ import type { ProjectBoardData } from '@/pages/project-board/project-board-data-
 import './documents-workspace.css'
 
 const appBaseUrl = import.meta.env.BASE_URL
-const intakeHref = `${appBaseUrl}modules/documents/intake`
 
 export function DocumentsWorkspace({
   sectionId,
+  projectId = 'project-1',
+  accountId,
+  onProjectChange,
 }: {
   sectionId?: string | undefined
+  projectId?: string | undefined
+  accountId?: string | undefined
+  onProjectChange?: ((id: string) => void) | undefined
 }) {
-  const { data, error, retry } = useWorkData()
+  const { data, error, retry } = useWorkData(projectId, accountId)
+  const picker = onProjectChange ? (
+    <ProjectPicker
+      projectId={projectId}
+      projectName={data?.project.name}
+      accountId={accountId}
+      onChange={onProjectChange}
+    />
+  ) : null
   if (error)
     return (
-      <section className="module-state-card" role="alert">
-        <h2>Project context could not be loaded</h2>
-        <p>Load the current project to register and link documents.</p>
-        <Button onClick={retry}>Try again</Button>
-      </section>
+      <>
+        {picker}
+        <section className="module-state-card" role="alert">
+          <h2>Project context could not be loaded</h2>
+          <p>Load the current project to register and link documents.</p>
+          <Button onClick={retry}>Try again</Button>
+        </section>
+      </>
     )
   if (!data) return <p role="status">Loading document workspace…</p>
   return (
-    <DocumentsWorkspaceContent
-      key={data.project.id}
-      data={data}
-      sectionId={sectionId}
-    />
+    <>
+      {picker}
+      <DocumentsWorkspaceContent
+        key={data.project.id}
+        data={data}
+        sectionId={sectionId}
+      />
+    </>
   )
 }
 
@@ -46,6 +67,10 @@ export function DocumentsWorkspaceContent({
   sectionId?: string | undefined
 }) {
   const { references, error, refresh } = useDocumentReferences(data.project.id)
+  const intakeHref = projectContextHref(
+    '/modules/documents/intake',
+    data.project.id,
+  )
   const isIntake = sectionId === 'intake'
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState('all')
@@ -101,7 +126,10 @@ export function DocumentsWorkspaceContent({
             Intake
           </a>
           <a
-            href={`${appBaseUrl}modules/documents/library`}
+            href={projectContextHref(
+              '/modules/documents/library',
+              data.project.id,
+            )}
             aria-current={
               sectionId === 'library' || !sectionId ? 'page' : undefined
             }
