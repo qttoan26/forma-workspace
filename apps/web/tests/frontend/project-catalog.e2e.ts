@@ -429,6 +429,11 @@ test('keeps Work, Documents and Production linked to the selected account projec
     page.getByRole('heading', { name: 'Prepare linked source', exact: true }),
   ).toBeVisible()
 
+  await page.getByRole('button', { name: 'Files', exact: true }).click()
+  await expect(
+    page.getByRole('link', { name: 'Manage document references', exact: true }),
+  ).toHaveAttribute('href', `/modules/documents/library${query}`)
+
   // Search navigation must carry the same scope as the sidebar and project picker.
   await page
     .getByRole('button', { name: 'Search workspace navigation' })
@@ -543,9 +548,16 @@ test('keeps Work, Documents and Production linked to the selected account projec
   await expect(
     editor.getByRole('button', { name: 'Queue package', exact: true }),
   ).toBeDisabled()
-  await editor
-    .getByRole('checkbox', { name: /Document .*unavailable/ })
-    .uncheck()
+  await expect(
+    editor.getByRole('link', {
+      name: 'Register a source document',
+      exact: true,
+    }),
+  ).toHaveAttribute('href', `/modules/documents/intake${query}`)
+  await editor.getByRole('checkbox', { name: /Document .*unavailable/ }).click()
+  await expect(
+    editor.getByRole('checkbox', { name: /Document .*unavailable/ }),
+  ).toHaveCount(0)
   await editor
     .getByRole('button', { name: 'Save package', exact: true })
     .click()

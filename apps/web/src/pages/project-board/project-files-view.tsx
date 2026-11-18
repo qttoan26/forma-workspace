@@ -1,3 +1,4 @@
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { ScrollRegion } from '@/shared/ui/scroll-region/scroll-region'
 import { useMemo } from 'react'
 import { useDocumentReferences } from '@/entities/document/lib/use-document-references'
@@ -41,7 +42,7 @@ export function ProjectFilesView({
           <small>Files</small>
           <h2>Project documents</h2>
         </div>
-        <a href={`${import.meta.env.BASE_URL}modules/documents/library`}>
+        <a href={projectContextHref('/modules/documents/library', projectId)}>
           Manage document references
         </a>
         <span>{error ? 'Unavailable' : `${references.length} references`}</span>

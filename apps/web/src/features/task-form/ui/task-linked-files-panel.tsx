@@ -1,3 +1,4 @@
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { useMemo, useState } from 'react'
 
 import { mutateProjectDocumentReference } from '@/entities/document/lib/document-reference-storage'
@@ -118,7 +119,7 @@ export function TaskLinkedFilesPanel({
         Links store document metadata only. File content remains owned by the
         Documents & Data storage layer.
       </p>
-      <a href={`${import.meta.env.BASE_URL}modules/documents/library`}>
+      <a href={projectContextHref('/modules/documents/library', projectId)}>
         Manage document references
       </a>
       {loadError ? (

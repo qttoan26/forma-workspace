@@ -1,3 +1,4 @@
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { useId, useState, type FormEvent } from 'react'
 import type { Task } from '@/entities/task/model/task'
 import { taskPriorities } from '@/entities/task/model/task'
@@ -242,7 +243,7 @@ export function ProductionJobForm({
             {!tasks.length ? (
               <p>
                 No Work tasks available.{' '}
-                <a href={`${import.meta.env.BASE_URL}modules/work/tasks`}>
+                <a href={projectContextHref('/modules/work/tasks', projectId)}>
                   Open Work
                 </a>{' '}
                 to add a task first.
@@ -291,7 +292,12 @@ export function ProductionJobForm({
             {!documents.length ? (
               <p>
                 No document references yet.{' '}
-                <a href={`${import.meta.env.BASE_URL}modules/documents/intake`}>
+                <a
+                  href={projectContextHref(
+                    '/modules/documents/intake',
+                    projectId,
+                  )}
+                >
                   Register a source document
                 </a>
                 .
