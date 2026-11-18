@@ -44,6 +44,40 @@ The authenticated Admin API uses `GET` and `PUT` on `/api/admin/workspaces/:work
 
 `GET` returns `{ deliveryRead, revision }`. A missing membership starts with delivery access disabled and revision zero. Legacy records retain their existing access and start at revision zero. To grant or revoke delivery access, send `{ deliveryRead, expectedRevision }` with the revision from the last read. A stale write returns HTTP 409. Each successful write records the actor, time and new revision on the membership.
 
+### Customer request and vendor assignment relationships
+
+The server registry identifies each relationship by workspace, project, audience
+and opaque relationship ID. A `customer` relationship represents a customer
+request; a `vendor` relationship represents a vendor assignment. Each has one
+current organization, an explicit active flag and a revision. Creating a record
+requires an explicit active value; an absent record grants nothing. This registry
+establishes the organization binding only. It does not create a package, share,
+membership or milestone, and does not import browser-local Production data.
+
+Authenticated internal operators use `GET` and `PUT` on
+`/api/admin/workspaces/:workspaceId/projects/:projectId/:audience/relationships/:relationshipId`.
+The deployment operator separately provisions `delivery_relationship_admins` in
+MongoDB with `_id: JSON.stringify([workspaceId, projectId, audience, actorAccountId])`
+and `active: true`. This authority covers relationship reassignment within that
+project and audience. Project ownership, organization membership administration
+and external delivery-read permission do not grant it. There is no public
+provisioning endpoint. Missing or revoked authority returns the same HTTP 404 for
+existing and unknown relationship IDs, for both reads and writes.
+
+`GET` returns `{ organizationId, active, revision }`; an absent record returns
+`{ organizationId: null, active: false, revision: 0 }`. `PUT` accepts exactly
+`{ organizationId, active, expectedRevision }`. Writes atomically check the
+revision, increment it and save the authenticated actor and server timestamp in
+`delivery_relationships`. Stale writes, including concurrent initial creation,
+return HTTP 409. Both responses use `Cache-Control: private, no-store`.
+
+The internal `findActive` lookup reads the primary on every call, returns only
+the current organization and revision, and fails closed for inactive or missing
+records. Database failures remain errors. Future publication and external-read
+services must resolve this relationship again and match its scope, organization
+and revision to the share. A reassignment, revocation or reactivation must not
+make an old publication valid. Customer and vendor bindings remain independent.
+
 ### Acceptance cases
 
 - A permitted customer sees only publications for its linked requests. A permitted vendor sees only publications for its linked assignments. Verify isolation with unrelated organizations in the same workspace and with another workspace.

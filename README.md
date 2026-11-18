@@ -244,6 +244,14 @@ Project task snapshots are owner-scoped using the JWT `sub` claim. Reads by a di
 
 ## API deployment readiness
 
+The delivery foundation includes server-owned organization membership, scoped
+delivery-access administration, and revisioned customer-request/vendor-assignment
+organization bindings. Relationship administration requires its own provisioned
+workspace/project/audience authority. It does not grant task access or publish
+browser-local Production records. See [ADR-007](docs/decisions/007-external-delivery-milestones.md)
+for the API contract and provisioning keys. Server-owned package transitions,
+share publication/revocation, and external milestone reads remain next steps.
+
 The API exposes two health endpoints:
 
 - `GET /api/health` is a lightweight liveness check for the NestJS process.
