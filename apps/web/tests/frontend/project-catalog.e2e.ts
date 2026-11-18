@@ -397,3 +397,199 @@ test('keeps project search, long names and creation usable on a phone', async ({
     path: testInfo.outputPath('project-catalog-mobile.png'),
   })
 })
+
+test('keeps Work, Documents and Production linked to the selected account project', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/modules/work/projects')
+  const row = await createProject(page, 'Linked operations', 'LINK')
+  await row.getByRole('link', { name: 'Open project', exact: true }).click()
+  const projectId = await page
+    .getByRole('combobox', { name: 'Current project' })
+    .inputValue()
+  const query = `?project=${encodeURIComponent(projectId)}`
+  await page.getByRole('button', { name: 'New task', exact: true }).click()
+  const taskEditor = page.getByRole('dialog', {
+    name: 'Create task',
+    exact: true,
+  })
+  await taskEditor
+    .getByRole('textbox', { name: 'Title', exact: true })
+    .fill('Prepare linked source')
+  await taskEditor
+    .getByRole('button', { name: 'Create task', exact: true })
+    .click()
+  await expect(taskEditor).toBeHidden()
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'Prepare linked source', exact: true }),
+  ).toBeVisible()
+
+  // Search navigation must carry the same scope as the sidebar and project picker.
+  await page
+    .getByRole('button', { name: 'Search workspace navigation' })
+    .click()
+  await page
+    .getByRole('searchbox', { name: 'Find a module or section' })
+    .fill('Document intake')
+  const searchResults = page.getByRole('navigation', {
+    name: 'Navigation search results',
+  })
+  const intakeResult = searchResults.locator(
+    'a[href^="/modules/documents/intake"]',
+  )
+  await expect(intakeResult).toHaveAttribute(
+    'href',
+    `/modules/documents/intake${query}`,
+  )
+  await intakeResult.click()
+  await expect(
+    page.getByRole('combobox', { name: 'Current project' }),
+  ).toHaveValue(projectId)
+  await page
+    .getByLabel('Document name', { exact: true })
+    .fill('Linked brief.pdf')
+  await page
+    .getByLabel('Reference location', { exact: true })
+    .fill('DOC-LINKED-1')
+  await page
+    .getByRole('combobox', { name: 'Linked task', exact: true })
+    .selectOption('LINK-01')
+  await page
+    .getByRole('button', { name: 'Register reference', exact: true })
+    .click()
+  await expect(page.getByText('Reference registered locally.')).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Document workspace views' })
+    .getByRole('link', { name: 'Library', exact: true })
+    .click()
+  await expect(page).toHaveURL(`/modules/documents/library${query}`)
+  const documents = page.getByRole('table', { name: 'Document references' })
+  await expect(
+    documents.getByRole('button', { name: 'Linked brief.pdf', exact: true }),
+  ).toBeVisible()
+  await expect(
+    documents.getByRole('link', { name: /LINK-01/ }),
+  ).toHaveAttribute(
+    'href',
+    `/workspaces/forma/projects/${projectId}?view=files&task=LINK-01`,
+  )
+
+  // Enter Production through the real module menu, then validate fresh sources on save.
+  await page.getByRole('button', { name: 'Expand Production sections' }).click()
+  await page
+    .getByRole('navigation', { name: 'Production sections', exact: true })
+    .getByRole('link', { name: 'Job intake', exact: true })
+    .click()
+  await expect(page).toHaveURL(`/modules/production/intake${query}`)
+  await expect(page.getByRole('checkbox', { name: /FOR-18/ })).toHaveCount(0)
+  await page.getByLabel('Package name', { exact: true }).fill('Linked package')
+  await page
+    .getByRole('checkbox', {
+      name: 'LINK-01 Prepare linked source',
+      exact: true,
+    })
+    .check()
+  await page
+    .getByRole('checkbox', { name: 'Linked brief.pdf', exact: true })
+    .check()
+  await page
+    .getByRole('button', { name: 'Save draft package', exact: true })
+    .click()
+  await expect(
+    page.getByText(/^Draft work package saved locally/),
+  ).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Production workspace views' })
+    .getByRole('link', { name: 'Queue', exact: true })
+    .click()
+  await expect(page).toHaveURL(`/modules/production/queue${query}`)
+  await page.reload()
+  const packages = page.getByRole('table', { name: 'Work packages' })
+  await expect(
+    packages.getByRole('link', { name: 'LINK-01', exact: true }),
+  ).toHaveAttribute(
+    'href',
+    `/workspaces/forma/projects/${projectId}?task=LINK-01`,
+  )
+  for (const section of ['processing', 'quality', 'delivery']) {
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Production workspace views' })
+        .locator(`a[href^="/modules/production/${section}"]`),
+    ).toHaveAttribute('href', `/modules/production/${section}${query}`)
+  }
+
+  // A source deleted in another tab is detected; it cannot silently enter the queue.
+  await packages
+    .getByRole('button', { name: 'Linked package', exact: true })
+    .click()
+  const editor = page.getByRole('dialog', { name: 'Work package editor' })
+  const other = await context.newPage()
+  await other.goto(`/modules/documents/library${query}`)
+  await other
+    .getByRole('button', { name: 'Linked brief.pdf', exact: true })
+    .click()
+  await other
+    .getByRole('button', { name: 'Remove reference', exact: true })
+    .click()
+  await other
+    .getByRole('button', { name: 'Confirm remove', exact: true })
+    .click()
+  await expect(
+    editor.getByRole('button', { name: 'Queue package', exact: true }),
+  ).toBeDisabled()
+  await editor
+    .getByRole('checkbox', { name: /Document .*unavailable/ })
+    .uncheck()
+  await editor
+    .getByRole('button', { name: 'Save package', exact: true })
+    .click()
+  await packages
+    .getByRole('button', { name: 'Linked package', exact: true })
+    .click()
+  await editor
+    .getByRole('button', { name: 'Queue package', exact: true })
+    .click()
+  await expect(page.getByText('Work package queued locally.')).toBeVisible()
+  await other.close()
+
+  await page
+    .getByRole('combobox', { name: 'Current project' })
+    .selectOption('project-1')
+  await expect(page).toHaveURL('/modules/production/queue')
+  await expect(
+    page.getByRole('button', { name: 'Linked package', exact: true }),
+  ).toHaveCount(0)
+  await page
+    .getByRole('combobox', { name: 'Current project' })
+    .selectOption(projectId)
+  await expect(
+    packages.getByRole('button', { name: 'Linked package', exact: true }),
+  ).toBeVisible()
+
+  // Neither module may fall back to the sample's sources for an inaccessible ID.
+  await page.route('**/api/auth/me', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ id: 'another-account' }),
+    }),
+  )
+  for (const module of ['documents/library', 'production/queue']) {
+    await page.goto(`/modules/${module}${query}`)
+    await expect(
+      page.getByRole('alert').filter({ hasText: /could not be loaded/ }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: /Linked (brief|package)/ }),
+    ).toHaveCount(0)
+    await page
+      .getByRole('combobox', { name: 'Current project' })
+      .selectOption('project-1')
+    await expect(
+      page.getByRole('alert').filter({ hasText: /could not be loaded/ }),
+    ).toHaveCount(0)
+  }
+})

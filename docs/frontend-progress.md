@@ -41,7 +41,10 @@ scoped by account, workspace and deployment; duplicate keys are checked in one
 IndexedDB transaction. See [the scope and remaining integration work](decisions/008-browser-local-project-catalog.md).
 
 This extension does not change the fixed **70/70** frontend foundation count.
-Next frontend integration: project context selection in Documents and Production.
+Documents and Production now share Work's URL-backed project selection and
+account-scoped catalog lookup. Module navigation keeps the selected project;
+project/account changes discard editors and drafts. Production reloads source
+tasks and documents under that same scope before mutations.
 Server project discovery, project membership and cross-device catalog sync need
 an authoritative API.
 

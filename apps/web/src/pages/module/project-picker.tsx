@@ -8,7 +8,7 @@ export function ProjectPicker({
   onChange,
 }: {
   projectId: string
-  projectName?: string
+  projectName?: string | undefined
   accountId?: string | undefined
   onChange: (id: string) => void
 }) {

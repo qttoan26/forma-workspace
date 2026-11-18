@@ -1,3 +1,5 @@
+import { ProjectPicker } from './project-picker'
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useWorkData } from './use-work-data'
 import { projectBoardRepository } from '@/pages/project-board/project-board-repository'
@@ -66,33 +68,56 @@ function transitionLabel(
 
 export function ProductionWorkspace({
   sectionId,
+  projectId = 'project-1',
+  accountId,
+  onProjectChange,
 }: {
   sectionId?: string | undefined
+  projectId?: string | undefined
+  accountId?: string | undefined
+  onProjectChange?: ((id: string) => void) | undefined
 }) {
-  const { data, error, retry } = useWorkData()
+  const { data, error, retry } = useWorkData(projectId, accountId)
+  const picker = onProjectChange ? (
+    <ProjectPicker
+      projectId={projectId}
+      projectName={data?.project.name}
+      accountId={accountId}
+      onChange={onProjectChange}
+    />
+  ) : null
   if (error)
     return (
-      <section className="module-state-card" role="alert">
-        <h2>Production sources could not be loaded</h2>
-        <p>Load the current Work project before preparing work packages.</p>
-        <Button onClick={retry}>Try again</Button>
-      </section>
+      <>
+        {picker}
+        <section className="module-state-card" role="alert">
+          <h2>Production sources could not be loaded</h2>
+          <p>Load the current Work project before preparing work packages.</p>
+          <Button onClick={retry}>Try again</Button>
+        </section>
+      </>
     )
   if (!data) return <p role="status">Loading production workspace…</p>
   return (
-    <ProductionWorkspaceContent
-      key={data.project.id}
-      data={data}
-      sectionId={sectionId}
-    />
+    <>
+      {picker}
+      <ProductionWorkspaceContent
+        key={data.project.id}
+        data={data}
+        sectionId={sectionId}
+        accountId={accountId}
+      />
+    </>
   )
 }
 
 export function ProductionWorkspaceContent({
   data,
   sectionId,
+  accountId,
 }: {
   data: ProjectBoardData
+  accountId?: string | undefined
   sectionId?: string | undefined
 }) {
   const { jobs, error, refresh } = useProductionJobs(data.project.id)
@@ -130,6 +155,7 @@ export function ProductionWorkspaceContent({
       const latest = await projectBoardRepository.getProjectBoard({
         workspaceSlug: data.workspace.slug,
         projectId: data.project.id,
+        accountId,
       })
       return {
         projectId: latest.project.id,
@@ -142,7 +168,7 @@ export function ProductionWorkspaceContent({
         'Source context could not be loaded. Refresh the project and document sources before saving.',
       )
     }
-  }, [data.workspace.slug, data.project.id])
+  }, [data.workspace.slug, data.project.id, accountId])
   const editJob = useCallback((job: ProductionJob) => {
     setEditor(job)
     setWorkflowNote('')
@@ -242,13 +268,19 @@ export function ProductionWorkspaceContent({
         </div>
         <nav aria-label="Production workspace views">
           <a
-            href={`${appBaseUrl}modules/production/intake`}
+            href={projectContextHref(
+              '/modules/production/intake',
+              data.project.id,
+            )}
             aria-current={sectionId === 'intake' ? 'page' : undefined}
           >
             Intake
           </a>
           <a
-            href={`${appBaseUrl}modules/production/queue`}
+            href={projectContextHref(
+              '/modules/production/queue',
+              data.project.id,
+            )}
             aria-current={
               !sectionId || sectionId === 'queue' ? 'page' : undefined
             }
@@ -258,7 +290,10 @@ export function ProductionWorkspaceContent({
           {Object.entries(stageLinks).map(([id, label]) => (
             <a
               key={id}
-              href={`${appBaseUrl}modules/production/${id}`}
+              href={projectContextHref(
+                `/modules/production/${id}`,
+                data.project.id,
+              )}
               aria-current={sectionId === id ? 'page' : undefined}
             >
               {label}
@@ -358,7 +393,10 @@ export function ProductionWorkspaceContent({
         </div>
         <a
           className="production-new-link"
-          href={`${appBaseUrl}modules/production/intake`}
+          href={projectContextHref(
+            '/modules/production/intake',
+            data.project.id,
+          )}
         >
           New work package
         </a>

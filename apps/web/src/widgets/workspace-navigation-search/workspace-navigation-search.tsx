@@ -1,3 +1,4 @@
+import { projectContextHref } from '@/shared/workspace/project-context-href'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 
 import { SearchIcon, XIcon } from '@/shared/ui/workspace-icons'
@@ -8,8 +9,10 @@ import './workspace-navigation-search.css'
 
 export function WorkspaceNavigationSearch({
   disabled = false,
+  projectId,
 }: {
   disabled?: boolean
+  projectId?: string | undefined
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -182,7 +185,7 @@ export function WorkspaceNavigationSearch({
               {entries.map((entry) => (
                 <li key={entry.id}>
                   <a
-                    href={`${import.meta.env.BASE_URL}${entry.path.replace(/^\//, '')}`}
+                    href={projectContextHref(entry.path, projectId)}
                     onClick={() => setIsOpen(false)}
                   >
                     <span className="workspace-navigation-search-result-copy">
