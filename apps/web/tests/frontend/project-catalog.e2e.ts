@@ -402,6 +402,9 @@ test('keeps Work, Documents and Production linked to the selected account projec
   page,
   context,
 }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('forma-workspace:sidebar-expanded:v1', 'true'),
+  )
   await page.goto('/modules/work/projects')
   const row = await createProject(page, 'Linked operations', 'LINK')
   await row.getByRole('link', { name: 'Open project', exact: true }).click()
